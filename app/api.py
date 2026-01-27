@@ -43,31 +43,54 @@ class ChatResponse(BaseModel):
 def chat(req: ChatRequest):
     import re
 
-    # Retrieve relevant FINUX chunks (keep small for cleanliness)
+    # 1. Retrieve relevant FINUX chunks
     docs = db.similarity_search(req.question, k=3)
 
     if not docs:
         return {"answer": "Sorry — mujhe FINUX documents me iska jawab nahi mila."}
 
-    # Combine + deduplicate chunks
+    # 2. Combine + deduplicate chunks
     raw = "\n\n".join(dict.fromkeys(d.page_content for d in docs))
 
-    # Remove [Page X]
+    # 3. Remove [Page X]
     clean = re.sub(r"\[Page\s*\d+\]", "", raw).strip()
 
-    # Remove duplicate lines
+    # 4. Remove duplicate lines
     clean = "\n".join(dict.fromkeys(clean.splitlines()))
 
-    # Limit length to avoid PDF dump
-    clean = clean[:1200]
+    # 5. Remove noisy marketing blocks
+    noise = [
+        "START YOUR FINUX CRYPTO JOURNEY",
+        "Join the",
+        "FINUX\nFuture Internet Network",
+        "Deposit • Rewards • Referral • Clubs",
+    ]
+
+    for n in noise:
+        clean = clean.replace(n, "")
+
+    # 6. Limit size (avoid PDF dump)
+    clean = clean[:1500]
+
+    # 7. Convert into conversational bullets
+    lines = [l.strip() for l in clean.split("\n") if len(l.strip()) > 5]
+
+    important = []
+    for l in lines:
+        if any(x in l.lower() for x in ["deposit", "reward", "stake", "club", "wallet", "register", "mint"]):
+            important.append("• " + l)
+        else:
+            important.append(l)
+
+    clean = "\n".join(important[:15])
 
     q = req.question.lower()
 
-    # Simple language detection
+    # 8. Simple language detection
     english_words = ["what", "how", "can", "is", "are", "do", "does", "member", "join", "deposit"]
     is_english = sum(w in q for w in english_words) >= 2
 
-    # Intent-based conversational intro
+    # 9. Intent-based conversational intro
     if any(x in q for x in ["member", "join", "register", "sign up", "become"]):
         intro = (
             "Yes — of course 🙂 You can become a FINUX member. Here’s the simple joining process:"
@@ -82,9 +105,9 @@ def chat(req: ChatRequest):
         )
     elif "reward" in q:
         intro = (
-            "FINUX rewards are based on staking and liquidity participation. Here are the details:"
+            "FINUX rewards come mainly from staking and liquidity participation. Here are the main points:"
             if is_english
-            else "FINUX me rewards staking aur liquidity participation se milte hain. Details yeh rahi:"
+            else "FINUX me rewards mainly staking aur liquidity participation se milte hain. Main points yeh rahe:"
         )
     elif "deposit" in q or "start" in q:
         intro = (
@@ -99,9 +122,17 @@ def chat(req: ChatRequest):
             else "Yeh FINUX documents ke according short explanation hai:"
         )
 
+    # 10. Human connector
+    bridge = (
+        "In simple terms:\n\n"
+        if is_english
+        else "Simple words me samjhein:\n\n"
+    )
+
+    # 11. Final answer (NO closing lines)
     answer = f"""{intro}
 
-{clean}
+{bridge}{clean}
 """
 
     return {"answer": answer.strip()}
