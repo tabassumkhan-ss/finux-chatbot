@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>FINUX Assistant</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
+  margin: 0;
+}
+
+header {
+  background: #1f2937;
+  color: white;
+  padding: 12px;
+  text-align: center;
+  font-size: 20px;
+}
+
+#chat {
+  padding: 15px;
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.user {
+  background: #2563eb;
+  color: white;
+  margin-left: auto;
+}
+
+.bot {
+  background: white;
+  border: 1px solid #ddd;
+}
+
+#typing {
+  display: none;
+  padding: 10px;
+  font-style: italic;
+  color: gray;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: white;
+  padding: 10px;
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  🤖 FINUX Assistant
+</header>
+
+<div id="chat"></div>
+
+<div id="typing">Bot is typing...</div>
+
+<footer>
+  <input id="input" placeholder="Ask about FINUX..." onkeydown="if(event.key==='Enter'){send();}" />
+  <button onclick="send()">Send</button>
+</footer>
+
+<script>
+function add(text, cls) {
+  let div = document.createElement("div");
+  div.className = "message " + cls;
+  div.innerText = text;
+  document.getElementById("chat").appendChild(div);
+  document.getElementById("chat").scrollTop = chat.scrollHeight;
+}
+
+async function send() {
+  let input = document.getElementById("input");
+  let text = input.value.trim();
+  if (!text) return;
+
+  add(text, "user");
+  input.value = "";
+
+  document.getElementById("typing").style.display = "block";
+
+  try {
+    let res = await fetch("/chat", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({question:text})
+    });
+
+    let data = await res.json();
+
+    document.getElementById("typing").style.display = "none";
+
+    add(data.answer || "No response", "bot");
+
+  } catch (e) {
+    document.getElementById("typing").style.display = "none";
+    add("Server error.", "bot");
+  }
+}
+</script>
+
+</body>
+</html>

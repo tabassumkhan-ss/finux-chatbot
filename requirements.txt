@@ -3,7 +3,7 @@ uvicorn
 python-docx
 pypdf
 langchain
+langchain-community
 faiss-cpu
-openai
-tiktoken
+sentence-transformers
 python-dotenv

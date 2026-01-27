@@ -22,4 +22,4 @@ def build_knowledge_base():
 
 if __name__ == "__main__":
     db = build_knowledge_base()
-    print(f"Knowledge base built with {len(db.index)} vectors")
+    print(f"Knowledge base built with {db.index.ntotal} vectors")
