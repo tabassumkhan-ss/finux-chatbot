@@ -41,19 +41,25 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    # Retrieve relevant FINUX chunks
-    docs = db.similarity_search(req.question, k=6)
+    import re
+
+    # Retrieve relevant FINUX chunks (keep small for cleanliness)
+    docs = db.similarity_search(req.question, k=3)
 
     if not docs:
         return {"answer": "Sorry — mujhe FINUX documents me iska jawab nahi mila."}
 
-    import re
-
-    # Deduplicate chunks
+    # Combine + deduplicate chunks
     raw = "\n\n".join(dict.fromkeys(d.page_content for d in docs))
 
     # Remove [Page X]
     clean = re.sub(r"\[Page\s*\d+\]", "", raw).strip()
+
+    # Remove duplicate lines
+    clean = "\n".join(dict.fromkeys(clean.splitlines()))
+
+    # Limit length to avoid PDF dump
+    clean = clean[:1200]
 
     q = req.question.lower()
 
@@ -61,7 +67,7 @@ def chat(req: ChatRequest):
     english_words = ["what", "how", "can", "is", "are", "do", "does", "member", "join", "deposit"]
     is_english = sum(w in q for w in english_words) >= 2
 
-    # Intent + language based conversational intro
+    # Intent-based conversational intro
     if any(x in q for x in ["member", "join", "register", "sign up", "become"]):
         intro = (
             "Yes — of course 🙂 You can become a FINUX member. Here’s the simple joining process:"
@@ -93,19 +99,9 @@ def chat(req: ChatRequest):
             else "Yeh FINUX documents ke according short explanation hai:"
         )
 
-    # Closing line (language aware)
-    closing = (
-        "If you’d like, I can also explain registration, deposit, rewards, or clubs in more detail."
-        if is_english
-        else "Agar aap chahein, main registration, deposit, rewards ya clubs ko aur simple karke bhi samjha sakta hoon."
-    )
-
     answer = f"""{intro}
 
 {clean}
-
-{closing}
 """
 
     return {"answer": answer.strip()}
-
