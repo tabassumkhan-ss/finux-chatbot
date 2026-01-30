@@ -1,25 +1,21 @@
 import os
-import google.generativeai as genai
+from google import genai
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    raise RuntimeError("GEMINI_API_KEY not found")
+    raise RuntimeError("GEMINI_API_KEY not set")
 
-# Configure Gemini (official way)
-genai.configure(api_key=API_KEY)
-
-# Use currently supported public model
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=API_KEY)
 
 def ask_gemini(prompt: str) -> str:
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-1.0-pro",
+            contents=prompt,
+        )
 
-        if response and response.text:
-            return response.text
-
-        return "Sorry — I couldn’t generate a response."
+        return response.text or "Sorry — I couldn’t generate a response."
 
     except Exception as e:
         print("Gemini error:", e)
