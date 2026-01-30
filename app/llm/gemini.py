@@ -1,11 +1,11 @@
 import os
-import google.generativeai as genai
+from google import genai
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Use stable supported model
-model = genai.GenerativeModel("models/gemini-1.0-pro")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def ask_gemini(prompt: str) -> str:
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=prompt,
+    )
     return response.text
