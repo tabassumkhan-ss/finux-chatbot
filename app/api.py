@@ -3,22 +3,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
-from app.db import init_db
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+
+from app.db import init_db, save_question
 
 from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.docx_loader import load_docx
 from app.ingestion.chunker import chunk_text
 from app.embeddings.vector_store import create_vector_store
 
-from app.core.prompt import SYSTEM_PROMPT
-
 app = FastAPI(title="FINUX Chatbot API")
+
+
+# ---------------- Startup ----------------
 
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+
+# ---------------- UI ----------------
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -26,15 +31,18 @@ def home():
         return f.read()
 
 
+# ---------------- Knowledge Base ----------------
+
 PDF_PATH = "data/raw/finux.pdf"
 DOCX_PATH = "data/raw/finux.docx"
 
-# Build knowledge base ONCE at startup
 pdf_text = load_pdf(PDF_PATH)
 docx_text = load_docx(DOCX_PATH)
 chunks = chunk_text(pdf_text + docx_text)
 db = create_vector_store(chunks)
 
+
+# ---------------- Models ----------------
 
 class ChatRequest(BaseModel):
     question: str
@@ -43,11 +51,21 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
 
+
+# ---------------- Chat Endpoint ----------------
+
 @app.post("/chat")
 def chat(req: ChatRequest):
-    import re
 
-    # Retrieve relevant FINUX chunks
+    # Save question safely (never break chat)
+    try:
+        save_question(req.question)
+    except Exception as e:
+        print("DB save failed:", e)
+
+    q = req.question.lower()
+
+    # Retrieve relevant chunks
     docs = db.similarity_search(req.question, k=3)
 
     if not docs:
@@ -65,14 +83,17 @@ def chat(req: ChatRequest):
     # Limit length (avoid PDF dump)
     clean = clean[:1200]
 
-    # Lowercase question once
-    q = req.question.lower()
-
     # ---------------- Language detection ----------------
 
+    hinglish_markers = [
+        " kya ", " mujhe ", " samjha", " bata", " ka ", " ke ",
+        " kyun", " kaise", " hai", " hain", " aap", " tum", " mera"
+    ]
+
+    q_spaced = f" {q} "
+
     if re.search(r"[a-zA-Z]", req.question):
-        hinglish_markers = ["kya", "ka", "ke", "me", "mujhe", "samjha", "bata", "hai", "hain"]
-        is_hinglish = any(w in q for w in hinglish_markers)
+        is_hinglish = any(w in q_spaced for w in hinglish_markers)
         is_english = not is_hinglish
     else:
         is_english = False
@@ -118,7 +139,7 @@ def chat(req: ChatRequest):
 
     bridge = "In simple terms:\n\n" if is_english else "Simple words me samjhein:\n\n"
 
-    # ---------------- Final answer (NO closing lines) ----------------
+    # ---------------- Final answer ----------------
 
     answer = f"""{intro}
 
