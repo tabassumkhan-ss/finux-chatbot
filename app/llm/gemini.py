@@ -1,10 +1,11 @@
 import os
 from google import genai
+import traceback
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    raise RuntimeError("GEMINI_API_KEY not found in environment variables")
+    print("WARNING: GEMINI_API_KEY missing")
 
 client = genai.Client(api_key=API_KEY)
 
@@ -12,7 +13,7 @@ client = genai.Client(api_key=API_KEY)
 def ask_gemini(prompt: str) -> str:
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-pro",
             contents=prompt,
         )
 
@@ -21,6 +22,6 @@ def ask_gemini(prompt: str) -> str:
 
         return "Sorry — I couldn’t generate a response."
 
-    except Exception as e:
-        print("Gemini error:", e)
+    except Exception:
+        traceback.print_exc()
         return "AI service temporarily unavailable. Please try again."
