@@ -1,9 +1,9 @@
 import re
-from app.db import init_db
 from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
+from app.db import init_db
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -15,7 +15,10 @@ from app.embeddings.vector_store import create_vector_store
 from app.core.prompt import SYSTEM_PROMPT
 
 app = FastAPI(title="FINUX Chatbot API")
-init_db()
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 @app.get("/", response_class=HTMLResponse)
 def home():
