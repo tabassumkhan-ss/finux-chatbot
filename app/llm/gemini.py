@@ -1,27 +1,26 @@
 import os
-import traceback
-from google import genai
+import google.generativeai as genai
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    print("WARNING: GEMINI_API_KEY missing")
+    raise RuntimeError("GEMINI_API_KEY not found")
 
-client = genai.Client(api_key=API_KEY)
+# Configure Gemini (official way)
+genai.configure(api_key=API_KEY)
 
+# Use currently supported public model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 def ask_gemini(prompt: str) -> str:
     try:
-        response = client.models.generate_content(
-            model="models/gemini-pro",
-            contents=prompt,
-        )
+        response = model.generate_content(prompt)
 
-        if hasattr(response, "text") and response.text:
-            return response.text.strip()
+        if response and response.text:
+            return response.text
 
         return "Sorry — I couldn’t generate a response."
 
-    except Exception:
-        traceback.print_exc()
+    except Exception as e:
+        print("Gemini error:", e)
         return "AI service temporarily unavailable. Please try again."
