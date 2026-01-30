@@ -1,3 +1,4 @@
+import os
 import re
 from dotenv import load_dotenv
 load_dotenv()
@@ -12,19 +13,18 @@ from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.docx_loader import load_docx
 from app.ingestion.chunker import chunk_text
 from app.embeddings.vector_store import create_vector_store
+
 from app.llm.gemini import ask_gemini
+
+# ---------------- App ----------------
 
 app = FastAPI(title="FINUX Chatbot API")
 
-
-# ---------------- Startup ----------------
 
 @app.on_event("startup")
 def on_startup():
     init_db()
 
-
-# ---------------- UI ----------------
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -32,15 +32,16 @@ def home():
         return f.read()
 
 
-# ---------------- Knowledge Base ----------------
+# ---------------- Load FINUX Docs Once ----------------
 
 PDF_PATH = "data/raw/finux.pdf"
 DOCX_PATH = "data/raw/finux.docx"
 
 pdf_text = load_pdf(PDF_PATH)
 docx_text = load_docx(DOCX_PATH)
+
 chunks = chunk_text(pdf_text + docx_text)
-db = create_vector_store(chunks)
+vector_db = create_vector_store(chunks)
 
 
 # ---------------- Models ----------------
@@ -53,57 +54,62 @@ class ChatResponse(BaseModel):
     answer: str
 
 
+# ---------------- Helpers ----------------
+
+def detect_language(text: str):
+    q = text.lower()
+    hinglish = ["kya", "ka", "ke", "me", "mujhe", "kaise", "bata", "hai", "hain", "kar"]
+    if any(w in q for w in hinglish):
+        return "hinglish"
+    if re.search(r"[a-zA-Z]", text):
+        return "english"
+    return "hinglish"
+
+
+def get_finux_answer(question: str) -> str:
+    docs = vector_db.similarity_search(question, k=3)
+
+    if not docs:
+        return ""
+
+    raw = "\n\n".join(dict.fromkeys(d.page_content for d in docs))
+    clean = re.sub(r"\[Page\s*\d+\]", "", raw)
+    clean = "\n".join(dict.fromkeys(clean.splitlines()))
+    return clean.strip()[:1200]
+
+
 # ---------------- Chat Endpoint ----------------
 
-@app.post("/chat")
+@app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
-    save_question(req.question)
 
-    question = req.question.strip()
-    q = question.lower()
+    user_q = req.question.strip()
+    save_question(user_q)
 
-    # Search FINUX docs
-    docs = db.similarity_search(question, k=3)
+    lang = detect_language(user_q)
 
-    finux_context = ""
-    if docs:
-        raw = "\n\n".join(d.page_content for d in docs)
-        clean = re.sub(r"\[Page\s*\d+\]", "", raw)
-        clean = "\n".join(dict.fromkeys(clean.splitlines()))
-        finux_context = clean[:1500]
+    # 1. FINUX RAG
+    finux_answer = get_finux_answer(user_q)
 
-    # Detect language (simple)
-    hinglish = ["kya","ka","ke","me","mujhe","samjha","bata","hai","hain","kar","kaise"]
-    is_hinglish = any(w in q for w in hinglish)
-    is_english = not is_hinglish
+    # 2. Gemini fallback
+    gemini_answer = ""
 
-    # Decide mode
-    is_finux = len(finux_context.strip()) > 150
+    if not finux_answer:
+        gemini_answer = ask_gemini(user_q)
 
-    if is_finux:
-        system = (
-            "You are FINUX Assistant. Answer ONLY using provided FINUX content. "
-            "Be friendly, simple, human. No marketing. No repetition."
-        )
+    # 3. Choose final answer
+    final_core = finux_answer if finux_answer else gemini_answer
 
-        if not is_english:
-            system += " Respond in Hinglish."
+    if not final_core:
+        return {"answer": "Sorry — service temporarily unavailable."}
 
-        prompt = f"""
-{system}
+    # 4. Humanize
 
-FINUX CONTENT:
-{finux_context}
-
-USER QUESTION:
-{question}
-
-Answer clearly:
-"""
-
+    if lang == "english":
+        intro = "Sure 🙂 Here’s the explanation:\n\n"
     else:
-        prompt = question
+        intro = "Bilkul 🙂 simple words me samjhiye:\n\n"
 
-    answer = ask_gemini(prompt)
+    answer = intro + final_core
 
-    return {"answer": answer}
+    return {"answer": answer.strip()}

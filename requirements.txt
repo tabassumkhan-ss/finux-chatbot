@@ -9,5 +9,5 @@ sentence-transformers
 python-dotenv
 pdfplumber
 psycopg2-binary
-google-genai>=0.3.0
+google-genai
 
