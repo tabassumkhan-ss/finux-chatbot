@@ -9,3 +9,4 @@ sentence-transformers
 python-dotenv
 pdfplumber
 psycopg2-binary
+google-generativeai
