@@ -6,6 +6,7 @@ import psycopg2
 
 from app.llm.gemini import ask_gemini
 from app.embeddings.vector_store import get_rag_answer
+from fastapi.responses import HTMLResponse
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -59,10 +60,10 @@ def save_question(question: str):
 
 # ---------------- Routes ----------------
 
-@app.get("/")
-def root():
-    return {"status": "FINUX chatbot running"}
-
+@app.get("/", response_class=HTMLResponse)
+def home():
+    with open("app/ui.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
