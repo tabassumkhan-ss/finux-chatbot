@@ -87,29 +87,21 @@ def chat(req: ChatRequest):
     save_question(user_q)
 
     lang = detect_language(user_q)
+    q = user_q.lower()
 
-    # 1. FINUX RAG
-    finux_answer = get_finux_answer(user_q)
+    finux_keywords = [
+        "finux", "deposit", "referral", "staking", "lp", "club",
+        "reward", "mst", "usdc", "wallet", "mining"
+    ]
 
-    # 2. Gemini fallback
-    gemini_answer = ""
+    is_finux = any(k in q for k in finux_keywords)
 
-    if not finux_answer:
-        gemini_answer = ask_gemini(user_q)
-
-    # 3. Choose final answer
-    final_core = finux_answer if finux_answer else gemini_answer
+    if is_finux:
+        final_core = get_finux_answer(user_q)
+        if not final_core:
+            final_core = "Sorry — FINUX documents me iska jawab nahi mila."
+    else:
+        final_core = ask_gemini(user_q)
 
     if not final_core:
         return {"answer": "Sorry — service temporarily unavailable."}
-
-    # 4. Humanize
-
-    if lang == "english":
-        intro = "Sure 🙂 Here’s the explanation:\n\n"
-    else:
-        intro = "Bilkul 🙂 simple words me samjhiye:\n\n"
-
-    answer = intro + final_core
-
-    return {"answer": answer.strip()}
