@@ -3,17 +3,23 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import os
+import re
 from datetime import datetime
 
-# Your helpers
+# FINUX loaders
+from app.ingestion.pdf_loader import load_pdf
+from app.ingestion.docx_loader import load_docx
+from app.ingestion.chunker import chunk_text
+from app.embeddings.vector_store import create_vector_store
+
+# Gemini
 from app.llm.gemini import ask_gemini
-from app.rag import get_rag_answer
 
 # -------------------------------------------------
 # App
 # -------------------------------------------------
 
-app = FastAPI(title="Finux Chatbot API")
+app = FastAPI(title="FINUX Chatbot API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,6 +30,23 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+PDF_PATH = "data/raw/finux.pdf"
+DOCX_PATH = "data/raw/finux.docx"
+
+# -------------------------------------------------
+# Build FINUX knowledge base ONCE
+# -------------------------------------------------
+
+print("Loading FINUX documents...")
+
+pdf_text = load_pdf(PDF_PATH)
+docx_text = load_docx(DOCX_PATH)
+
+chunks = chunk_text(pdf_text + docx_text)
+vector_db = create_vector_store(chunks)
+
+print("FINUX knowledge base ready")
 
 # -------------------------------------------------
 # DB helper
@@ -88,37 +111,31 @@ async def chat(req: ChatRequest):
     if not user_message:
         return {"response": "Please ask something 🙂"}
 
-    # Save question
     save_question(user_message)
 
     try:
         # -----------------------------
-        # 1. FINUX RAG first
+        # FINUX RAG
         # -----------------------------
-        rag_answer = get_rag_answer(user_message)
+        docs = vector_db.similarity_search(user_message, k=3)
 
-        if rag_answer and rag_answer.strip():
-            return {"response": rag_answer}
+        if docs:
+            raw = "\n\n".join(d.page_content for d in docs)
+            clean = re.sub(r"\[Page\s*\d+\]", "", raw).strip()
+            clean = clean[:1200]
+
+            return {"response": clean}
 
         # -----------------------------
-        # 2. Gemini fallback
+        # Gemini fallback
         # -----------------------------
         gemini_answer = ask_gemini(user_message)
 
         if gemini_answer and gemini_answer.strip():
             return {"response": gemini_answer}
 
-        # -----------------------------
-        # 3. Final fallback
-        # -----------------------------
-        return {
-            "response": "Sorry — AI service is temporarily unavailable. Please try again."
-        }
+        return {"response": "Sorry — AI service temporarily unavailable."}
 
     except Exception as e:
         print("Chat error:", e)
-
-        # NEVER return None
-        return {
-            "response": "Something went wrong on server. Please try again."
-        }
+        return {"response": "Server error. Please try again."}
