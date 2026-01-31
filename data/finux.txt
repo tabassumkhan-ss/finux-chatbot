@@ -1,0 +1,207 @@
+🚀 FINUX — Future Internet Network for Universal Assets
+
+(Deposit • Rewards • Referral • Clubs • LP Benefits)
+
+1. Fund Distribution
+
+Blockchain: MST Blockchain (MEP-20)
+
+Category	Percentage	Description
+
+Liquidity Pool	50%	Added as system liquidity
+Referral Program Wallet	35%	Referral payouts
+Admin Maintenance	15%	Operations, maintenance
+
+
+🔸 MSTC → Deposited to Admin Wallet
+🔸 USDCe → Distributed as per allocation
+
+2. Registration (Step 1)
+
+Users must register on the official DEX / Application / Platform.
+
+3. Deposit (Step 2)
+
+Minimum Deposit: 20 USDCe
+Combination:
+
+70% USDCe
+30% MSTC
+
+Allowed Deposit Slabs:
+20 / 50 / 100 / 200 / Multiples of 100
+
+4. Transaction Completion (Step 3)
+
+After depositing MSTC + USDCe, the system automatically mints:
+
+✔ ONE new FINUX coin
+✔ Auto-credited to user wallet
+
+5. Airdrop (Step 4)
+
+1. Wallet registration required
+2. Verification mandatory
+3. Earn 50 FINUX after 5 direct paid referrals
+
+6. Liquidity Pool (Step 5)
+
+Option 1 — LP Staking (5% MPY)
+Stake FINUX in Liquidity Pool:
+
+✔ Earn 5% MPY
+✔ Daily rewards auto-credited
+
+
+7. Self-Staking (Step 6)
+
+Option 2 — FINUX Self Staking (2% MPY)
+
+✔ Earn 2% MPY
+✔ Daily auto-rewards
+
+Referral Program — Rank Wise Rewards
+
+-------------
+🔸 Origin — 10%
+
+Requirements:
+A. Become an Origin
+B. Self-Activation Required
+
+🔸 Life Changer — 16%
+
+✔ 1000 USDCe Total Team Business
+✔ 10 Active Origins
+✔  mini.20 USDCe LP (LIQUIDITY POOL)
+
+    (C.T.O Club 3%)
+✔ Club Achiever: 20$ FINUX coin Staking 
+✔ To receive club income every month, you must maintain a team business of $300.
+
+
+🔸 Advisor — 20%
+
+✔ 5000 USDCe Team Business
+✔ 2 Active Life Changers (Different Wings)
+✔ mini. 100 USDCe LP (LIQUIDITY POOL)
+
+    (C.T.O Club 2.5%)
+✔ Club Achiever: 100$ FINUX coin Staking 
+✔ To receive club income every month, you must maintain a team business of $1500.
+
+
+🔸 Visionary — 23%
+
+✔ 25,000 USDCe Team Business
+✔ 2 Active Advisors
+✔ mini.300 USDCe LP (LIQUIDITY POOL)
+
+    (C.T.O Club  2%)
+✔ Club Achiever: 300$ FINUX coin Staking 
+✔ To receive club income every month, you must maintain a team business of $7500.
+
+
+🔸 Creator — 25%
+
+✔ 100,000 USDCe Team Business
+✔ 2 Active Advisors
+✔ mini.1000 USDCe LP (LIQUIDITY POOL)
+
+     (C.T.O Club — 1.5%)
+✔ Club Achiever:1000$ FINUX coin Staking 
+✔ To receive club income every month, you must maintain a team business of $30,000
+
+
+
+How to Achieve All Clubs?
+
+Assume you are a Creator:
+
+Your Team	When They Qualify	You Earn
+
+A Team	Visionary	Visionary Club Income
+B Team	Visionary	Visionary Club Income
+C Direct	Life Changer	Life Changer Club Income
+D Direct	Advisor	Advisor Club Income
+E Direct	Visionary	Visionary Club Income
+
+
+Why Invest in LP (Liquidity Pool)?
+
+1. Stable & Secure Trading
+
+Ensures smooth execution & price stability.
+
+2. Higher Rewards & Bonuses
+
+LP investors enjoy enhanced MPY and bonus income.
+
+3. Convert Idle Tokens into Income
+
+Non-productive tokens start generating profit.
+
+4. Community Trust & Strength
+
+High liquidity builds strong market confidence.
+
+5. Future Premium Benefits
+
+✔ Early Airdrops
+✔ Extra Mining Income
+✔ Exclusive Access
+
+6. Strengthens Ecosystem
+
+Increases liquidity, volume & reduces manipulation.
+
+7. Passive Income Machine
+
+Stake → Hold → Earn daily rewards automatically.
+
+Token Price
+
+1 FINUX = 0.01 USDCe
+
+
+Terms & Conditions
+
+General Terms
+
+1. Referral program only for verified users.
+2. One registration per wallet.
+3. Rewards follow company policy.
+4. Fraud/duplicate wallets → termination.
+5. Company may update/stop the program anytime.
+6. LP contributes 50% toward team business.
+7. Income limit: 3X, in affiliate program after which retop-up required.
+8. Re-Top Up gives 50% FINUX.
+9. Rewards available only on active IDs.
+
+
+Withdrawal Policy
+
+✔ Withdraw FINUX rewards anytime
+✔ Minimum withdrawal: 1 USDCe equivalent
+
+On Withdrawal:
+50% FINUX Burned
+50% Returned to Supply
+Admin Fee: 5%
+
+
+Objectives
+
+A — Create universal user identity
+B — Blockchain-based authentication
+C — Increase liquidity participation
+D — Ensure fair reward distribution
+E — Boost token adoption & engagement
+
+Important Note
+
+🔐 Wallet is automatically generated.
+📌 Keep private key / seed phrase safe.
+📌 Wallet address is system-generated.
+
+🙏 Thank You for Your Support
