@@ -84,7 +84,7 @@ async def chat(req: ChatRequest):
         return {"response": "Please ask something 🙂"}
 
     # 1️⃣ Try FINUX RAG first
-    finux_answer = get_rag_answer(question)
+    finux_answer = rag_answer(question)
 
     if finux_answer and finux_answer.strip():
         answer = finux_answer
