@@ -1,100 +1,96 @@
-import os
+import re
 from fastapi import FastAPI
-from pydantic import BaseModel
-from datetime import datetime
-import psycopg2
-
-from app.llm.gemini import ask_gemini
-from app.embeddings.vector_store import get_rag_answer
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-app = FastAPI()
-
-
-# ---------------- Models ----------------
-
-class ChatRequest(BaseModel):
-    message: str
+from app.db import init_db, save_question
+from app.ingestion.pdf_loader import load_pdf
+from app.ingestion.docx_loader import load_docx
+from app.ingestion.chunker import chunk_text
+from app.embeddings.vector_store import create_vector_store
+from app.llm.gemini import ask_gemini
 
 
-class ChatResponse(BaseModel):
-    response: str
+app = FastAPI(title="FINUX Chatbot")
+
+# ---------- Startup ----------
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 
-# ---------------- Database ----------------
-
-def get_db():
-    if not DATABASE_URL:
-        return None
-    return psycopg2.connect(DATABASE_URL)
-
-
-def save_question(question: str):
-    try:
-        conn = get_db()
-        if not conn:
-            return
-
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS questions (
-                id SERIAL PRIMARY KEY,
-                question TEXT,
-                created_at TIMESTAMP
-            )
-        """)
-
-        cur.execute(
-            "INSERT INTO questions (question, created_at) VALUES (%s, %s)",
-            (question, datetime.utcnow()),
-        )
-
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print("DB error:", e)
-
-
-# ---------------- Routes ----------------
+# ---------- UI ----------
 
 @app.get("/", response_class=HTMLResponse)
 def home():
     with open("app/ui.html", "r", encoding="utf-8") as f:
         return f.read()
 
+
+# ---------- Load FINUX docs once ----------
+
+PDF_PATH = "data/raw/finux.pdf"
+DOCX_PATH = "data/raw/finux.docx"
+
+pdf_text = load_pdf(PDF_PATH)
+docx_text = load_docx(DOCX_PATH)
+
+chunks = chunk_text(pdf_text + docx_text)
+vector_db = create_vector_store(chunks)
+
+
+# ---------- Models ----------
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatResponse(BaseModel):
+    answer: str
+
+
+# ---------- Helpers ----------
+
+def is_finux_related(q: str) -> bool:
+    keywords = [
+        "finux", "deposit", "referral", "club", "staking",
+        "lp", "liquidity", "mint", "mst", "usdc"
+    ]
+    ql = q.lower()
+    return any(k in ql for k in keywords)
+
+
+def rag_answer(question: str) -> str | None:
+    docs = vector_db.similarity_search(question, k=3)
+
+    if not docs:
+        return None
+
+    text = "\n".join(d.page_content for d in docs)
+    text = re.sub(r"\[Page\s*\d+\]", "", text)
+    text = text.strip()
+
+    return text[:1500]
+
+
+# ---------- Chat ----------
+
 @app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
-    user_msg = req.message.strip()
+def chat(req: ChatRequest):
+    question = req.message.strip()
 
-    if not user_msg:
-        return {"response": "Please enter a message."}
+    if not question:
+        return {"answer": "Please type a question 🙂"}
 
-    # save question
-    save_question(user_msg)
+    save_question(question)
 
-    finux_answer = ""
-    gemini_answer = ""
+    # FINUX → RAG
+    if is_finux_related(question):
+        finux = rag_answer(question)
+        if finux:
+            return {"answer": finux}
 
-    # 1. FINUX RAG
-    try:
-        finux_answer = get_rag_answer(user_msg)
-    except Exception as e:
-        print("RAG error:", e)
-
-    if finux_answer and finux_answer.strip():
-        return {"response": finux_answer}
-
-    # 2. Gemini fallback
-    try:
-        gemini_answer = ask_gemini(user_msg)
-    except Exception as e:
-        print("Gemini error:", e)
-
-    if gemini_answer and gemini_answer.strip():
-        return {"response": gemini_answer}
-
-    # 3. Final fallback
-    return {"response": "Sorry — AI service temporarily unavailable."}
+    # Otherwise Gemini
+    gemini = ask_gemini(question)
+    return {"answer": gemini}
