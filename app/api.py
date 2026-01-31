@@ -1,11 +1,15 @@
+import os
+import requests
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import os
 
 from app.embeddings.vector_store import create_vector_store
 from app.llm.gemini import ask_gemini
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 app = FastAPI()
 
@@ -107,3 +111,31 @@ async def chat(req: ChatRequest):
 @app.get("/health")
 def health():
     return {"status": "FINUX chatbot running"}
+
+@app.post("/telegram")
+async def telegram_webhook(req: Request):
+    data = await req.json()
+
+    try:
+        chat_id = data["message"]["chat"]["id"]
+        text = data["message"]["text"]
+
+        # reuse your existing chatbot logic
+        finux_answer = rag_answer(text)
+
+        if not finux_answer.strip():
+            finux_answer = ask_gemini(text)
+
+        requests.post(
+            f"{TELEGRAM_API}/sendMessage",
+            json={
+                "chat_id": chat_id,
+                "text": finux_answer
+            }
+        )
+
+    except Exception as e:
+        print("Telegram error:", e)
+
+    return {"ok": True}
+
