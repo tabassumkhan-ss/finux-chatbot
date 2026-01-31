@@ -1,82 +1,97 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
 
-from embeddings.vector_store import create_vector_store
-from embeddings.text_loader import load_finux_text
-from embeddings.text_splitter import split_text
-
-from gemini import ask_gemini
+from app.embeddings.vector_store import create_vector_store
+from app.llm.gemini import ask_gemini
 
 app = FastAPI()
 
+# -----------------------------
+# CORS (optional but useful)
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -------------------------
-# Load FINUX Knowledge ONCE
-# -------------------------
+# -----------------------------
+# Load UI
+# -----------------------------
+BASE_DIR = os.path.dirname(__file__)
+UI_PATH = os.path.join(BASE_DIR, "ui.html")
 
-print("Loading FINUX data...")
+# -----------------------------
+# Load FINUX documents
+# -----------------------------
+DATA_PATH = os.path.join(os.path.dirname(BASE_DIR), "data", "finux.txt")
 
-raw_text = load_finux_text()
-chunks = split_text(raw_text)
+if os.path.exists(DATA_PATH):
+    with open(DATA_PATH, "r", encoding="utf-8") as f:
+        texts = [f.read()]
+else:
+    texts = ["FINUX is a decentralized Crypto Ecosystem."]
 
-db = create_vector_store(chunks)
+# -----------------------------
+# Build Vector DB ONCE
+# -----------------------------
+db = create_vector_store(texts)
 
-print("FINUX Vector DB Ready")
-
-# -------------------------
-
+# -----------------------------
+# Request schema
+# -----------------------------
 class ChatRequest(BaseModel):
     message: str
 
+# -----------------------------
+# Home = UI
+# -----------------------------
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    with open(UI_PATH, "r", encoding="utf-8") as f:
+        return f.read()
 
-@app.get("/")
-def root():
-    return {"status": "FINUX chatbot running"}
-
-
-# -------------------------
-# RAG
-# -------------------------
-
-def rag_answer(question: str):
-
+# -----------------------------
+# RAG Answer
+# -----------------------------
+def rag_answer(question: str) -> str:
     docs = db.similarity_search_with_score(question, k=2)
 
     if not docs:
-        return None
+        return ""
 
-    doc, score = docs[0]
+    context = "\n".join([d[0].page_content for d in docs])
 
-    # higher = worse
-    if score > 0.75:
-        return None
+    prompt = f"""
+Use the context below to answer.
 
-    return doc.page_content
+Context:
+{context}
 
+Question:
+{question}
+"""
 
-# -------------------------
+    return ask_gemini(prompt)
+
+# -----------------------------
 # Chat Endpoint
-# -------------------------
-
+# -----------------------------
 @app.post("/chat")
 async def chat(req: ChatRequest):
-
     question = req.message
 
+    # 1️⃣ Try FINUX RAG
     finux_answer = rag_answer(question)
 
     if finux_answer and finux_answer.strip():
         answer = finux_answer
-
     else:
+        # 2️⃣ Fallback Gemini
         gemini_answer = ask_gemini(question)
 
         if gemini_answer and gemini_answer.strip():
@@ -85,3 +100,10 @@ async def chat(req: ChatRequest):
             answer = "Sorry — I could not generate a reply."
 
     return {"response": answer}
+
+# -----------------------------
+# Health
+# -----------------------------
+@app.get("/health")
+def health():
+    return {"status": "FINUX chatbot running"}
