@@ -1,91 +1,18 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-import psycopg2
-import os
-import re
 from datetime import datetime
+import psycopg2
 
-# FINUX loaders
-from app.ingestion.pdf_loader import load_pdf
-from app.ingestion.docx_loader import load_docx
-from app.ingestion.chunker import chunk_text
-from app.embeddings.vector_store import create_vector_store
-
-# Gemini
-from app.llm.gemini import ask_gemini
-
-# -------------------------------------------------
-# App
-# -------------------------------------------------
-
-app = FastAPI(title="FINUX Chatbot API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from app.gemini import ask_gemini
+from app.embeddings.vector_store import get_rag_answer
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-PDF_PATH = "data/raw/finux.pdf"
-DOCX_PATH = "data/raw/finux.docx"
-
-# -------------------------------------------------
-# Build FINUX knowledge base ONCE
-# -------------------------------------------------
-
-print("Loading FINUX documents...")
-
-pdf_text = load_pdf(PDF_PATH)
-docx_text = load_docx(DOCX_PATH)
-
-chunks = chunk_text(pdf_text + docx_text)
-vector_db = create_vector_store(chunks)
-
-print("FINUX knowledge base ready")
-
-# -------------------------------------------------
-# DB helper
-# -------------------------------------------------
-
-def save_question(question: str):
-    if not DATABASE_URL:
-        return
-
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS questions (
-                id SERIAL PRIMARY KEY,
-                question TEXT,
-                created_at TIMESTAMP
-            )
-            """
-        )
-
-        cur.execute(
-            "INSERT INTO questions (question, created_at) VALUES (%s, %s)",
-            (question, datetime.utcnow()),
-        )
-
-        conn.commit()
-        cur.close()
-        conn.close()
-
-    except Exception as e:
-        print("DB error:", e)
+app = FastAPI()
 
 
-# -------------------------------------------------
-# Models
-# -------------------------------------------------
+# ---------------- Models ----------------
 
 class ChatRequest(BaseModel):
     message: str
@@ -95,9 +22,42 @@ class ChatResponse(BaseModel):
     response: str
 
 
-# -------------------------------------------------
-# Routes
-# -------------------------------------------------
+# ---------------- Database ----------------
+
+def get_db():
+    if not DATABASE_URL:
+        return None
+    return psycopg2.connect(DATABASE_URL)
+
+
+def save_question(question: str):
+    try:
+        conn = get_db()
+        if not conn:
+            return
+
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS questions (
+                id SERIAL PRIMARY KEY,
+                question TEXT,
+                created_at TIMESTAMP
+            )
+        """)
+
+        cur.execute(
+            "INSERT INTO questions (question, created_at) VALUES (%s, %s)",
+            (question, datetime.utcnow()),
+        )
+
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print("DB error:", e)
+
+
+# ---------------- Routes ----------------
 
 @app.get("/")
 def root():
@@ -106,36 +66,34 @@ def root():
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    user_message = req.message.strip()
+    user_msg = req.message.strip()
 
-    if not user_message:
-        return {"response": "Please ask something 🙂"}
+    if not user_msg:
+        return {"response": "Please enter a message."}
 
-    save_question(user_message)
+    # save question
+    save_question(user_msg)
 
+    finux_answer = ""
+    gemini_answer = ""
+
+    # 1. FINUX RAG
     try:
-        # -----------------------------
-        # FINUX RAG
-        # -----------------------------
-        docs = vector_db.similarity_search(user_message, k=3)
-
-        if docs:
-            raw = "\n\n".join(d.page_content for d in docs)
-            clean = re.sub(r"\[Page\s*\d+\]", "", raw).strip()
-            clean = clean[:1200]
-
-            return {"response": clean}
-
-        # -----------------------------
-        # Gemini fallback
-        # -----------------------------
-        gemini_answer = ask_gemini(user_message)
-
-        if gemini_answer and gemini_answer.strip():
-            return {"response": gemini_answer}
-
-        return {"response": "Sorry — AI service temporarily unavailable."}
-
+        finux_answer = get_rag_answer(user_msg)
     except Exception as e:
-        print("Chat error:", e)
-        return {"response": "Server error. Please try again."}
+        print("RAG error:", e)
+
+    if finux_answer and finux_answer.strip():
+        return {"response": finux_answer}
+
+    # 2. Gemini fallback
+    try:
+        gemini_answer = ask_gemini(user_msg)
+    except Exception as e:
+        print("Gemini error:", e)
+
+    if gemini_answer and gemini_answer.strip():
+        return {"response": gemini_answer}
+
+    # 3. Final fallback
+    return {"response": "Sorry — AI service temporarily unavailable."}
