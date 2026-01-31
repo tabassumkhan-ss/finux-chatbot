@@ -1,65 +1,50 @@
-import re
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.db import init_db, save_question
-from app.ingestion.pdf_loader import load_pdf
-from app.ingestion.docx_loader import load_docx
-from app.ingestion.chunker import chunk_text
-from app.embeddings.vector_store import create_vector_store
-from app.llm.gemini import ask_gemini
+from embeddings.vector_store import create_vector_store
+from embeddings.text_loader import load_finux_text
+from embeddings.text_splitter import split_text
 
+from gemini import ask_gemini
 
-app = FastAPI(title="FINUX Chatbot")
+app = FastAPI()
 
-# ---------- Startup ----------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.on_event("startup")
-def startup():
-    init_db()
+# -------------------------
+# Load FINUX Knowledge ONCE
+# -------------------------
 
+print("Loading FINUX data...")
 
-# ---------- UI ----------
+raw_text = load_finux_text()
+chunks = split_text(raw_text)
 
-@app.get("/", response_class=HTMLResponse)
-def home():
-    with open("app/ui.html", "r", encoding="utf-8") as f:
-        return f.read()
+db = create_vector_store(chunks)
 
+print("FINUX Vector DB Ready")
 
-# ---------- Load FINUX docs once ----------
-
-PDF_PATH = "data/raw/finux.pdf"
-DOCX_PATH = "data/raw/finux.docx"
-
-pdf_text = load_pdf(PDF_PATH)
-docx_text = load_docx(DOCX_PATH)
-
-chunks = chunk_text(pdf_text + docx_text)
-vector_db = create_vector_store(chunks)
-
-
-# ---------- Models ----------
+# -------------------------
 
 class ChatRequest(BaseModel):
     message: str
 
 
-class ChatResponse(BaseModel):
-    answer: str
+@app.get("/")
+def root():
+    return {"status": "FINUX chatbot running"}
 
 
-# ---------- Helpers ----------
-
-def is_finux_related(q: str) -> bool:
-    keywords = [
-        "finux", "deposit", "referral", "club", "staking",
-        "lp", "liquidity", "mint", "mst", "usdc"
-    ]
-    ql = q.lower()
-    return any(k in ql for k in keywords)
-
+# -------------------------
+# RAG
+# -------------------------
 
 def rag_answer(question: str):
 
@@ -70,30 +55,28 @@ def rag_answer(question: str):
 
     doc, score = docs[0]
 
-    # FAISS: LOWER score = better match
-    # If score too high → not relevant
+    # higher = worse
     if score > 0.75:
         return None
 
     return doc.page_content
 
-# ---------- Chat ----------
+
+# -------------------------
+# Chat Endpoint
+# -------------------------
 
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    question = req.message.strip()
 
-    if not question:
-        return {"response": "Please ask something 🙂"}
+    question = req.message
 
-    # 1️⃣ Try FINUX RAG first
     finux_answer = rag_answer(question)
 
     if finux_answer and finux_answer.strip():
         answer = finux_answer
 
     else:
-        # 2️⃣ Fallback to Gemini
         gemini_answer = ask_gemini(question)
 
         if gemini_answer and gemini_answer.strip():
