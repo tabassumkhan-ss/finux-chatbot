@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import psycopg2
 
-from app.gemini import ask_gemini
+from app.llm.gemini import ask_gemini
 from app.embeddings.vector_store import get_rag_answer
 
 DATABASE_URL = os.getenv("DATABASE_URL")
