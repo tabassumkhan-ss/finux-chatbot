@@ -61,18 +61,21 @@ def is_finux_related(q: str) -> bool:
     return any(k in ql for k in keywords)
 
 
-def rag_answer(question: str) -> str | None:
-    docs = vector_db.similarity_search(question, k=3)
+def rag_answer(question: str):
+
+    docs = db.similarity_search_with_score(question, k=2)
 
     if not docs:
         return None
 
-    text = "\n".join(d.page_content for d in docs)
-    text = re.sub(r"\[Page\s*\d+\]", "", text)
-    text = text.strip()
+    doc, score = docs[0]
 
-    return text[:1500]
+    # FAISS: LOWER score = better match
+    # If score too high → not relevant
+    if score > 0.75:
+        return None
 
+    return doc.page_content
 
 # ---------- Chat ----------
 
