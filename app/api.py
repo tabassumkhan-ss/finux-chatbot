@@ -76,21 +76,26 @@ def rag_answer(question: str) -> str | None:
 
 # ---------- Chat ----------
 
-@app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
+@app.post("/chat")
+async def chat(req: ChatRequest):
     question = req.message.strip()
 
     if not question:
-        return {"answer": "Please type a question 🙂"}
+        return {"response": "Please ask something 🙂"}
 
-    save_question(question)
+    # 1️⃣ Try FINUX RAG first
+    finux_answer = get_rag_answer(question)
 
-    # FINUX → RAG
-    if is_finux_related(question):
-        finux = rag_answer(question)
-        if finux:
-            return {"answer": finux}
+    if finux_answer and finux_answer.strip():
+        answer = finux_answer
 
-    # Otherwise Gemini
-    gemini = ask_gemini(question)
-    return {"answer": gemini}
+    else:
+        # 2️⃣ Fallback to Gemini
+        gemini_answer = ask_gemini(question)
+
+        if gemini_answer and gemini_answer.strip():
+            answer = gemini_answer
+        else:
+            answer = "Sorry — I could not generate a reply."
+
+    return {"response": answer}
