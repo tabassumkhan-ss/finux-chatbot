@@ -15,11 +15,11 @@ from app.db import save_chat
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-# -----------------------------
-# FastAPI
-# -----------------------------
 app = FastAPI()
 
+# -----------------------------
+# CORS
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,15 +28,16 @@ app.add_middleware(
 )
 
 # -----------------------------
-# Paths
+# UI path
 # -----------------------------
 BASE_DIR = os.path.dirname(__file__)
 UI_PATH = os.path.join(BASE_DIR, "ui.html")
-DATA_PATH = os.path.join(os.path.dirname(BASE_DIR), "data", "finux.txt")
 
 # -----------------------------
-# Load FINUX Text
+# Load FINUX data
 # -----------------------------
+DATA_PATH = os.path.join(os.path.dirname(BASE_DIR), "data", "finux.txt")
+
 if os.path.exists(DATA_PATH):
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         texts = [f.read()]
@@ -46,16 +47,18 @@ else:
 # -----------------------------
 # Build Vector Store ONCE
 # -----------------------------
+print("Building vector store...")
 db = create_vector_store(texts)
+print("Vector store ready.")
 
 # -----------------------------
-# Request Model
+# Request schema
 # -----------------------------
 class ChatRequest(BaseModel):
     message: str
 
 # -----------------------------
-# UI
+# Home → UI
 # -----------------------------
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -97,25 +100,27 @@ Question:
 async def chat(req: ChatRequest):
     question = req.message
 
-    finux_answer = rag_answer(question)
+    # RAG first
+    answer = rag_answer(question)
 
-    if finux_answer and finux_answer.strip():
-        answer = finux_answer
-    else:
-        gemini_answer = ask_gemini(question)
-        if gemini_answer and gemini_answer.strip():
-            answer = gemini_answer
-        else:
-            answer = "Sorry — I could not generate a reply."
+    # Fallback Gemini
+    if not answer.strip():
+        answer = ask_gemini(question)
 
-    # ✅ Save WEB chat
-    save_chat(
-        "web",
-        "anonymous",
-        "",
-        question,
-        answer
-    )
+    if not answer.strip():
+        answer = "Sorry — I could not generate a reply."
+
+    # Save to DB (WEB)
+    try:
+        save_chat(
+            "web",
+            "anonymous",
+            "",
+            question,
+            answer
+        )
+    except Exception as e:
+        print("DB save error (web):", e)
 
     return {"response": answer}
 
@@ -130,27 +135,34 @@ async def telegram_webhook(req: Request):
         chat_id = data["message"]["chat"]["id"]
         text = data["message"]["text"]
 
-        finux_answer = rag_answer(text)
+        answer = rag_answer(text)
 
-        if not finux_answer.strip():
-            finux_answer = ask_gemini(text)
+        if not answer.strip():
+            answer = ask_gemini(text)
 
-        # ✅ Save TELEGRAM chat
-        save_chat(
-            "telegram",
-            str(chat_id),
-            "",
-            text,
-            finux_answer
-        )
+        if not answer.strip():
+            answer = "Sorry — I could not generate a reply."
 
+        # Send to Telegram
         requests.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": chat_id,
-                "text": finux_answer
+                "text": answer
             }
         )
+
+        # Save to DB (Telegram)
+        try:
+            save_chat(
+                "telegram",
+                str(chat_id),
+                "",
+                text,
+                answer
+            )
+        except Exception as e:
+            print("DB save error (telegram):", e)
 
     except Exception as e:
         print("Telegram error:", e)
