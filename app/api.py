@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from app.embeddings.vector_store import create_vector_store
 from app.llm.gemini import ask_gemini
-from app.db import save_chat
+from app.db import save_chat, save_question
 
 # -----------------------------
 # Telegram
