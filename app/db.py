@@ -7,9 +7,7 @@ conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 cursor = conn.cursor()
 
-# ----------------------------
-# Chats table
-# ----------------------------
+# Create chats table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS chats (
     id SERIAL PRIMARY KEY,
@@ -22,9 +20,7 @@ CREATE TABLE IF NOT EXISTS chats (
 )
 """)
 
-# ----------------------------
-# Questions table
-# ----------------------------
+# QUESTIONS TABLE (if not already)
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS questions (
     id SERIAL PRIMARY KEY,
@@ -33,26 +29,29 @@ CREATE TABLE IF NOT EXISTS questions (
 )
 """)
 
-# ----------------------------
-# Save chat (full conversation)
-# ----------------------------
-def save_chat(platform, user_id, username, question, answer):
-    cursor.execute(
-        """
-        INSERT INTO chats (platform, user_id, username, question, answer)
-        VALUES (%s,%s,%s,%s,%s)
-        """,
-        (platform, user_id, username, question, answer)
-    )
-
-# ----------------------------
-# Save only questions
-# ----------------------------
 def save_question(question):
-    cursor.execute(
-        """
-        INSERT INTO questions (question)
-        VALUES (%s)
-        """,
-        (question,)
-    )
+    try:
+        cursor.execute(
+            "INSERT INTO questions (question) VALUES (%s)",
+            (question,)
+        )
+    except Exception as e:
+        print("save_question error:", e)
+
+def save_chat(platform, user_id, username, question, answer):
+    try:
+        cursor.execute(
+            """
+            INSERT INTO chats (platform, user_id, username, question, answer)
+            VALUES (%s,%s,%s,%s,%s)
+            """,
+            (
+                platform or "web",
+                str(user_id or "0"),
+                username or "",
+                question,
+                answer,
+            )
+        )
+    except Exception as e:
+        print("save_chat error:", e)
