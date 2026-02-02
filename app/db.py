@@ -3,39 +3,28 @@ import psycopg2
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+conn = psycopg2.connect(DATABASE_URL)
+conn.autocommit = True
+cursor = conn.cursor()
 
-def get_conn():
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL not set")
-    return psycopg2.connect(DATABASE_URL)
+# Create table once
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS chats (
+    id SERIAL PRIMARY KEY,
+    platform TEXT,
+    user_id TEXT,
+    username TEXT,
+    question TEXT,
+    answer TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
 
-
-def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS questions (
-            id SERIAL PRIMARY KEY,
-            question TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-
-def save_question(text: str):
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute(
-        "INSERT INTO questions (question) VALUES (%s);",
-        (text,)
+def save_chat(platform, user_id, username, question, answer):
+    cursor.execute(
+        """
+        INSERT INTO chats (platform, user_id, username, question, answer)
+        VALUES (%s,%s,%s,%s,%s)
+        """,
+        (platform, user_id, username, question, answer)
     )
-
-    conn.commit()
-    cur.close()
-    conn.close()

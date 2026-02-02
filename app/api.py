@@ -7,15 +7,19 @@ from pydantic import BaseModel
 
 from app.embeddings.vector_store import create_vector_store
 from app.llm.gemini import ask_gemini
+from app.db import save_chat
 
+# -----------------------------
+# Telegram
+# -----------------------------
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
+# -----------------------------
+# FastAPI
+# -----------------------------
 app = FastAPI()
 
-# -----------------------------
-# CORS (optional but useful)
-# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,35 +28,34 @@ app.add_middleware(
 )
 
 # -----------------------------
-# Load UI
+# Paths
 # -----------------------------
 BASE_DIR = os.path.dirname(__file__)
 UI_PATH = os.path.join(BASE_DIR, "ui.html")
-
-# -----------------------------
-# Load FINUX documents
-# -----------------------------
 DATA_PATH = os.path.join(os.path.dirname(BASE_DIR), "data", "finux.txt")
 
+# -----------------------------
+# Load FINUX Text
+# -----------------------------
 if os.path.exists(DATA_PATH):
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         texts = [f.read()]
 else:
-    texts = ["FINUX is a decentralized Crypto Ecosystem."]
+    texts = ["FINUX is a decentralized crypto ecosystem."]
 
 # -----------------------------
-# Build Vector DB ONCE
+# Build Vector Store ONCE
 # -----------------------------
 db = create_vector_store(texts)
 
 # -----------------------------
-# Request schema
+# Request Model
 # -----------------------------
 class ChatRequest(BaseModel):
     message: str
 
 # -----------------------------
-# Home = UI
+# UI
 # -----------------------------
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -60,17 +63,18 @@ async def home():
         return f.read()
 
 # -----------------------------
-# RAG Answer
+# RAG
 # -----------------------------
 def rag_answer(question: str) -> str:
-    docs = db.similarity_search_with_score(question, k=2)
+    try:
+        docs = db.similarity_search_with_score(question, k=2)
 
-    if not docs:
-        return ""
+        if not docs:
+            return ""
 
-    context = "\n".join([d[0].page_content for d in docs])
+        context = "\n".join([d[0].page_content for d in docs])
 
-    prompt = f"""
+        prompt = f"""
 Use the context below to answer.
 
 Context:
@@ -80,38 +84,44 @@ Question:
 {question}
 """
 
-    return ask_gemini(prompt)
+        return ask_gemini(prompt)
+
+    except Exception as e:
+        print("RAG error:", e)
+        return ""
 
 # -----------------------------
-# Chat Endpoint
+# Web Chat
 # -----------------------------
 @app.post("/chat")
 async def chat(req: ChatRequest):
     question = req.message
 
-    # 1️⃣ Try FINUX RAG
     finux_answer = rag_answer(question)
 
     if finux_answer and finux_answer.strip():
         answer = finux_answer
     else:
-        # 2️⃣ Fallback Gemini
         gemini_answer = ask_gemini(question)
-
         if gemini_answer and gemini_answer.strip():
             answer = gemini_answer
         else:
             answer = "Sorry — I could not generate a reply."
 
+    # ✅ Save WEB chat
+    save_chat(
+        "web",
+        "anonymous",
+        "",
+        question,
+        answer
+    )
+
     return {"response": answer}
 
 # -----------------------------
-# Health
+# Telegram Webhook
 # -----------------------------
-@app.get("/health")
-def health():
-    return {"status": "FINUX chatbot running"}
-
 @app.post("/telegram")
 async def telegram_webhook(req: Request):
     data = await req.json()
@@ -120,11 +130,19 @@ async def telegram_webhook(req: Request):
         chat_id = data["message"]["chat"]["id"]
         text = data["message"]["text"]
 
-        # reuse your existing chatbot logic
         finux_answer = rag_answer(text)
 
         if not finux_answer.strip():
             finux_answer = ask_gemini(text)
+
+        # ✅ Save TELEGRAM chat
+        save_chat(
+            "telegram",
+            str(chat_id),
+            "",
+            text,
+            finux_answer
+        )
 
         requests.post(
             f"{TELEGRAM_API}/sendMessage",
@@ -139,3 +157,9 @@ async def telegram_webhook(req: Request):
 
     return {"ok": True}
 
+# -----------------------------
+# Health
+# -----------------------------
+@app.get("/health")
+def health():
+    return {"status": "FINUX chatbot running"}
