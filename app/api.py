@@ -14,36 +14,30 @@ from app.db import save_chat, save_question
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-def send_welcome(chat_id):
-    image_path = Path("app/assets/finux.png")
-
-    with open(image_path, "rb") as f:
-        files = {"photo": f}
-
-        reply_markup = {
-            "inline_keyboard": [
-                [
-                    {"text": "🚀 Open App", "url": "finux-chatbot-production.up.railway.app"},
-                    {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"}
-                ],
-                [
-                    {"text": "🌐 Website", "url": "https://your-site"}
-                ]
-            ]
-        }
-
-        requests.post(
-            f"{TELEGRAM_API}/sendPhoto",
-            files=files,
-            data={
-                "chat_id": chat_id,
-                "caption": "👋 Welcome to FINUX!\n\nYour AI assistant for FINUX ecosystem.",
-                "reply_markup": str(reply_markup).replace("'", '"')
-            }
-        )
-
-
 app = FastAPI()
+
+def send_welcome(chat_id):
+    reply_markup = {
+        "inline_keyboard": [
+            [
+                {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
+                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"}
+            ],
+            [
+                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
+            ]
+        ]
+    }
+
+    requests.post(
+        f"{TELEGRAM_API}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": "👋 Welcome to FINUX Assistant!\n\nAsk me anything about FINUX.",
+            "reply_markup": reply_markup
+        }
+    )
+
 
 # -----------------------------
 # CORS
@@ -153,9 +147,8 @@ async def telegram_webhook(req: Request):
     try:
         chat_id = data["message"]["chat"]["id"]
         text = data["message"].get("text", "")
-        username = data["message"]["chat"].get("username", "")
 
-        # /start command → show UI
+        # 👉 Handle /start
         if text == "/start":
             send_welcome(chat_id)
             return {"ok": True}
@@ -166,11 +159,11 @@ async def telegram_webhook(req: Request):
         if not finux_answer.strip():
             finux_answer = ask_gemini(text)
 
-        # Save to DB
+        # Save Telegram chat
         save_chat(
             "telegram",
             str(chat_id),
-            username,
+            "",
             text,
             finux_answer
         )
