@@ -1,5 +1,7 @@
 import os
 import requests
+import base64
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +13,35 @@ from app.db import save_chat, save_question
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+def send_welcome(chat_id):
+    image_path = Path("app/assets/finux.png")
+
+    with open(image_path, "rb") as f:
+        files = {"photo": f}
+
+        reply_markup = {
+            "inline_keyboard": [
+                [
+                    {"text": "🚀 Open App", "url": "finux-chatbot-production.up.railway.app"},
+                    {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"}
+                ],
+                [
+                    {"text": "🌐 Website", "url": "https://your-site"}
+                ]
+            ]
+        }
+
+        requests.post(
+            f"{TELEGRAM_API}/sendPhoto",
+            files=files,
+            data={
+                "chat_id": chat_id,
+                "caption": "👋 Welcome to FINUX!\n\nYour AI assistant for FINUX ecosystem.",
+                "reply_markup": str(reply_markup).replace("'", '"')
+            }
+        )
+
 
 app = FastAPI()
 
@@ -121,32 +152,34 @@ async def telegram_webhook(req: Request):
 
     try:
         chat_id = data["message"]["chat"]["id"]
-        text = data["message"]["text"]
+        text = data["message"].get("text", "")
         username = data["message"]["chat"].get("username", "")
 
+        # /start command → show UI
+        if text == "/start":
+            send_welcome(chat_id)
+            return {"ok": True}
+
+        # Normal chat
         finux_answer = rag_answer(text)
 
         if not finux_answer.strip():
             finux_answer = ask_gemini(text)
 
-        answer = finux_answer or "Sorry — I could not generate a reply."
-
-        # SAVE TELEGRAM TOO
-        save_question(text)
-
+        # Save to DB
         save_chat(
             "telegram",
             str(chat_id),
             username,
             text,
-            answer
+            finux_answer
         )
 
         requests.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": chat_id,
-                "text": answer
+                "text": finux_answer
             }
         )
 
