@@ -160,6 +160,7 @@ def health():
 @app.post("/telegram")
 async def telegram(req: Request):
     data = await req.json()
+    logging.info(f"Telegram update: {data}")
 
     try:
         if "callback_query" in data:
@@ -168,13 +169,16 @@ async def telegram(req: Request):
             question = cq["data"].replace("q:", "")
 
         else:
-            chat_id = data["message"]["chat"]["id"]
-            text = data["message"].get("text", "")
+            msg = data.get("message")
+            if not msg:
+                return {"ok": True}
+
+            chat_id = msg["chat"]["id"]
+            text = msg.get("text", "")
 
             if text == "/start":
-             send_start(chat_id)
-             return {"ok": True}
-
+                send_start(chat_id)
+                return {"ok": True}
 
             question = text
 
@@ -183,15 +187,12 @@ async def telegram(req: Request):
         if not answer:
             answer = "Not available in FINUX docs."
 
-        save_question(question)
-        save_chat("telegram", str(chat_id), "", question, answer)
-
         requests.post(
             f"{TELEGRAM_API}/sendMessage",
             json={"chat_id": chat_id, "text": answer}
         )
 
     except Exception as e:
-        logging.error(e)
+        logging.exception("Telegram error")
 
     return {"ok": True}
