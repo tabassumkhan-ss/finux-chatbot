@@ -149,10 +149,34 @@ async def home():
 # -----------------------------
 def rag_answer(question: str) -> str:
     docs = db.similarity_search_with_score(question, k=2)
+
     if not docs:
         return ""
+
     context = "\n".join([d[0].page_content for d in docs])
-    return ask_gemini(f"Context:\n{context}\n\nQuestion:\n{question}")
+
+    prompt = f"""
+You are FINUX Assistant.
+
+Answer STRICTLY using the context below.
+
+Rules:
+- Keep answers SHORT (max 4–5 lines).
+- Be precise and direct.
+- Use bullet points if helpful.
+- Do NOT add extra explanation.
+- If answer not in context, say: "Information not found."
+
+Context:
+{context}
+
+Question:
+{question}
+
+Short Answer:
+"""
+
+    return ask_gemini(prompt)
 
 # -----------------------------
 # WEB CHAT
