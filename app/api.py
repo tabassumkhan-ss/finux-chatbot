@@ -11,7 +11,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
 from app.embeddings.vector_store import create_vector_store
-from app.llm.gemini import ask_gemini
 from app.db import save_chat, save_question
 
 logging.basicConfig(level=logging.INFO)
@@ -104,24 +103,23 @@ async def home():
 
 # ---------------- RAG ----------------
 
-def rag_answer(question: str):
-    docs = db.similarity_search(question, k=5)
+def rag_answer(question: str) -> str:
+    docs = db.similarity_search(question, k=3)
 
     if not docs:
-        return None
+        return "Not available in FINUX docs."
 
-    context = "\n".join(d.page_content for d in docs)
-
-    if not context.strip():
-        return None
+    context = "\n".join([d.page_content for d in docs])
 
     prompt = f"""
-Answer ONLY from this FINUX context.
+Answer ONLY using this FINUX context.
 
 Rules:
-- Very short (max 5 lines)
-- Bullet points preferred
-- If missing say: Not available in FINUX docs.
+- Max 3 bullet points
+- Very short
+- No outside knowledge
+- If answer not clearly present, reply exactly:
+Not available in FINUX docs.
 
 Context:
 {context}
@@ -132,8 +130,7 @@ Question:
 Answer:
 """
 
-    ans = ask_gemini(prompt)
-    return ans if ans and ans.strip() else None
+    return ask_gemini(prompt)
 
 # ---------------- Web Chat ----------------
 
