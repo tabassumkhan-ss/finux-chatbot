@@ -31,14 +31,26 @@ app.add_middleware(
 # ---------------- Telegram UI ----------------
 
 def send_welcome(chat_id):
+    reply_markup = {
+        "inline_keyboard": [
+            [
+                {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
+                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"}
+            ],
+            [
+                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
+            ]
+        ]
+    }
+
     requests.post(
         f"{TELEGRAM_API}/sendMessage",
         json={
             "chat_id": chat_id,
-            "text": "👋 Welcome to FINUX Assistant!\n\nChoose a topic or ask about FINUX."
+            "text": "👋 Welcome to FINUX Assistant!\n\nChoose a topic or ask about FINUX.",
+            "reply_markup": reply_markup
         }
     )
-
 
 def send_main_menu(chat_id):
     keyboard = {
@@ -107,30 +119,22 @@ def rag_answer(question: str) -> str:
     docs = db.similarity_search(question, k=3)
 
     if not docs:
-        return "Not available in FINUX docs."
+        return ""
 
-    context = "\n".join([d.page_content for d in docs])
+    combined = " ".join([d.page_content for d in docs])
 
-    prompt = f"""
-Answer ONLY using this FINUX context.
+    # clean + shorten
+    combined = combined.replace("\n", " ").strip()
 
-Rules:
-- Max 3 bullet points
-- Very short
-- No outside knowledge
-- If answer not clearly present, reply exactly:
-Not available in FINUX docs.
+    # hard limit
+    short = combined[:350]
 
-Context:
-{context}
+    # simple bullets
+    parts = short.split(".")[:3]
 
-Question:
-{question}
+    bullets = "\n".join([f"• {p.strip()}" for p in parts if p.strip()])
 
-Answer:
-"""
-
-    return ask_gemini(prompt)
+    return bullets
 
 # ---------------- Web Chat ----------------
 
@@ -140,11 +144,9 @@ async def chat(req: ChatRequest):
 
     answer = rag_answer(question)
 
+    
     if not answer:
-        answer = ask_gemini(question)
-
-    if not answer:
-        answer = "Sorry — I couldn’t find an answer about FINUX."
+     answer = "Not available in FINUX docs."
 
     try:
         save_question(question)
@@ -172,6 +174,9 @@ async def telegram_webhook(req: Request):
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
             question = cq["data"].replace("q:", "")
+            if question == "start":
+                send_main_menu(chat_id)
+                return {"ok": True}
 
         else:
             chat_id = data["message"]["chat"]["id"]
@@ -186,11 +191,9 @@ async def telegram_webhook(req: Request):
 
         answer = rag_answer(question)
 
+        
         if not answer:
-            answer = ask_gemini(question)
-
-        if not answer:
-            answer = "Sorry — I couldn’t find an answer about FINUX."
+         answer = "Not available in FINUX docs."
 
         save_question(question)
         save_chat("telegram", str(chat_id), "", question, answer)
