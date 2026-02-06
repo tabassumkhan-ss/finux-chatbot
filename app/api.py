@@ -159,41 +159,32 @@ def health():
 # ---------------- Telegram Webhook ----------------
 
 @app.post("/telegram")
-async def telegram(req: Request):
-    data = await req.json()
-    logging.info(f"Telegram update: {data}")
+async def telegram_webhook(request: Request):
+    data = await request.json()
+    print("TELEGRAM UPDATE:", data)
 
     try:
-        if "callback_query" in data:
-            cq = data["callback_query"]
-            chat_id = cq["message"]["chat"]["id"]
-            question = cq["data"].replace("q:", "")
+        message = data.get("message", {})
+        chat_id = message.get("chat", {}).get("id")
+        text = message.get("text", "")
 
-        else:
-            msg = data.get("message")
-            if not msg:
-                return {"ok": True}
+        if not chat_id:
+            return {"ok": True}
 
-            chat_id = msg["chat"]["id"]
-            text = msg.get("text", "")
+        # TEMP: always reply so we confirm pipeline works
+        reply = "✅ Bot is alive.\nYou sent: " + text
 
-            if text == "/start":
-                send_start(chat_id)
-                return {"ok": True}
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": chat_id,
+            "text": reply
+        }
 
-            question = text
-
-        answer = rag_answer(question)
-
-        if not answer:
-            answer = "Not available in FINUX docs."
-
-        requests.post(
-            f"{TELEGRAM_API}/sendMessage",
-            json={"chat_id": chat_id, "text": answer}
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.post(url, json=payload)
+            print("Telegram sendMessage:", r.text)
 
     except Exception as e:
-        logging.exception("Telegram error")
+        print("TELEGRAM ERROR:", e)
 
     return {"ok": True}
