@@ -44,7 +44,7 @@ app.add_middleware(
 
 # ---------------- Telegram UI ----------------
 
-def send_welcome(chat_id):
+def send_start(chat_id):
     logo_url = "https://finux-chatbot-production.up.railway.app/static/finux.png"
 
     keyboard = {
@@ -54,6 +54,10 @@ def send_welcome(chat_id):
                 {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
                 {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
             ],
+            [{"text": "🚀 What is FINUX?", "callback_data": "q:what is finux"}],
+            [{"text": "💰 Tokenomics", "callback_data": "q:finux tokenomics"}],
+            [{"text": "🛠 Products", "callback_data": "q:finux products"}],
+            [{"text": "🧭 Roadmap", "callback_data": "q:finux roadmap"}],
         ]
     }
 
@@ -66,22 +70,6 @@ def send_welcome(chat_id):
             "parse_mode": "Markdown",
             "reply_markup": keyboard
         }
-    )
-
-
-def send_main_menu(chat_id):
-    keyboard = {
-        "inline_keyboard": [
-            [{"text": "🚀 What is FINUX?", "callback_data": "q:what is finux"}],
-            [{"text": "💰 Tokenomics", "callback_data": "q:finux tokenomics"}],
-            [{"text": "🛠 Products", "callback_data": "q:finux products"}],
-            [{"text": "🧭 Roadmap", "callback_data": "q:finux roadmap"}],
-        ]
-    }
-
-    requests.post(
-        f"{TELEGRAM_API}/sendMessage",
-        json={"chat_id": chat_id, "text": "Select 👇", "reply_markup": keyboard}
     )
 
 # ---------------- Load FINUX Docs ----------------
@@ -184,9 +172,9 @@ async def telegram(req: Request):
             text = data["message"].get("text", "")
 
             if text == "/start":
-                send_welcome(chat_id)
-                send_main_menu(chat_id)
-                return {"ok": True}
+             send_start(chat_id)
+             return {"ok": True}
+
 
             question = text
 
