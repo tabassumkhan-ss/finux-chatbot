@@ -20,6 +20,11 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 app = FastAPI()
 
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/static", StaticFiles(directory="app/data"), name="static")
+
+
 # ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
@@ -31,24 +36,32 @@ app.add_middleware(
 # ---------------- Telegram UI ----------------
 
 def send_welcome(chat_id):
-    reply_markup = {
+    logo_url = "https://finux-chatbot-production.up.railway.app/static/finux.png"
+    # ↑ replace with your real FINUX banner / logo URL
+
+    keyboard = {
         "inline_keyboard": [
             [
                 {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"}
             ],
             [
-                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
+                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
+                {"text": "🌐 Site", "url": "https://finux-chatbot-production.up.railway.app"},
+            ],
+            [
+                {"text": "🔔 Notification", "callback_data": "notify"}
             ]
         ]
     }
 
     requests.post(
-        f"{TELEGRAM_API}/sendMessage",
+        f"{TELEGRAM_API}/sendPhoto",
         json={
             "chat_id": chat_id,
-            "text": "👋 Welcome to FINUX Assistant!\n\nChoose a topic or ask about FINUX.",
-            "reply_markup": reply_markup
+            "photo": logo_url,
+            "caption": "✨ *Welcome to FINUX!*\n\nYour decentralized ecosystem for blockchain + AI.\n\nTap below to continue 👇",
+            "parse_mode": "Markdown",
+            "reply_markup": keyboard
         }
     )
 
