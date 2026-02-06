@@ -1,9 +1,11 @@
 import os
-import requests
 import logging
+import requests
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
@@ -20,12 +22,19 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 app = FastAPI()
 
-from fastapi.staticfiles import StaticFiles
+# ---------------- Static (logo) ----------------
 
-app.mount("/static", StaticFiles(directory="app/data"), name="static")
+BASE_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
 
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+RAW_DIR = os.path.join(DATA_DIR, "raw")
+
+
+app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
 
 # ---------------- CORS ----------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,20 +46,14 @@ app.add_middleware(
 
 def send_welcome(chat_id):
     logo_url = "https://finux-chatbot-production.up.railway.app/static/finux.png"
-    # ↑ replace with your real FINUX banner / logo URL
 
     keyboard = {
         "inline_keyboard": [
-            [
-                {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-            ],
+            [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
             [
                 {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-                {"text": "🌐 Site", "url": "https://finux-chatbot-production.up.railway.app"},
+                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
             ],
-            [
-                {"text": "🔔 Notification", "callback_data": "notify"}
-            ]
         ]
     }
 
@@ -59,11 +62,12 @@ def send_welcome(chat_id):
         json={
             "chat_id": chat_id,
             "photo": logo_url,
-            "caption": "✨ *Welcome to FINUX!*\n\nYour decentralized ecosystem for blockchain + AI.\n\nTap below to continue 👇",
+            "caption": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
             "parse_mode": "Markdown",
             "reply_markup": keyboard
         }
     )
+
 
 def send_main_menu(chat_id):
     keyboard = {
@@ -80,16 +84,10 @@ def send_main_menu(chat_id):
         json={"chat_id": chat_id, "text": "Select 👇", "reply_markup": keyboard}
     )
 
-# ---------------- Load UI ----------------
-
-BASE_DIR = os.path.dirname(__file__)
-UI_PATH = os.path.join(BASE_DIR, "ui.html")
-
 # ---------------- Load FINUX Docs ----------------
 
-DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), "data")
-pdf_path = os.path.join(DATA_DIR, "finux.pdf")
-docx_path = os.path.join(DATA_DIR, "finux.docx")
+pdf_path = os.path.join(RAW_DIR, "finux.pdf")
+docx_path = os.path.join(RAW_DIR, "finux.docx")
 
 documents = []
 
@@ -101,16 +99,15 @@ if os.path.exists(docx_path):
 
 if not documents:
     documents = [
-        Document(page_content="FINUX is a decentralized crypto ecosystem providing blockchain products, token utilities, and AI tools.")
+        Document(page_content="FINUX is a decentralized crypto ecosystem.")
     ]
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
 chunks = splitter.split_documents(documents)
 
 texts = [c.page_content for c in chunks]
-logging.info(f"Loaded FINUX chunks: {len(texts)}")
 
-# ---------------- Vector Store ----------------
+logging.info(f"FINUX chunks: {len(texts)}")
 
 db = create_vector_store(texts)
 
@@ -119,7 +116,9 @@ db = create_vector_store(texts)
 class ChatRequest(BaseModel):
     message: str
 
-# ---------------- Pages ----------------
+# ---------------- UI ----------------
+
+UI_PATH = os.path.join(BASE_DIR, "ui.html")
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -134,20 +133,14 @@ def rag_answer(question: str) -> str:
     if not docs:
         return ""
 
-    combined = " ".join([d.page_content for d in docs])
+    text = " ".join([d.page_content for d in docs])
+    text = text.replace("\n", " ")
 
-    # clean + shorten
-    combined = combined.replace("\n", " ").strip()
-
-    # hard limit
-    short = combined[:350]
-
-    # simple bullets
-    parts = short.split(".")[:3]
+    parts = text.split(".")[:3]
 
     bullets = "\n".join([f"• {p.strip()}" for p in parts if p.strip()])
 
-    return bullets
+    return bullets[:400]
 
 # ---------------- Web Chat ----------------
 
@@ -157,15 +150,14 @@ async def chat(req: ChatRequest):
 
     answer = rag_answer(question)
 
-    
     if not answer:
-     answer = "Not available in FINUX docs."
+        answer = "Not available in FINUX docs."
 
     try:
         save_question(question)
         save_chat("web", "anonymous", "", question, answer)
-    except Exception as e:
-        logging.error(e)
+    except:
+        pass
 
     return {"response": answer}
 
@@ -173,23 +165,19 @@ async def chat(req: ChatRequest):
 
 @app.get("/health")
 def health():
-    return {"status": "FINUX chatbot running"}
+    return {"status": "ok"}
 
 # ---------------- Telegram Webhook ----------------
 
 @app.post("/telegram")
-async def telegram_webhook(req: Request):
+async def telegram(req: Request):
     data = await req.json()
 
     try:
-        # Button click
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
             question = cq["data"].replace("q:", "")
-            if question == "start":
-                send_main_menu(chat_id)
-                return {"ok": True}
 
         else:
             chat_id = data["message"]["chat"]["id"]
@@ -204,9 +192,8 @@ async def telegram_webhook(req: Request):
 
         answer = rag_answer(question)
 
-        
         if not answer:
-         answer = "Not available in FINUX docs."
+            answer = "Not available in FINUX docs."
 
         save_question(question)
         save_chat("telegram", str(chat_id), "", question, answer)
