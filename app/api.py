@@ -10,7 +10,7 @@ from app.embeddings.vector_store import create_vector_store
 from app.llm.gemini import ask_gemini
 from app.db import save_chat, save_question
 
-from langchain.document_loaders import PyPDFLoader, Docx2txtLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
 
 logging.basicConfig(level=logging.INFO)
 
