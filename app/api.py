@@ -5,12 +5,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from langchain_core.documents import Document
 
 from app.embeddings.vector_store import create_vector_store
 from app.llm.gemini import ask_gemini
 from app.db import save_chat, save_question
 
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -117,19 +119,35 @@ UI_PATH = os.path.join(BASE_DIR, "ui.html")
 # -----------------------------
 DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), "data")
 
-texts = []
-
 pdf_path = os.path.join(DATA_DIR, "finux.pdf")
 docx_path = os.path.join(DATA_DIR, "finux.docx")
 
+documents = []
+
 if os.path.exists(pdf_path):
-    texts += [d.page_content for d in PyPDFLoader(pdf_path).load()]
+    documents += PyPDFLoader(pdf_path).load()
 
 if os.path.exists(docx_path):
-    texts += [d.page_content for d in Docx2txtLoader(docx_path).load()]
+    documents += Docx2txtLoader(docx_path).load()
 
-if not texts:
-    texts = ["FINUX is a decentralized Crypto Ecosystem."]
+if not documents:
+    documents = [
+        Document(
+            page_content="FINUX is a decentralized crypto ecosystem providing blockchain products, token utilities, roadmap, and AI tools."
+        )
+    ]
+
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=100
+)
+
+chunks = splitter.split_documents(documents)
+
+texts = [c.page_content for c in chunks]
+
+logging.info(f"Loaded FINUX chunks: {len(texts)}")
 
 # -----------------------------
 # Vector Store
@@ -148,24 +166,23 @@ async def home():
 
 # -----------------------------
 def rag_answer(question: str) -> str:
-    docs = db.similarity_search_with_score(question, k=2)
+    docs = db.similarity_search(question, k=3)
 
     if not docs:
         return ""
 
-    context = "\n".join([d[0].page_content for d in docs])
+    context = "\n".join([d.page_content for d in docs])
 
     prompt = f"""
 You are FINUX Assistant.
 
-Answer STRICTLY using the context below.
+Answer ONLY from this context.
 
 Rules:
-- Keep answers SHORT (max 4–5 lines).
-- Be precise and direct.
-- Use bullet points if helpful.
-- Do NOT add extra explanation.
-- If answer not in context, say: "Information not found."
+- Very short answers (3–5 lines max)
+- Bullet points preferred
+- No hallucination
+- If missing say: Not available in FINUX docs.
 
 Context:
 {context}
@@ -173,7 +190,7 @@ Context:
 Question:
 {question}
 
-Short Answer:
+Answer:
 """
 
     return ask_gemini(prompt)

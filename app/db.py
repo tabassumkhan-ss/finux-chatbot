@@ -1,57 +1,51 @@
 import os
 import psycopg2
+import logging
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-conn = psycopg2.connect(DATABASE_URL)
-conn.autocommit = True
-cursor = conn.cursor()
+conn = None
+cursor = None
 
-# Create chats table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS chats (
-    id SERIAL PRIMARY KEY,
-    platform TEXT,
-    user_id TEXT,
-    username TEXT,
-    question TEXT,
-    answer TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-
-# QUESTIONS TABLE (if not already)
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS questions (
-    id SERIAL PRIMARY KEY,
-    question TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-
-def save_question(question):
+if DATABASE_URL:
     try:
-        cursor.execute(
-            "INSERT INTO questions (question) VALUES (%s)",
-            (question,)
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.autocommit = True
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS chats (
+            id SERIAL PRIMARY KEY,
+            platform TEXT,
+            user_id TEXT,
+            username TEXT,
+            question TEXT,
+            answer TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
+        """)
+
+        logging.info("Database connected")
+
     except Exception as e:
-        print("save_question error:", e)
+        logging.error("DB connection failed:", e)
+
+else:
+    logging.warning("DATABASE_URL not set — running without DB")
+
 
 def save_chat(platform, user_id, username, question, answer):
-    try:
-        cursor.execute(
-            """
-            INSERT INTO chats (platform, user_id, username, question, answer)
-            VALUES (%s,%s,%s,%s,%s)
-            """,
-            (
-                platform or "web",
-                str(user_id or "0"),
-                username or "",
-                question,
-                answer,
-            )
-        )
-    except Exception as e:
-        print("save_chat error:", e)
+    if not cursor:
+        return
+
+    cursor.execute(
+        """
+        INSERT INTO chats (platform, user_id, username, question, answer)
+        VALUES (%s,%s,%s,%s,%s)
+        """,
+        (platform, user_id, username, question, answer)
+    )
+
+
+def save_question(question):
+    pass

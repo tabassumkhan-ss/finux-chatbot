@@ -1,19 +1,16 @@
 import os
-from google import genai
+import google.generativeai as genai
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=API_KEY)
+genai.configure(api_key=API_KEY)
+
+model = genai.GenerativeModel("gemini-pro")
 
 def ask_gemini(prompt: str) -> str:
     try:
-        resp = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
-
-        return resp.text or "Sorry — I could not generate a reply."
-
+        response = model.generate_content(prompt)
+        return response.text.strip()
     except Exception as e:
         print("Gemini error:", e)
-        return "Sorry — AI service temporarily unavailable."
+        return ""
