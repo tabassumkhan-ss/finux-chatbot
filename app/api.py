@@ -166,64 +166,100 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"TELEGRAM UPDATE: {data}")
 
-    try:
-        # ---------- BUTTON CLICK ----------
-        if "callback_query" in data:
-            cq = data["callback_query"]
-            chat_id = cq["message"]["chat"]["id"]
-            query = cq.get("data", "")
+    async with httpx.AsyncClient(timeout=15) as client:
 
-            if query.startswith("q:"):
-                question = query.replace("q:", "")
-                answer = rag_answer(question)
+        try:
+            # ---------- CALLBACK BUTTON ----------
+            if "callback_query" in data:
+                cq = data["callback_query"]
+                chat_id = cq["message"]["chat"]["id"]
+                query_id = cq["id"]
+                query = cq.get("data", "")
 
-                if not answer:
-                    answer = "Not available in FINUX docs."
+                # ✅ REQUIRED: acknowledge callback
+                await client.post(
+                    f"{TELEGRAM_API}/answerCallbackQuery",
+                    json={"callback_query_id": query_id}
+                )
 
-                save_question(question)
-                save_chat("telegram", str(chat_id), "", question, answer)
+                if query.startswith("q:"):
+                    question = query.replace("q:", "")
+                    answer = rag_answer(question) or "Not available in FINUX docs."
 
-                requests.post(
-                    f"{TELEGRAM_API}/sendMessage",
+                    save_question(question)
+                    save_chat("telegram", str(chat_id), "", question, answer)
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": answer
+                        }
+                    )
+
+                return {"ok": True}
+
+            # ---------- NORMAL MESSAGE ----------
+            message = data.get("message")
+            if not message:
+                return {"ok": True}
+
+            chat_id = message["chat"]["id"]
+            text = message.get("text", "").strip()
+
+            # ---------- /start ----------
+            if text == "/start":
+                # 1️⃣ Send photo + buttons
+                photo_resp = await client.post(
+                    f"{TELEGRAM_API}/sendPhoto",
                     json={
                         "chat_id": chat_id,
-                        "text": answer
+                        "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
+                        "caption": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
+                        "parse_mode": "Markdown",
+                        "reply_markup": {
+                            "inline_keyboard": [
+                                [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
+                                [
+                                    {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
+                                    {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
+                                ],
+                                [{"text": "🚀 What is FINUX?", "callback_data": "q:what is finux"}],
+                                [{"text": "💰 Tokenomics", "callback_data": "q:finux tokenomics"}],
+                                [{"text": "🛠 Products", "callback_data": "q:finux products"}],
+                                [{"text": "🧭 Roadmap", "callback_data": "q:finux roadmap"}],
+                            ]
+                        }
                     }
                 )
 
-            return {"ok": True}
+                # 2️⃣ Fallback text if photo fails
+                if photo_resp.status_code != 200:
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Welcome to FINUX 🚀\nUse the menu below."
+                        }
+                    )
 
-        # ---------- NORMAL MESSAGE ----------
-        message = data.get("message")
-        if not message:
-            return {"ok": True}
+                return {"ok": True}
 
-        chat_id = message["chat"]["id"]
-        text = message.get("text", "").strip()
+            # ---------- NORMAL QUESTION ----------
+            answer = rag_answer(text) or "Not available in FINUX docs."
 
-        # ---------- /start ----------
-        if text == "/start":
-            send_start(chat_id)
-            return {"ok": True}
+            save_question(text)
+            save_chat("telegram", str(chat_id), "", text, answer)
 
-        # ---------- NORMAL QUESTION ----------
-        answer = rag_answer(text)
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": answer
+                }
+            )
 
-        if not answer:
-            answer = "Not available in FINUX docs."
-
-        save_question(text)
-        save_chat("telegram", str(chat_id), "", text, answer)
-
-        requests.post(
-            f"{TELEGRAM_API}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": answer
-            }
-        )
-
-    except Exception as e:
-        logging.exception("TELEGRAM ERROR")
+        except Exception as e:
+            logging.exception("TELEGRAM ERROR")
 
     return {"ok": True}
