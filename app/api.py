@@ -140,14 +140,14 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=15) as client:
         try:
-            # ---------- CALLBACK BUTTON ----------
+            # ---------------- CALLBACK BUTTON ----------------
             if "callback_query" in data:
                 cq = data["callback_query"]
                 chat_id = cq["message"]["chat"]["id"]
                 query_id = cq["id"]
                 query = cq.get("data", "")
 
-                # acknowledge callback (required)
+                # REQUIRED: acknowledge callback
                 await client.post(
                     f"{TELEGRAM_API}/answerCallbackQuery",
                     json={"callback_query_id": query_id}
@@ -170,7 +170,7 @@ async def telegram_webhook(request: Request):
 
                 return {"ok": True}
 
-            # ---------- NORMAL MESSAGE ----------
+            # ---------------- NORMAL MESSAGE ----------------
             message = data.get("message")
             if not message:
                 return {"ok": True}
@@ -178,14 +178,13 @@ async def telegram_webhook(request: Request):
             chat_id = message["chat"]["id"]
             text = message.get("text", "").strip()
 
-            # ---------- /start ----------
+            # ---------------- /start ----------------
             if text == "/start":
-                resp = await client.post(
-                    f"{TELEGRAM_API}/sendPhoto",
+                await client.post(
+                    f"{TELEGRAM_API}/sendMessage",
                     json={
                         "chat_id": chat_id,
-                        "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
-                        "caption": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
+                        "text": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
                         "parse_mode": "Markdown",
                         "reply_markup": {
                             "inline_keyboard": [
@@ -202,20 +201,9 @@ async def telegram_webhook(request: Request):
                         }
                     }
                 )
-
-                # fallback if image fails
-                if resp.status_code != 200:
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
-                        json={
-                            "chat_id": chat_id,
-                            "text": "Welcome to FINUX 🚀\nUse the menu below."
-                        }
-                    )
-
                 return {"ok": True}
 
-            # ---------- NORMAL QUESTION ----------
+            # ---------------- NORMAL QUESTION ----------------
             answer = rag_answer(text) or "Not available in FINUX docs."
 
             save_question(text)
@@ -233,4 +221,3 @@ async def telegram_webhook(request: Request):
             logging.exception("TELEGRAM ERROR")
 
     return {"ok": True}
-
