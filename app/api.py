@@ -2,6 +2,7 @@ print("API VERSION 2026-02-06 STARTED")
 import os
 import logging
 import requests
+import httpx
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
