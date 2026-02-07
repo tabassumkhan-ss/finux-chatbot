@@ -19,6 +19,9 @@ from app.db import save_chat, save_question
 logging.basicConfig(level=logging.INFO)
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if not TELEGRAM_TOKEN:
+    raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
+
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 app = FastAPI()
@@ -174,7 +177,7 @@ async def telegram_webhook(request: Request):
         # TEMP: always reply so we confirm pipeline works
         reply = "✅ Bot is alive.\nYou sent: " + text
 
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         payload = {
             "chat_id": chat_id,
             "text": reply
