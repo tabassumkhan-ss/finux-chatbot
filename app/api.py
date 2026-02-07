@@ -161,6 +161,7 @@ def health():
     return {"status": "ok"}
 
 # ---------------- Telegram Webhook ----------------
+from fastapi import Request
 
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
@@ -168,6 +169,24 @@ async def telegram_webhook(request: Request):
     print("TELEGRAM UPDATE:", data)
 
     try:
+        # ---------- Inline button click ----------
+        if "callback_query" in data:
+            cq = data["callback_query"]
+            chat_id = cq["message"]["chat"]["id"]
+            question = cq["data"].replace("q:", "")
+
+            answer = rag_answer(question) or "Not available in FINUX docs."
+
+            requests.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": answer
+                }
+            )
+            return {"ok": True}
+
+        # ---------- Normal message ----------
         message = data.get("message", {})
         chat_id = message.get("chat", {}).get("id")
         text = message.get("text", "")
@@ -175,18 +194,27 @@ async def telegram_webhook(request: Request):
         if not chat_id:
             return {"ok": True}
 
-        # TEMP: always reply so we confirm pipeline works
-        reply = "✅ Bot is alive.\nYou sent: " + text
+        # ---------- /start ----------
+        if text == "/start":
+            send_start(chat_id)
+            return {"ok": True}
 
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {
-            "chat_id": chat_id,
-            "text": reply
-        }
+        # ---------- Question ----------
+        answer = rag_answer(text) or "Not available in FINUX docs."
 
-        async with httpx.AsyncClient() as client:
-            r = await client.post(url, json=payload)
-            print("Telegram sendMessage:", r.text)
+        try:
+            save_question(text)
+            save_chat("telegram", str(chat_id), "", text, answer)
+        except:
+            pass
+
+        requests.post(
+            f"{TELEGRAM_API}/sendMessage",
+            json={
+                "chat_id": chat_id,
+                "text": answer
+            }
+        )
 
     except Exception as e:
         print("TELEGRAM ERROR:", e)
