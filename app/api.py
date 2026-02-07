@@ -1,4 +1,3 @@
-print("API VERSION 2026-02-06 STARTED")
 import os
 import logging
 import requests
@@ -161,7 +160,6 @@ def health():
     return {"status": "ok"}
 
 # ---------------- Telegram Webhook ----------------
-from fastapi import Request
 
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
@@ -194,12 +192,12 @@ async def telegram_webhook(request: Request):
         if not chat_id:
             return {"ok": True}
 
-        # ---------- /start ----------
+        # ---------- /start MUST come FIRST ----------
         if text == "/start":
             send_start(chat_id)
             return {"ok": True}
 
-        # ---------- Question ----------
+        # ---------- Normal question ----------
         answer = rag_answer(text) or "Not available in FINUX docs."
 
         try:
