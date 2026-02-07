@@ -18,6 +18,72 @@ from app.db import save_chat, save_question
 
 logging.basicConfig(level=logging.INFO)
 
+MENUS = {
+    "main": {
+        "Deposit": "menu:deposit",
+        "Fund Distribution": "menu:funds",
+        "Rank Wise Rewards": "menu:ranks",
+        "Dual Income System": "menu:dual_income",
+        "Others": "menu:others"
+    },
+
+    "deposit": {
+        "Deposit Slab": "q:deposit_slab",
+        "Self-Staking": "q:self_staking",
+        "Min. Deposit & Structure": "q:min_deposit",
+        "⬅️ Back": "menu:main"
+    },
+
+    "funds": {
+        "MSTC": "q:mstc",
+        "USDCe": "q:usdce",
+        "Fund Distribution": "q:fund_distribution",
+        "⬅️ Back": "menu:main"
+    },
+
+    "ranks": {
+        "Origin": "q:origin",
+        "Life Changer": "q:life_changer",
+        "Advisor": "q:advisor",
+        "Visionary": "q:visionary",
+        "Creator": "q:creator",
+        "⬅️ Back": "menu:main"
+    },
+
+    "dual_income": {
+        "Club Income": "q:club_income",
+        "Liquidity Pool": "q:lp_benefits",
+        "⬅️ Back": "menu:main"
+    },
+
+    "others": {
+        "Rewards": "q:rewards",
+        "Referral": "q:referral",
+        "Registration": "q:registration",
+        "Airdrop": "q:airdrop",
+        "Wallet & Security": "q:wallet_security",
+        "Token Price": "q:token_price",
+        "Terms & Conditions": "q:terms",
+        "Withdrawal Policy": "q:withdrawal",
+        "Objectives": "q:objectives",
+        "Important Note": "q:important_note",
+        "⬅️ Back": "menu:main"
+    }
+}
+
+def build_menu(menu_key: str):
+    menu = MENUS.get(menu_key, {})
+    keyboard = []
+
+    for text, callback in menu.items():
+        keyboard.append([{
+            "text": text,
+            "callback_data": callback
+        }])
+
+    return {"inline_keyboard": keyboard}
+
+
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TELEGRAM_TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
@@ -46,8 +112,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- Telegram UI ----------------
+ANSWERS = {
+    "deposit_slab": "Deposit slabs define fixed investment tiers with benefits.",
+    "self_staking": "Stake FINUX tokens to earn passive rewards.",
+    "min_deposit": "Minimum deposit ensures platform stability.",
 
+    "mstc": "MSTC funds ecosystem development.",
+    "usdce": "USDCe ensures stable-value allocation.",
+    "fund_distribution": "Funds are distributed transparently.",
+
+    "origin": "Entry-level rank with basic benefits.",
+    "life_changer": "Higher rank with increased rewards.",
+    "advisor": "Leadership-based income level.",
+    "visionary": "Advanced rank with network rewards.",
+    "creator": "Top-tier rank with maximum benefits.",
+
+    "club_income": "Club income rewards active members.",
+    "lp_benefits": "Liquidity pools generate passive earnings.",
+
+    "rewards": "Earn rewards via activity and staking.",
+    "referral": "Invite users and earn referral income.",
+    "registration": "Simple onboarding to FINUX ecosystem.",
+    "airdrop": "Free tokens for eligible users.",
+    "wallet_security": "Secure wallets protect your assets.",
+    "token_price": "Token price depends on market demand.",
+    "terms": "Platform rules and conditions apply.",
+    "withdrawal": "Withdrawals follow defined policies.",
+    "objectives": "FINUX aims for decentralized growth.",
+    "important_note": "Always verify before investing."
+}
 
 # ---------------- Load FINUX Docs ----------------
 
@@ -139,85 +232,64 @@ async def telegram_webhook(request: Request):
     logging.info(f"TELEGRAM UPDATE: {data}")
 
     async with httpx.AsyncClient(timeout=15) as client:
-        try:
-            # ---------------- CALLBACK BUTTON ----------------
-            if "callback_query" in data:
-                cq = data["callback_query"]
-                chat_id = cq["message"]["chat"]["id"]
-                query_id = cq["id"]
-                query = cq.get("data", "")
 
-                # REQUIRED: acknowledge callback
+        # ---------- CALLBACK ----------
+        if "callback_query" in data:
+            cq = data["callback_query"]
+            chat_id = cq["message"]["chat"]["id"]
+            query_id = cq["id"]
+            payload = cq.get("data", "")
+
+            # acknowledge callback
+            await client.post(
+                f"{TELEGRAM_API}/answerCallbackQuery",
+                json={"callback_query_id": query_id}
+            )
+
+            # MENU navigation
+            if payload.startswith("menu:"):
+                menu_key = payload.replace("menu:", "")
                 await client.post(
-                    f"{TELEGRAM_API}/answerCallbackQuery",
-                    json={"callback_query_id": query_id}
-                )
-
-                if query.startswith("q:"):
-                    question = query.replace("q:", "")
-                    answer = rag_answer(question) or "Not available in FINUX docs."
-
-                    save_question(question)
-                    save_chat("telegram", str(chat_id), "", question, answer)
-
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
-                        json={
-                            "chat_id": chat_id,
-                            "text": answer
-                        }
-                    )
-
-                return {"ok": True}
-
-            # ---------------- NORMAL MESSAGE ----------------
-            message = data.get("message")
-            if not message:
-                return {"ok": True}
-
-            chat_id = message["chat"]["id"]
-            text = message.get("text", "").strip()
-
-            # ---------------- /start ----------------
-            if text == "/start":
-                await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
+                    f"{TELEGRAM_API}/editMessageText",
                     json={
                         "chat_id": chat_id,
-                        "text": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
-                        "parse_mode": "Markdown",
-                        "reply_markup": {
-                            "inline_keyboard": [
-                                [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
-                                [
-                                    {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-                                    {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
-                                ],
-                                [{"text": "🚀 What is FINUX?", "callback_data": "q:what is finux"}],
-                                [{"text": "💰 Tokenomics", "callback_data": "q:finux tokenomics"}],
-                                [{"text": "🛠 Products", "callback_data": "q:finux products"}],
-                                [{"text": "🧭 Roadmap", "callback_data": "q:finux roadmap"}],
-                            ]
-                        }
+                        "message_id": cq["message"]["message_id"],
+                        "text": "📌 Please choose:",
+                        "reply_markup": build_menu(menu_key)
                     }
                 )
                 return {"ok": True}
 
-            # ---------------- NORMAL QUESTION ----------------
-            answer = rag_answer(text) or "Not available in FINUX docs."
+            # QUESTION
+            if payload.startswith("q:"):
+                key = payload.replace("q:", "")
+                answer = ANSWERS.get(key, "Information coming soon.")
 
-            save_question(text)
-            save_chat("telegram", str(chat_id), "", text, answer)
+                await client.post(
+                    f"{TELEGRAM_API}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": answer
+                    }
+                )
+                return {"ok": True}
 
+        # ---------- /start ----------
+        message = data.get("message")
+        if not message:
+            return {"ok": True}
+
+        chat_id = message["chat"]["id"]
+        text = message.get("text", "")
+
+        if text == "/start":
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": answer
+                    "text": "Welcome to FINUX 🚀\nChoose a category below:",
+                    "reply_markup": build_menu("main")
                 }
             )
-
-        except Exception:
-            logging.exception("TELEGRAM ERROR")
 
     return {"ok": True}
