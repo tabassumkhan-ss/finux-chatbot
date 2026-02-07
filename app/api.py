@@ -48,33 +48,6 @@ app.add_middleware(
 
 # ---------------- Telegram UI ----------------
 
-def send_start(chat_id):
-    logo_url = "https://finux-chatbot-production.up.railway.app/static/finux.png"
-
-    keyboard = {
-        "inline_keyboard": [
-            [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
-            [
-                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
-            ],
-            [{"text": "🚀 What is FINUX?", "callback_data": "q:what is finux"}],
-            [{"text": "💰 Tokenomics", "callback_data": "q:finux tokenomics"}],
-            [{"text": "🛠 Products", "callback_data": "q:finux products"}],
-            [{"text": "🧭 Roadmap", "callback_data": "q:finux roadmap"}],
-        ]
-    }
-
-    requests.post(
-        f"{TELEGRAM_API}/sendPhoto",
-        json={
-            "chat_id": chat_id,
-            "photo": logo_url,
-            "caption": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose below 👇",
-            "parse_mode": "Markdown",
-            "reply_markup": keyboard
-        }
-    )
 
 # ---------------- Load FINUX Docs ----------------
 
@@ -160,14 +133,12 @@ def health():
     return {"status": "ok"}
 
 # ---------------- Telegram Webhook ----------------
-
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"TELEGRAM UPDATE: {data}")
 
     async with httpx.AsyncClient(timeout=15) as client:
-
         try:
             # ---------- CALLBACK BUTTON ----------
             if "callback_query" in data:
@@ -176,7 +147,7 @@ async def telegram_webhook(request: Request):
                 query_id = cq["id"]
                 query = cq.get("data", "")
 
-                # ✅ REQUIRED: acknowledge callback
+                # acknowledge callback (required)
                 await client.post(
                     f"{TELEGRAM_API}/answerCallbackQuery",
                     json={"callback_query_id": query_id}
@@ -209,8 +180,7 @@ async def telegram_webhook(request: Request):
 
             # ---------- /start ----------
             if text == "/start":
-                # 1️⃣ Send photo + buttons
-                photo_resp = await client.post(
+                resp = await client.post(
                     f"{TELEGRAM_API}/sendPhoto",
                     json={
                         "chat_id": chat_id,
@@ -233,8 +203,8 @@ async def telegram_webhook(request: Request):
                     }
                 )
 
-                # 2️⃣ Fallback text if photo fails
-                if photo_resp.status_code != 200:
+                # fallback if image fails
+                if resp.status_code != 200:
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
                         json={
@@ -259,7 +229,8 @@ async def telegram_webhook(request: Request):
                 }
             )
 
-        except Exception as e:
+        except Exception:
             logging.exception("TELEGRAM ERROR")
 
     return {"ok": True}
+
