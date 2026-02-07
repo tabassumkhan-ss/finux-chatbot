@@ -164,47 +164,56 @@ def health():
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
     data = await request.json()
-    print("TELEGRAM UPDATE:", data)
+    logging.info(f"TELEGRAM UPDATE: {data}")
 
     try:
-        # ---------- Inline button click ----------
+        # ---------- BUTTON CLICK ----------
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
-            question = cq["data"].replace("q:", "")
+            query = cq.get("data", "")
 
-            answer = rag_answer(question) or "Not available in FINUX docs."
+            if query.startswith("q:"):
+                question = query.replace("q:", "")
+                answer = rag_answer(question)
 
-            requests.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": answer
-                }
-            )
+                if not answer:
+                    answer = "Not available in FINUX docs."
+
+                save_question(question)
+                save_chat("telegram", str(chat_id), "", question, answer)
+
+                requests.post(
+                    f"{TELEGRAM_API}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": answer
+                    }
+                )
+
             return {"ok": True}
 
-        # ---------- Normal message ----------
-        message = data.get("message", {})
-        chat_id = message.get("chat", {}).get("id")
-        text = message.get("text", "")
-
-        if not chat_id:
+        # ---------- NORMAL MESSAGE ----------
+        message = data.get("message")
+        if not message:
             return {"ok": True}
 
-        # ---------- /start MUST come FIRST ----------
+        chat_id = message["chat"]["id"]
+        text = message.get("text", "").strip()
+
+        # ---------- /start ----------
         if text == "/start":
             send_start(chat_id)
             return {"ok": True}
 
-        # ---------- Normal question ----------
-        answer = rag_answer(text) or "Not available in FINUX docs."
+        # ---------- NORMAL QUESTION ----------
+        answer = rag_answer(text)
 
-        try:
-            save_question(text)
-            save_chat("telegram", str(chat_id), "", text, answer)
-        except:
-            pass
+        if not answer:
+            answer = "Not available in FINUX docs."
+
+        save_question(text)
+        save_chat("telegram", str(chat_id), "", text, answer)
 
         requests.post(
             f"{TELEGRAM_API}/sendMessage",
@@ -215,6 +224,6 @@ async def telegram_webhook(request: Request):
         )
 
     except Exception as e:
-        print("TELEGRAM ERROR:", e)
+        logging.exception("TELEGRAM ERROR")
 
     return {"ok": True}
