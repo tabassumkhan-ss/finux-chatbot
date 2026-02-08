@@ -71,34 +71,39 @@ MENUS = {
     }
 }
 
-def build_start_menu():
-    return {
-        "inline_keyboard": [
-            [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
-            [
-                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
-            ],
-            [{"text": "💰 Deposit", "callback_data": "menu:deposit"}],
-            [{"text": "📊 Fund Distribution", "callback_data": "menu:funds"}],
-            [{"text": "🏆 Rank Wise Rewards", "callback_data": "menu:ranks"}],
-            [{"text": "🔁 Dual Income System", "callback_data": "menu:dual_income"}],
-            [{"text": "📌 Others", "callback_data": "menu:others"}],
+def build_header_buttons():
+    return [
+        [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
+        [
+            {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
+            {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
         ]
-    }
+    ]
 
+
+def build_start_menu():
+    keyboard = build_header_buttons()
+
+    keyboard.extend([
+        [{"text": "💰 Deposit", "callback_data": "menu:deposit"}],
+        [{"text": "📊 Fund Distribution", "callback_data": "menu:funds"}],
+        [{"text": "🏆 Rank Wise Rewards", "callback_data": "menu:ranks"}],
+        [{"text": "🔁 Dual Income System", "callback_data": "menu:dual_income"}],
+        [{"text": "📌 Others", "callback_data": "menu:others"}],
+    ])
+
+    return {"inline_keyboard": keyboard}
 
 def build_menu(menu_key: str):
-    buttons = []
+    keyboard = build_header_buttons()
 
     for label, action in MENUS.get(menu_key, {}).items():
-        buttons.append([{
+        keyboard.append([{
             "text": label,
             "callback_data": action
         }])
 
-    return {"inline_keyboard": buttons}
-
+    return {"inline_keyboard": keyboard}
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TELEGRAM_TOKEN:
