@@ -71,17 +71,33 @@ MENUS = {
     }
 }
 
-def build_menu(menu_key: str):
-    menu = MENUS.get(menu_key, {})
-    keyboard = []
+def build_start_menu():
+    return {
+        "inline_keyboard": [
+            [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
+            [
+                {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
+                {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
+            ],
+            [{"text": "💰 Deposit", "callback_data": "menu:deposit"}],
+            [{"text": "📊 Fund Distribution", "callback_data": "menu:funds"}],
+            [{"text": "🏆 Rank Wise Rewards", "callback_data": "menu:ranks"}],
+            [{"text": "🔁 Dual Income System", "callback_data": "menu:dual_income"}],
+            [{"text": "📌 Others", "callback_data": "menu:others"}],
+        ]
+    }
 
-    for text, callback in menu.items():
-        keyboard.append([{
-            "text": text,
-            "callback_data": callback
+
+def build_menu(menu_key: str):
+    buttons = []
+
+    for label, action in MENUS.get(menu_key, {}).items():
+        buttons.append([{
+            "text": label,
+            "callback_data": action
         }])
 
-    return {"inline_keyboard": keyboard}
+    return {"inline_keyboard": buttons}
 
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -283,13 +299,14 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": "Welcome to FINUX 🚀\nChoose a category below:",
-                    "reply_markup": build_menu("main")
-                }
-            )
-
+         await client.post(
+        f"{TELEGRAM_API}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose an option below 👇",
+            "parse_mode": "Markdown",
+            "reply_markup": build_start_menu()
+        }
+    )
     return {"ok": True}
+
