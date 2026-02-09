@@ -207,7 +207,7 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "📌 *Main Menu*",
+                    "text": " ",
                     "parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
