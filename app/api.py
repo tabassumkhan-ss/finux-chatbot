@@ -174,8 +174,10 @@ async def telegram_webhook(request: Request):
                             "caption": WELCOME_TEXT,
                             "parse_mode": "Markdown",
                         },
-                        files={"photo": img},
+                        files={"photo": ("finux.png", img, "image/png")},
                     )
+        else:
+            logging.error("❌ finux.png not found")
 
             # 2️⃣ Send menu as separate message (stable)
             await client.post(
