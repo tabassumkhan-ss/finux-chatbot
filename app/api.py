@@ -119,8 +119,8 @@ app.add_middleware(
 # ===================== TELEGRAM WEBHOOK =====================
 
 @app.post("/telegram")
-def telegram_webhook(request: Request):
-    data = request.json()
+async def telegram_webhook(request: Request):
+    data = await request.json()
     logging.info(f"UPDATE: {data}")
 
     # CALLBACK
