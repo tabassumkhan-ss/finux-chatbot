@@ -23,7 +23,7 @@ if not TELEGRAM_TOKEN:
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 WELCOME_TEXT = (
-    "✨ *Welcome to FINUX..."
+    "✨ *Welcome to FINUX"
     )
 
 # ===================== MENUS =====================
