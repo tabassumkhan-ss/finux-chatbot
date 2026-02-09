@@ -112,7 +112,7 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"TELEGRAM UPDATE: {data}")
 
-    async with httpx.AsyncClient(timeout=15) as client:
+    async with httpx.AsyncClient(timeout=20) as client:
 
         # ---------- CALLBACK ----------
         if "callback_query" in data:
@@ -148,13 +148,13 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": f"{WELCOME_TEXT}\n\nAnswer:\n{answer}",
+                        "text": f"{WELCOME_TEXT}\n\n{answer}",
                         "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ---------- /start ----------
+        # ---------- MESSAGE ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -164,17 +164,25 @@ async def telegram_webhook(request: Request):
 
         if text == "/start":
 
-            # 1️⃣ IMAGE + WELCOME (NO MARKDOWN, NO FILE UPLOAD)
+            # 1️⃣ SEND IMAGE (NO CAPTION)
             await client.post(
                 f"{TELEGRAM_API}/sendPhoto",
                 json={
                     "chat_id": chat_id,
                     "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
-                    "caption": "✨ Welcome to FINUX\n\nDecentralized blockchain + AI ecosystem.\n\nChoose an option below 👇",
                 },
             )
 
-            # 2️⃣ MENU BUTTONS
+            # 2️⃣ SEND WELCOME TEXT
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": WELCOME_TEXT,
+                },
+            )
+
+            # 3️⃣ SEND MENU
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
