@@ -161,26 +161,11 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-         with open("data/finux.png", "rb") as img:
-          await client.post(
-            f"{TELEGRAM_API}/sendPhoto",
-            data={
-                "chat_id": chat_id,
-                "caption": WELCOME_TEXT,
-                "parse_mode": "Markdown",
-            },
-            files={
-                "photo": img,
-            },
-        )
-
-    await client.post(
+         await client.post(
         f"{TELEGRAM_API}/sendMessage",
         json={
             "chat_id": chat_id,
-            "text": "Choose an option below 👇",
-            "reply_markup": build_menu("main"),
+            "text": "✅ BOT IS ALIVE",
         },
     )
-
-
+    return {"ok": True}
