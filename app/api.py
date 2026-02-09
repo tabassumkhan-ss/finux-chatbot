@@ -23,10 +23,8 @@ if not TELEGRAM_TOKEN:
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 WELCOME_TEXT = (
-    "✨ *Welcome to FINUX*\n\n"
-    "Decentralized blockchain + AI ecosystem.\n\n"
-    "Choose an option below 👇"
-)
+    "✨ *Welcome to FINUX"
+    )
 
 # ===================== MENUS =====================
 
@@ -158,7 +156,7 @@ async def telegram_webhook(request: Request):
                 )
                 return {"ok": True}
 
-        # ---------- MESSAGE ----------
+        # ---------- /start ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -168,27 +166,23 @@ async def telegram_webhook(request: Request):
 
         if text == "/start":
 
-            # 1️⃣ Welcome text (safe)
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": WELCOME_TEXT,
-                    "parse_mode": "Markdown",
-                },
-            )
-
-            # 2️⃣ Image ONLY (no reply_markup here)
+            # 1️⃣ IMAGE + WELCOME MESSAGE (caption)
             image_path = os.path.join("data", "finux.png")
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
                         f"{TELEGRAM_API}/sendPhoto",
-                        data={"chat_id": chat_id},
-                        files={"photo": ("finux.png", img, "image/png")},
+                        data={
+                            "chat_id": chat_id,
+                            "caption": WELCOME_TEXT,
+                            "parse_mode": "Markdown",
+                        },
+                        files={
+                            "photo": ("finux.png", img, "image/png"),
+                        },
                     )
 
-            # 3️⃣ Menu buttons (reply_markup ONLY here)
+            # 2️⃣ MENU BUTTONS (separate message)
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
