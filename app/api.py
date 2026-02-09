@@ -109,51 +109,54 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"UPDATE: {data}")
 
-    async with httpx.AsyncClient(timeout=10) as client:
+    async with httpx.AsyncClient(timeout=15) as client:
 
-        # ---------- CALLBACK ----------
+        # ================= CALLBACK =================
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
             msg_id = cq["message"]["message_id"]
             payload = cq["data"]
 
+            # acknowledge callback
             await client.post(
                 f"{TELEGRAM_API}/answerCallbackQuery",
                 json={"callback_query_id": cq["id"]},
             )
 
+            # MENU navigation
             if payload.startswith("menu:"):
                 menu = payload.replace("menu:", "")
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
+                    f"{TELEGRAM_API}/editMessageCaption",
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": WELCOME_TEXT,
+                        "caption": WELCOME_TEXT,
                         "parse_mode": "Markdown",
                         "reply_markup": build_menu(menu),
                     },
                 )
                 return {"ok": True}
 
+            # QUESTION click
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
                 answer = ANSWERS.get(key, "Info coming soon.")
 
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
+                    f"{TELEGRAM_API}/editMessageCaption",
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
+                        "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
                         "parse_mode": "Markdown",
                         "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ---------- MESSAGE ----------
+        # ================= MESSAGE =================
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -161,37 +164,29 @@ async def telegram_webhook(request: Request):
         chat_id = message["chat"]["id"]
         text = message.get("text", "")
 
+        # ================= /start =================
         if text == "/start":
+         image_path = "data/finux.png"
 
-            # 1️⃣ SEND WELCOME TEXT (this NEVER fails)
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img:
             await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
+                f"{TELEGRAM_API}/sendPhoto",
+                data={
                     "chat_id": chat_id,
-                    "text": WELCOME_TEXT,
+                    "caption": (
+                        "✨ *Welcome to FINUX*\n\n"
+                        "One bot – the whole FINUX ecosystem in your pocket.\n\n"
+                        "Click below to start 🚀"
+                    ),
                     "parse_mode": "Markdown",
                 },
-            )
-
-            # 2️⃣ SEND IMAGE (optional, safe)
-            image_path = "data/finux.png"
-            if os.path.exists(image_path):
-                with open(image_path, "rb") as img:
-                    await client.post(
-                        f"{TELEGRAM_API}/sendPhoto",
-                        data={"chat_id": chat_id},
-                        files={"photo": ("finux.png", img, "image/png")},
-                    )
-
-            # 3️⃣ SEND MENU (always last)
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": "👇 *Main Menu*",
-                    "parse_mode": "Markdown",
-                    "reply_markup": build_menu("main"),
+                files={
+                    "photo": ("finux.png", img, "image/png")
                 },
+                params={
+                    "reply_markup": build_menu("main")
+                }
             )
 
-        return {"ok": True}
+    return {"ok": True}
