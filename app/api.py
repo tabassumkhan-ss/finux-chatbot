@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 logging.basicConfig(level=logging.INFO)
+logging.info("DATA DIR CONTENTS: %s", os.listdir("data"))
 
 # ===================== TELEGRAM =====================
 
@@ -110,7 +111,7 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=10) as client:
 
-        # CALLBACK
+        # ================= CALLBACK =================
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
@@ -152,7 +153,7 @@ async def telegram_webhook(request: Request):
                 )
                 return {"ok": True}
 
-        # MESSAGE
+        # ================= MESSAGE =================
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -161,11 +162,32 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-         await client.post(
-        f"{TELEGRAM_API}/sendMessage",
-        json={
-            "chat_id": chat_id,
-            "text": "✅ BOT IS ALIVE",
-        },
-    )
+
+            image_path = "data/finux.png"  # ✅ Railway-safe path
+
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img:
+                    await client.post(
+                        f"{TELEGRAM_API}/sendPhoto",
+                        data={
+                            "chat_id": chat_id,
+                            "caption": "✨ Welcome to FINUX\n\nDecentralized blockchain + AI ecosystem.",
+                        },
+                        files={
+                            "photo": img,
+                        },
+                    )
+            else:
+                logging.error("FINUX image not found at data/finux.png")
+
+            # Menu message
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": "Choose an option below 👇",
+                    "reply_markup": build_menu("main"),
+                },
+            )
+
     return {"ok": True}
