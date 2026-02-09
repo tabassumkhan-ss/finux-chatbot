@@ -230,62 +230,58 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"TELEGRAM UPDATE: {data}")
 
-    async with httpx.AsyncClient(timeout=15) as client:
+    # ---------- CALLBACK ----------
+    if "callback_query" in data:
+        cq = data["callback_query"]
+        chat_id = cq["message"]["chat"]["id"]
+        message_id = cq["message"]["message_id"]
+        payload = cq.get("data", "")
 
-        # ---------- CALLBACK ----------
-        if "callback_query" in data:
-            cq = data["callback_query"]
-            chat_id = cq["message"]["chat"]["id"]
-            message_id = cq["message"]["message_id"]
-            payload = cq.get("data", "")
+        requests.post(
+            f"{TELEGRAM_API}/answerCallbackQuery",
+            json={"callback_query_id": cq["id"]}
+        )
 
-            await client.post(
-                f"{TELEGRAM_API}/answerCallbackQuery",
-                json={"callback_query_id": cq["id"]},
+        if payload.startswith("menu:"):
+            menu_key = payload.replace("menu:", "")
+            requests.post(
+                f"{TELEGRAM_API}/editMessageCaption",
+                json={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "caption": WELCOME_TEXT,
+                    "parse_mode": "Markdown",
+                    "reply_markup": build_menu(menu_key),
+                },
             )
-
-            # MENU
-            if payload.startswith("menu:"):
-                menu_key = payload.replace("menu:", "")
-                await client.post(
-                    f"{TELEGRAM_API}/editMessageCaption",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "caption": WELCOME_TEXT,
-                        "parse_mode": "Markdown",
-                        "reply_markup": build_menu(menu_key),
-                    },
-                )
-                return {"ok": True}
-
-            # QUESTION
-            if payload.startswith("q:"):
-                key = payload.replace("q:", "")
-                answer = ANSWERS.get(key, "Information coming soon.")
-
-                await client.post(
-                    f"{TELEGRAM_API}/editMessageCaption",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
-                        "parse_mode": "Markdown",
-                        "reply_markup": build_menu("main"),
-                    },
-                )
-                return {"ok": True}
-
-        # ---------- /start ----------
-        message = data.get("message")
-        if not message:
             return {"ok": True}
 
-        chat_id = message["chat"]["id"]
-        text = message.get("text", "")
+        if payload.startswith("q:"):
+            key = payload.replace("q:", "")
+            answer = ANSWERS.get(key, "Information coming soon.")
 
-        if text == "/start":
-            send_start_photo(chat_id)
+            requests.post(
+                f"{TELEGRAM_API}/editMessageCaption",
+                json={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
+                    "parse_mode": "Markdown",
+                    "reply_markup": build_menu("main"),
+                },
+            )
             return {"ok": True}
+
+    # ---------- MESSAGE ----------
+    message = data.get("message")
+    if not message:
+        return {"ok": True}
+
+    chat_id = message["chat"]["id"]
+    text = message.get("text", "")
+
+    if text == "/start":
+        send_start_photo(chat_id)
+        return {"ok": True}
 
     return {"ok": True}
