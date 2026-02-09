@@ -161,15 +161,13 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-            await client.post(
-                f"{TELEGRAM_API}/sendPhoto",
-                json={
-                    "chat_id": chat_id,
-                    "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
-                    "caption": WELCOME_TEXT,
-                    "parse_mode": "Markdown",
-                    "reply_markup": build_menu("main"),
-                },
-            )
+         await client.post(
+        f"{TELEGRAM_API}/sendPhoto",
+        json={
+            "chat_id": chat_id,
+            "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
+            "caption": "Welcome to FINUX\n\nDecentralized blockchain + AI ecosystem.\n\nChoose an option below 👇",
+            "reply_markup": build_menu("main"),
+        },
+    )
 
-    return {"ok": True}
