@@ -16,29 +16,75 @@ from langchain_core.documents import Document
 from app.embeddings.vector_store import create_vector_store
 from app.db import save_chat, save_question
 
+# -------------------------------------------------
+# LOGGING
+# -------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 
+# -------------------------------------------------
+# CONSTANTS
+# -------------------------------------------------
+WELCOME_TEXT = (
+    "✨ *Welcome to FINUX*\n\n"
+    "Decentralized blockchain + AI ecosystem.\n\n"
+    "Choose an option below 👇"
+)
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if not TELEGRAM_TOKEN:
+    raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
+
+TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+# -------------------------------------------------
+# FASTAPI APP
+# -------------------------------------------------
+app = FastAPI()
+
+# -------------------------------------------------
+# STATIC FILES
+# -------------------------------------------------
+BASE_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+RAW_DIR = os.path.join(DATA_DIR, "raw")
+
+app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
+
+# -------------------------------------------------
+# CORS
+# -------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# -------------------------------------------------
+# MENUS
+# -------------------------------------------------
 MENUS = {
     "main": {
-        "Deposit": "menu:deposit",
-        "Fund Distribution": "menu:funds",
-        "Rank Wise Rewards": "menu:ranks",
-        "Dual Income System": "menu:dual_income",
-        "Others": "menu:others"
+        "💰 Deposit": "menu:deposit",
+        "📊 Fund Distribution": "menu:funds",
+        "🏆 Rank Wise Rewards": "menu:ranks",
+        "🔁 Dual Income System": "menu:dual_income",
+        "📌 Others": "menu:others",
     },
 
     "deposit": {
         "Deposit Slab": "q:deposit_slab",
         "Self-Staking": "q:self_staking",
         "Min. Deposit & Structure": "q:min_deposit",
-        "⬅️ Back": "menu:main"
+        "⬅️ Back": "menu:main",
     },
 
     "funds": {
         "MSTC": "q:mstc",
         "USDCe": "q:usdce",
         "Fund Distribution": "q:fund_distribution",
-        "⬅️ Back": "menu:main"
+        "⬅️ Back": "menu:main",
     },
 
     "ranks": {
@@ -47,13 +93,13 @@ MENUS = {
         "Advisor": "q:advisor",
         "Visionary": "q:visionary",
         "Creator": "q:creator",
-        "⬅️ Back": "menu:main"
+        "⬅️ Back": "menu:main",
     },
 
     "dual_income": {
         "Club Income": "q:club_income",
         "Liquidity Pool": "q:lp_benefits",
-        "⬅️ Back": "menu:main"
+        "⬅️ Back": "menu:main",
     },
 
     "others": {
@@ -67,108 +113,82 @@ MENUS = {
         "Withdrawal Policy": "q:withdrawal",
         "Objectives": "q:objectives",
         "Important Note": "q:important_note",
-        "⬅️ Back": "menu:main"
-    }
+        "⬅️ Back": "menu:main",
+    },
 }
 
+# -------------------------------------------------
+# ANSWERS (SHORT)
+# -------------------------------------------------
+ANSWERS = {
+    "deposit_slab": "Fixed deposit tiers with defined benefits.",
+    "self_staking": "Stake FINUX to earn passive rewards.",
+    "min_deposit": "Minimum deposit ensures system stability.",
+
+    "mstc": "MSTC funds ecosystem operations.",
+    "usdce": "USDCe maintains stable fund allocation.",
+    "fund_distribution": "Funds are distributed transparently.",
+
+    "origin": "Entry-level rank with base rewards.",
+    "life_changer": "Mid-level rank with higher income.",
+    "advisor": "Leadership rank with network rewards.",
+    "visionary": "Advanced rank with global benefits.",
+    "creator": "Top-tier rank with maximum income.",
+
+    "club_income": "Club income rewards active members.",
+    "lp_benefits": "Liquidity pools generate passive earnings.",
+
+    "rewards": "Earn rewards via staking & activity.",
+    "referral": "Invite users and earn commissions.",
+    "registration": "Simple onboarding into FINUX.",
+    "airdrop": "Free tokens for eligible users.",
+    "wallet_security": "Secure wallets protect assets.",
+    "token_price": "Price depends on market demand.",
+    "terms": "Platform rules & conditions apply.",
+    "withdrawal": "Withdrawals follow set policies.",
+    "objectives": "FINUX focuses on decentralized growth.",
+    "important_note": "Always verify before investing.",
+}
+
+# -------------------------------------------------
+# TELEGRAM UI HELPERS
+# -------------------------------------------------
 def build_header_buttons():
     return [
         [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
         [
             {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-            {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"}
-        ]
+            {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"},
+        ],
     ]
 
 
-def build_start_menu():
-    keyboard = build_header_buttons()
-
-    keyboard.extend([
-        [{"text": "💰 Deposit", "callback_data": "menu:deposit"}],
-        [{"text": "📊 Fund Distribution", "callback_data": "menu:funds"}],
-        [{"text": "🏆 Rank Wise Rewards", "callback_data": "menu:ranks"}],
-        [{"text": "🔁 Dual Income System", "callback_data": "menu:dual_income"}],
-        [{"text": "📌 Others", "callback_data": "menu:others"}],
-    ])
-
-    return {"inline_keyboard": keyboard}
-
 def build_menu(menu_key: str):
     keyboard = build_header_buttons()
-
     for label, action in MENUS.get(menu_key, {}).items():
-        keyboard.append([{
-            "text": label,
-            "callback_data": action
-        }])
-
+        keyboard.append([{"text": label, "callback_data": action}])
     return {"inline_keyboard": keyboard}
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-if not TELEGRAM_TOKEN:
-    raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
 
-TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+def send_start_photo(chat_id: int):
+    requests.post(
+        f"{TELEGRAM_API}/sendPhoto",
+        json={
+            "chat_id": chat_id,
+            "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
+            "caption": WELCOME_TEXT,
+            "parse_mode": "Markdown",
+            "reply_markup": build_menu("main"),
+        },
+    )
 
-app = FastAPI()
-
-# ---------------- Static (logo) ----------------
-
-BASE_DIR = os.path.dirname(__file__)
-PROJECT_ROOT = os.path.dirname(BASE_DIR)
-
-DATA_DIR = os.path.join(PROJECT_ROOT, "data")
-RAW_DIR = os.path.join(DATA_DIR, "raw")
-
-
-app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
-
-# ---------------- CORS ----------------
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-ANSWERS = {
-    "deposit_slab": "Deposit slabs define fixed investment tiers with benefits.",
-    "self_staking": "Stake FINUX tokens to earn passive rewards.",
-    "min_deposit": "Minimum deposit ensures platform stability.",
-
-    "mstc": "MSTC funds ecosystem development.",
-    "usdce": "USDCe ensures stable-value allocation.",
-    "fund_distribution": "Funds are distributed transparently.",
-
-    "origin": "Entry-level rank with basic benefits.",
-    "life_changer": "Higher rank with increased rewards.",
-    "advisor": "Leadership-based income level.",
-    "visionary": "Advanced rank with network rewards.",
-    "creator": "Top-tier rank with maximum benefits.",
-
-    "club_income": "Club income rewards active members.",
-    "lp_benefits": "Liquidity pools generate passive earnings.",
-
-    "rewards": "Earn rewards via activity and staking.",
-    "referral": "Invite users and earn referral income.",
-    "registration": "Simple onboarding to FINUX ecosystem.",
-    "airdrop": "Free tokens for eligible users.",
-    "wallet_security": "Secure wallets protect your assets.",
-    "token_price": "Token price depends on market demand.",
-    "terms": "Platform rules and conditions apply.",
-    "withdrawal": "Withdrawals follow defined policies.",
-    "objectives": "FINUX aims for decentralized growth.",
-    "important_note": "Always verify before investing."
-}
-
-# ---------------- Load FINUX Docs ----------------
+# -------------------------------------------------
+# LOAD FINUX DOCS (PDF + DOCX)
+# -------------------------------------------------
+documents = []
 
 pdf_path = os.path.join(RAW_DIR, "finux.pdf")
 docx_path = os.path.join(RAW_DIR, "finux.docx")
-
-documents = []
 
 if os.path.exists(pdf_path):
     documents += PyPDFLoader(pdf_path).load()
@@ -177,76 +197,34 @@ if os.path.exists(docx_path):
     documents += Docx2txtLoader(docx_path).load()
 
 if not documents:
-    documents = [
-        Document(page_content="FINUX is a decentralized crypto ecosystem.")
-    ]
+    documents = [Document(page_content="FINUX is a decentralized crypto ecosystem.")]
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
 chunks = splitter.split_documents(documents)
-
 texts = [c.page_content for c in chunks]
-
-logging.info(f"FINUX chunks: {len(texts)}")
 
 db = create_vector_store(texts)
 
-# ---------------- Models ----------------
-
+# -------------------------------------------------
+# MODELS
+# -------------------------------------------------
 class ChatRequest(BaseModel):
     message: str
 
-# ---------------- UI ----------------
-
-UI_PATH = os.path.join(BASE_DIR, "ui.html")
-
+# -------------------------------------------------
+# ROUTES
+# -------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    with open(UI_PATH, "r", encoding="utf-8") as f:
+    with open(os.path.join(BASE_DIR, "ui.html"), encoding="utf-8") as f:
         return f.read()
 
-# ---------------- RAG ----------------
-
-def rag_answer(question: str) -> str:
-    docs = db.similarity_search(question, k=3)
-
-    if not docs:
-        return ""
-
-    text = " ".join([d.page_content for d in docs])
-    text = text.replace("\n", " ")
-
-    parts = text.split(".")[:3]
-
-    bullets = "\n".join([f"• {p.strip()}" for p in parts if p.strip()])
-
-    return bullets[:400]
-
-# ---------------- Web Chat ----------------
-
-@app.post("/chat")
-async def chat(req: ChatRequest):
-    question = req.message
-
-    answer = rag_answer(question)
-
-    if not answer:
-        answer = "Not available in FINUX docs."
-
-    try:
-        save_question(question)
-        save_chat("web", "anonymous", "", question, answer)
-    except:
-        pass
-
-    return {"response": answer}
-
-# ---------------- Health ----------------
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-# ---------------- Telegram Webhook ----------------
+
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
     data = await request.json()
@@ -258,26 +236,26 @@ async def telegram_webhook(request: Request):
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
-            query_id = cq["id"]
+            message_id = cq["message"]["message_id"]
             payload = cq.get("data", "")
 
-            # acknowledge callback
             await client.post(
                 f"{TELEGRAM_API}/answerCallbackQuery",
-                json={"callback_query_id": query_id}
+                json={"callback_query_id": cq["id"]},
             )
 
-            # MENU navigation
+            # MENU
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
+                    f"{TELEGRAM_API}/editMessageCaption",
                     json={
                         "chat_id": chat_id,
-                        "message_id": cq["message"]["message_id"],
-                        "text": "📌 Please choose:",
-                        "reply_markup": build_menu(menu_key)
-                    }
+                        "message_id": message_id,
+                        "caption": WELCOME_TEXT,
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu(menu_key),
+                    },
                 )
                 return {"ok": True}
 
@@ -287,11 +265,14 @@ async def telegram_webhook(request: Request):
                 answer = ANSWERS.get(key, "Information coming soon.")
 
                 await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
+                    f"{TELEGRAM_API}/editMessageCaption",
                     json={
                         "chat_id": chat_id,
-                        "text": answer
-                    }
+                        "message_id": message_id,
+                        "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu("main"),
+                    },
                 )
                 return {"ok": True}
 
@@ -304,14 +285,7 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-         await client.post(
-        f"{TELEGRAM_API}/sendMessage",
-        json={
-            "chat_id": chat_id,
-            "text": "✨ *Welcome to FINUX*\n\nDecentralized blockchain + AI ecosystem.\n\nChoose an option below 👇",
-            "parse_mode": "Markdown",
-            "reply_markup": build_start_menu()
-        }
-    )
-    return {"ok": True}
+            send_start_photo(chat_id)
+            return {"ok": True}
 
+    return {"ok": True}
