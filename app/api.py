@@ -145,8 +145,7 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": "👇 *Please choose an option*",
-                        "parse_mode": "Markdown",
+                        "text": WELCOME_TEXT,
                         "reply_markup": build_menu(menu_key),
                     },
                 )
@@ -161,14 +160,13 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": f"*Answer:*\n{answer}",
-                        "parse_mode": "Markdown",
+                        "text": f"{WELCOME_TEXT}\n\n{answer}",
                         "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ---------- /start ----------
+        # ---------- MESSAGE ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -178,8 +176,8 @@ async def telegram_webhook(request: Request):
 
         if text == "/start":
 
-            # 1️⃣ IMAGE (uploaded from server)
-            image_path = os.path.join(DATA_DIR, "finux.png")
+            # 1️⃣ SEND IMAGE (UPLOAD FILE — THIS IS THE KEY)
+            image_path = "data/finux.png"
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
@@ -188,26 +186,21 @@ async def telegram_webhook(request: Request):
                         files={"photo": img},
                     )
 
-            # 2️⃣ WELCOME MESSAGE
+            # 2️⃣ SEND WELCOME MESSAGE
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": (
-                        "✨ *Welcome to FINUX*\n\n"
-                        "Decentralized blockchain + ecosystem.\n\n"
-                        "Choose an option below 👇"
-                    ),
                     "parse_mode": "Markdown",
                 },
             )
 
-            # 3️⃣ MAIN MENU
+            # 3️⃣ SEND MENU
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": " ",
+                    "text": "👇 *Main Menu*",
                     "parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
