@@ -112,7 +112,7 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"TELEGRAM UPDATE: {data}")
 
-    async with httpx.AsyncClient(timeout=20) as client:
+    async with httpx.AsyncClient(timeout=30) as client:
 
         # ---------- CALLBACK ----------
         if "callback_query" in data:
@@ -164,21 +164,23 @@ async def telegram_webhook(request: Request):
 
         if text == "/start":
 
-            # 1️⃣ SEND IMAGE (NO CAPTION)
-            await client.post(
-                f"{TELEGRAM_API}/sendPhoto",
-                json={
-                    "chat_id": chat_id,
-                    "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
-                },
-            )
+            # 1️⃣ SEND IMAGE (UPLOAD FILE — THIS IS THE KEY)
+            image_path = "data/finux.png"
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img:
+                    await client.post(
+                        f"{TELEGRAM_API}/sendPhoto",
+                        data={"chat_id": chat_id},
+                        files={"photo": img},
+                    )
 
-            # 2️⃣ SEND WELCOME TEXT
+            # 2️⃣ SEND WELCOME MESSAGE
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
                     "text": WELCOME_TEXT,
+                    "parse_mode": "Markdown",
                 },
             )
 
@@ -187,7 +189,8 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "👇 Main Menu",
+                    "text": "👇 *Main Menu*",
+                    "parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
             )
