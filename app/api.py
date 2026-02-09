@@ -22,19 +22,31 @@ if not TELEGRAM_TOKEN:
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-WELCOME_TEXT = (
-    "✨ *Welcome to FINUX !"
-    )
 
 # ===================== MENUS =====================
 
 MENUS = {
     "main": {
-        "💰 Deposit": "menu:deposit",
-        "📊 Fund Distribution": "menu:funds",
-        "🏆 Rank Wise Rewards": "menu:ranks",
-        "🔁 Dual Income System": "menu:dual_income",
-        "📌 Others": "menu:others",
+        "Deposit": "menu:deposit",
+        "Rewards": "menu:rewards",
+        "Referral": "menu:referral",
+        "Clubs": "menu:clubs",
+        "LP Benefits": "menu:lp",
+        "Registration": "menu:reg",
+        "Airdrop": "menu:airdrop",
+        "Self-staking": "menu:self-staking",
+        "Club Income": "menu:clubincome",
+        "Token Price": "menu:token",
+        "Withdrawal Policy": "menu:withdraw",
+        "Objectivies": "menu:obj",
+        "Finux Mining Project": "menu:fmp",
+        "Wallet & Security": "menu:wallet",
+        "Terms & Conditions": "menu:terms",
+        "Important Note": "menu:note",
+        " Fund Distribution": "menu:funds",
+        " Rank Wise Rewards": "menu:ranks",
+        " Dual Income System": "menu:dual_income",
+        " Others": "menu:others",
     },
     "deposit": {
         "Deposit Slab": "q:deposit_slab",
@@ -78,10 +90,10 @@ ANSWERS = {
 
 def header_buttons():
     return [
-        [{"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
+        [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
         [
-            {"text": "📢 Channel", "url": "https://t.me/FINUX_ADV"},
-            {"text": "🌐 Website", "url": "https://finux-chatbot-production.up.railway.app"},
+            {"text": "Channel", "url": "https://t.me/FINUX_ADV"},
+            {"text": " Website", "url": "https://finux-chatbot-production.up.railway.app"},
         ],
     ]
 
@@ -179,7 +191,6 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": WELCOME_TEXT,
                     "parse_mode": "Markdown",
                 },
             )
