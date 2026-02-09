@@ -107,7 +107,7 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
     data = await request.json()
-    logging.info(f"UPDATE: {data}")
+    logging.info(f"TELEGRAM UPDATE: {data}")
 
     async with httpx.AsyncClient(timeout=15) as client:
 
@@ -116,7 +116,7 @@ async def telegram_webhook(request: Request):
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
             msg_id = cq["message"]["message_id"]
-            payload = cq["data"]
+            payload = cq.get("data", "")
 
             # acknowledge callback
             await client.post(
@@ -124,9 +124,9 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
-            # MENU navigation
+            # MENU navigation (KEEP IMAGE)
             if payload.startswith("menu:"):
-                menu = payload.replace("menu:", "")
+                menu_key = payload.replace("menu:", "")
                 await client.post(
                     f"{TELEGRAM_API}/editMessageCaption",
                     json={
@@ -134,15 +134,15 @@ async def telegram_webhook(request: Request):
                         "message_id": msg_id,
                         "caption": WELCOME_TEXT,
                         "parse_mode": "Markdown",
-                        "reply_markup": build_menu(menu),
+                        "reply_markup": build_menu(menu_key),
                     },
                 )
                 return {"ok": True}
 
-            # QUESTION click
+            # QUESTION (KEEP IMAGE)
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
-                answer = ANSWERS.get(key, "Info coming soon.")
+                answer = ANSWERS.get(key, "Information coming soon.")
 
                 await client.post(
                     f"{TELEGRAM_API}/editMessageCaption",
@@ -166,27 +166,26 @@ async def telegram_webhook(request: Request):
 
         # ================= /start =================
         if text == "/start":
-         image_path = "data/finux.png"
+            image_path = os.path.join(DATA_DIR, "finux.png")
 
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as img:
-            await client.post(
-                f"{TELEGRAM_API}/sendPhoto",
-                data={
-                    "chat_id": chat_id,
-                    "caption": (
-                        "✨ *Welcome to FINUX*\n\n"
-                        "One bot – the whole FINUX ecosystem in your pocket.\n\n"
-                        "Click below to start 🚀"
-                    ),
-                    "parse_mode": "Markdown",
-                },
-                files={
-                    "photo": ("finux.png", img, "image/png")
-                },
-                params={
-                    "reply_markup": build_menu("main")
-                }
-            )
+            if not os.path.exists(image_path):
+                logging.error("finux.png not found")
+                return {"ok": True}
+
+            with open(image_path, "rb") as img:
+                await client.post(
+                    f"{TELEGRAM_API}/sendPhoto",
+                    data={
+                        "chat_id": chat_id,
+                        "caption": WELCOME_TEXT,
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_start_menu(),
+                    },
+                    files={
+                        "photo": ("finux.png", img, "image/png"),
+                    },
+                )
+
+            return {"ok": True}
 
     return {"ok": True}
