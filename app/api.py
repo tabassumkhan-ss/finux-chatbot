@@ -1,25 +1,19 @@
 import os
 import logging
-import requests
+import httpx
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-
-from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_core.documents import Document
-
-from app.embeddings.vector_store import create_vector_store
-from app.db import save_chat, save_question
 
 logging.basicConfig(level=logging.INFO)
 
 # ===================== TELEGRAM =====================
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if not TELEGRAM_TOKEN:
+    raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
+
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 WELCOME_TEXT = (
@@ -93,18 +87,6 @@ def build_menu(menu_key):
         keyboard.append([{"text": label, "callback_data": action}])
     return {"inline_keyboard": keyboard}
 
-def send_start(chat_id):
-    requests.post(
-        f"{TELEGRAM_API}/sendPhoto",
-        json={
-            "chat_id": chat_id,
-            "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
-            "caption": WELCOME_TEXT,
-            "parse_mode": "Markdown",
-            "reply_markup": build_menu("main"),
-        },
-    )
-
 # ===================== FASTAPI =====================
 
 app = FastAPI()
@@ -116,6 +98,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ static folder
+app.mount("/static", StaticFiles(directory="data"), name="static")
+
 # ===================== TELEGRAM WEBHOOK =====================
 
 @app.post("/telegram")
@@ -123,57 +108,68 @@ async def telegram_webhook(request: Request):
     data = await request.json()
     logging.info(f"UPDATE: {data}")
 
-    # CALLBACK
-    if "callback_query" in data:
-        cq = data["callback_query"]
-        chat_id = cq["message"]["chat"]["id"]
-        msg_id = cq["message"]["message_id"]
-        payload = cq["data"]
+    async with httpx.AsyncClient(timeout=10) as client:
 
-        requests.post(
-            f"{TELEGRAM_API}/answerCallbackQuery",
-            json={"callback_query_id": cq["id"]},
-        )
+        # CALLBACK
+        if "callback_query" in data:
+            cq = data["callback_query"]
+            chat_id = cq["message"]["chat"]["id"]
+            msg_id = cq["message"]["message_id"]
+            payload = cq["data"]
 
-        if payload.startswith("menu:"):
-            menu = payload.replace("menu:", "")
-            requests.post(
-                f"{TELEGRAM_API}/editMessageCaption",
-                json={
-                    "chat_id": chat_id,
-                    "message_id": msg_id,
-                    "caption": WELCOME_TEXT,
-                    "parse_mode": "Markdown",
-                    "reply_markup": build_menu(menu),
-                },
+            await client.post(
+                f"{TELEGRAM_API}/answerCallbackQuery",
+                json={"callback_query_id": cq["id"]},
             )
+
+            if payload.startswith("menu:"):
+                menu = payload.replace("menu:", "")
+                await client.post(
+                    f"{TELEGRAM_API}/editMessageCaption",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": msg_id,
+                        "caption": WELCOME_TEXT,
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu(menu),
+                    },
+                )
+                return {"ok": True}
+
+            if payload.startswith("q:"):
+                key = payload.replace("q:", "")
+                answer = ANSWERS.get(key, "Info coming soon.")
+
+                await client.post(
+                    f"{TELEGRAM_API}/editMessageCaption",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": msg_id,
+                        "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu("main"),
+                    },
+                )
+                return {"ok": True}
+
+        # MESSAGE
+        message = data.get("message")
+        if not message:
             return {"ok": True}
 
-        if payload.startswith("q:"):
-            key = payload.replace("q:", "")
-            answer = ANSWERS.get(key, "Info coming soon.")
+        chat_id = message["chat"]["id"]
+        text = message.get("text", "")
 
-            requests.post(
-                f"{TELEGRAM_API}/editMessageCaption",
+        if text == "/start":
+            await client.post(
+                f"{TELEGRAM_API}/sendPhoto",
                 json={
                     "chat_id": chat_id,
-                    "message_id": msg_id,
-                    "caption": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
+                    "photo": "https://finux-chatbot-production.up.railway.app/static/finux.png",
+                    "caption": WELCOME_TEXT,
                     "parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
             )
-            return {"ok": True}
-
-    # MESSAGE
-    message = data.get("message")
-    if not message:
-        return {"ok": True}
-
-    chat_id = message["chat"]["id"]
-    text = message.get("text", "")
-
-    if text == "/start":
-        send_start(chat_id)
 
     return {"ok": True}
