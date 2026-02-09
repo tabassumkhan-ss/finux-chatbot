@@ -111,7 +111,7 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=10) as client:
 
-        # ---------- CALLBACK (menus & questions) ----------
+        # ---------- CALLBACK ----------
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
@@ -130,7 +130,7 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": "👇 *Main Menu*",
+                        "text": WELCOME_TEXT,
                         "parse_mode": "Markdown",
                         "reply_markup": build_menu(menu),
                     },
@@ -146,14 +146,14 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": f"*Answer:*\n{answer}",
+                        "text": f"{WELCOME_TEXT}\n\n*Answer:*\n{answer}",
                         "parse_mode": "Markdown",
                         "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ---------- MESSAGE (/start) ----------
+        # ---------- MESSAGE ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -162,24 +162,28 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "")
 
         if text == "/start":
-            image_path = "data/finux.png"  # ✅ your file location
 
-            # 1️⃣ Send image + welcome text
+            # 1️⃣ SEND WELCOME TEXT (this NEVER fails)
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": WELCOME_TEXT,
+                    "parse_mode": "Markdown",
+                },
+            )
+
+            # 2️⃣ SEND IMAGE (optional, safe)
+            image_path = "data/finux.png"
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
                         f"{TELEGRAM_API}/sendPhoto",
-                        data={
-                            "chat_id": chat_id,
-                            "caption": WELCOME_TEXT,
-                            "parse_mode": "Markdown",
-                        },
+                        data={"chat_id": chat_id},
                         files={"photo": ("finux.png", img, "image/png")},
                     )
-        else:
-            logging.error("❌ finux.png not found")
 
-            # 2️⃣ Send menu as separate message (stable)
+            # 3️⃣ SEND MENU (always last)
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
