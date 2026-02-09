@@ -111,50 +111,49 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=10) as client:
 
-        # ================= CALLBACK QUERIES =================
+        # ---------- CALLBACK (menus & questions) ----------
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
             msg_id = cq["message"]["message_id"]
             payload = cq["data"]
 
-            # acknowledge callback (important)
             await client.post(
                 f"{TELEGRAM_API}/answerCallbackQuery",
                 json={"callback_query_id": cq["id"]},
             )
 
-            # -------- MENU NAVIGATION (buttons only) --------
             if payload.startswith("menu:"):
-                menu_key = payload.replace("menu:", "")
-
+                menu = payload.replace("menu:", "")
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageReplyMarkup",
+                    f"{TELEGRAM_API}/editMessageText",
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "reply_markup": build_menu(menu_key),
+                        "text": "👇 *Main Menu*",
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu(menu),
                     },
                 )
                 return {"ok": True}
 
-            # -------- QUESTION CLICK --------
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
-                answer = ANSWERS.get(key, "Information coming soon.")
+                answer = ANSWERS.get(key, "Info coming soon.")
 
-                # send answer as NEW message (do not touch image)
                 await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
+                    f"{TELEGRAM_API}/editMessageText",
                     json={
                         "chat_id": chat_id,
+                        "message_id": msg_id,
                         "text": f"*Answer:*\n{answer}",
                         "parse_mode": "Markdown",
+                        "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ================= NORMAL MESSAGE =================
+        # ---------- MESSAGE (/start) ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -162,36 +161,29 @@ async def telegram_webhook(request: Request):
         chat_id = message["chat"]["id"]
         text = message.get("text", "")
 
-        # -------- /start --------
         if text == "/start":
-            image_path = "data/finux.png"  # local image (Railway safe)
+            image_path = "data/finux.png"  # ✅ your file location
 
+            # 1️⃣ Send image + welcome text
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
                         f"{TELEGRAM_API}/sendPhoto",
                         data={
                             "chat_id": chat_id,
-                            "caption": (
-                                "✨ *Welcome to FINUX*\n\n"
-                                "Decentralized blockchain + AI ecosystem.\n\n"
-                                "Choose an option below 👇"
-                            ),
+                            "caption": WELCOME_TEXT,
                             "parse_mode": "Markdown",
                         },
-                        files={
-                            "photo": img,
-                        },
+                        files={"photo": img},
                     )
-            else:
-                logging.error("FINUX image not found at data/finux.png")
 
-            # Send menu separately (always reliable)
+            # 2️⃣ Send menu as separate message (stable)
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "👇 Main Menu",
+                    "text": "👇 *Main Menu*",
+                    "parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
             )
