@@ -6,6 +6,11 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+BASE_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
+
 logging.basicConfig(level=logging.INFO)
 logging.info("DATA DIR CONTENTS: %s", os.listdir("data"))
 
@@ -124,7 +129,7 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
-            # MENU navigation (KEEP IMAGE)
+            # MENU navigation (keeps image)
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
                 await client.post(
@@ -139,7 +144,7 @@ async def telegram_webhook(request: Request):
                 )
                 return {"ok": True}
 
-            # QUESTION (KEEP IMAGE)
+            # QUESTION (keeps image)
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
                 answer = ANSWERS.get(key, "Information coming soon.")
@@ -169,7 +174,7 @@ async def telegram_webhook(request: Request):
             image_path = os.path.join(DATA_DIR, "finux.png")
 
             if not os.path.exists(image_path):
-                logging.error("finux.png not found")
+                logging.error(f"Image not found: {image_path}")
                 return {"ok": True}
 
             with open(image_path, "rb") as img:
@@ -179,7 +184,7 @@ async def telegram_webhook(request: Request):
                         "chat_id": chat_id,
                         "caption": WELCOME_TEXT,
                         "parse_mode": "Markdown",
-                        "reply_markup": build_start_menu(),
+                        "reply_markup": build_menu("main"),
                     },
                     files={
                         "photo": ("finux.png", img, "image/png"),
