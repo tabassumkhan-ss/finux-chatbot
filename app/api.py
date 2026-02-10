@@ -12,7 +12,11 @@ DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 
 logging.basicConfig(level=logging.INFO)
-logging.info("DATA DIR CONTENTS: %s", os.listdir("data"))
+
+if os.path.exists("data"):
+    logging.info("DATA DIR CONTENTS: %s", os.listdir("data"))
+else:
+    logging.warning("DATA directory does not exist")
 
 # ===================== TELEGRAM =====================
 
@@ -24,6 +28,26 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 
 # ===================== MENUS =====================
+
+MAIN_MENU = {
+    "💰 Deposit": "menu:deposit",
+    "🏆 Rewards": "menu:rewards",
+    "👥 Referral": "menu:referral",
+    "📦 Others": "menu:others",
+}
+
+OTHERS_MENU = {
+    "📈 Fund Distribution": "menu:funds",
+    "🏅 Rank Wise Rewards": "menu:ranks",
+    "🔁 Dual Income System": "menu:dual_income",
+    "🏦 Club Income": "menu:clubincome",
+    "🪙 Token Price": "menu:token",
+    "💸 Withdrawal Policy": "menu:withdraw",
+    "📜 Terms & Conditions": "menu:terms",
+    "🔐 Wallet & Security": "menu:wallet",
+    "🚀 FINUX Mining Project": "menu:fmp",
+    "⬅️ Back to Main": "menu:main",
+}
 
 MENUS = {
     "main": MAIN_MENU,
@@ -107,11 +131,13 @@ async def telegram_webhook(request: Request):
             msg_id = cq["message"]["message_id"]
             payload = cq.get("data", "")
 
+            # acknowledge callback
             await client.post(
                 f"{TELEGRAM_API}/answerCallbackQuery",
                 json={"callback_query_id": cq["id"]},
             )
 
+            # MENU HANDLER
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
                 await client.post(
@@ -119,12 +145,13 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": WELCOME_TEXT,
+                        "text": "👇 Choose an option",
                         "reply_markup": build_menu(menu_key),
                     },
                 )
                 return {"ok": True}
 
+            # QUESTION / INFO HANDLER
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
                 answer = ANSWERS.get(key, "Information coming soon.")
@@ -134,7 +161,7 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "message_id": msg_id,
-                        "text": f"{WELCOME_TEXT}\n\n{answer}",
+                        "text": answer,
                         "reply_markup": build_menu("main"),
                     },
                 )
@@ -150,7 +177,7 @@ async def telegram_webhook(request: Request):
 
         if text == "/start":
 
-            # 1️⃣ SEND IMAGE (UPLOAD FILE — THIS IS THE KEY)
+            # 1️⃣ SEND IMAGE (optional)
             image_path = "data/finux.png"
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
@@ -160,22 +187,12 @@ async def telegram_webhook(request: Request):
                         files={"photo": img},
                     )
 
-            # 2️⃣ SEND WELCOME MESSAGE
+            # 2️⃣ SEND MENU ONLY (NO WELCOME TEXT)
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "parse_mode": "Markdown",
-                },
-            )
-
-            # 3️⃣ SEND MENU
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": "👇 *Main Menu*",
-                    "parse_mode": "Markdown",
+                    "text": "👇 Choose an option",
                     "reply_markup": build_menu("main"),
                 },
             )
