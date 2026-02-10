@@ -5,6 +5,11 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+
+class ChatRequest(BaseModel):
+    message: str
 
 BASE_DIR = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
@@ -13,8 +18,8 @@ DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 logging.basicConfig(level=logging.INFO)
 
-if os.path.exists("data"):
-    logging.info("DATA DIR CONTENTS: %s", os.listdir("data"))
+if os.path.exists(DATA_DIR):
+    logging.info("DATA DIR CONTENTS: %s", os.listdir(DATA_DIR))
 else:
     logging.warning("DATA directory does not exist")
 
@@ -65,10 +70,15 @@ MENUS = {
         "⬅️ Back": "menu:main",
     },
 
-    "referral": {
+        "referral": {
         "How Referral Works": "q:referral",
         "Referral Income": "q:referral_income",
         "⬅️ Back": "menu:main",
+    },
+
+        "clubincome": {
+        "Club Income Info": "q:club_income",
+        "⬅️ Back": "menu:others",
     },
 }
 
@@ -104,6 +114,20 @@ def build_menu(menu_key):
 # ===================== FASTAPI =====================
 
 app = FastAPI()
+
+@app.get("/")
+async def serve_ui():
+    return FileResponse(os.path.join(DATA_DIR, "ui.html"))
+
+
+@app.post("/chat")
+async def chat_api(payload: ChatRequest):
+    user_message = payload.message.strip()
+
+    # TEMP RESPONSE (you can connect AI / logic later)
+    return {
+        "response": f"You asked: {user_message}"
+    }
 
 app.add_middleware(
     CORSMiddleware,
@@ -178,7 +202,7 @@ async def telegram_webhook(request: Request):
         if text == "/start":
 
             # 1️⃣ SEND IMAGE (optional)
-            image_path = "data/finux.png"
+            image_path = os.path.join(DATA_DIR, "finux.png") 
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
