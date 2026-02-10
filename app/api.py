@@ -41,20 +41,26 @@ def load_documents():
             if para.text.strip():
                 texts.append(para.text)
 
-    return [t.strip() for t in texts if len(t.strip()) > 20]
-
+    return [
+    t.strip()
+    for t in texts
+    if len(t.strip()) > 30 and "•" not in t
+]
 
 DOCUMENT_TEXT = load_documents()
 
 def find_short_answer(question: str) -> str:
-    q = question.lower()
+    q_words = [w for w in question.lower().split() if len(w) > 3]
 
     for line in DOCUMENT_TEXT:
-        if q[:20] in line.lower() or any(w in line.lower() for w in q.split()):
-            return line[:180]  # VERY SHORT
+        line_l = line.lower()
+
+        # must match at least one meaningful keyword
+        if any(w in line_l for w in q_words):
+            # return only first sentence, very short
+            return line.split(".")[0].strip()[:160]
 
     return "Information not available in FINUX documents."
-
 
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 logging.basicConfig(level=logging.INFO)
