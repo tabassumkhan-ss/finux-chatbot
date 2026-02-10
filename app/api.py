@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
 
+logging.basicConfig(level=logging.INFO)
+
 class ChatRequest(BaseModel):
     message: str
 
@@ -63,7 +65,6 @@ def find_short_answer(question: str) -> str:
     return "Information not available in FINUX documents."
 
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
-logging.basicConfig(level=logging.INFO)
 
 if os.path.exists(DATA_DIR):
     logging.info("DATA DIR CONTENTS: %s", os.listdir(DATA_DIR))
@@ -196,11 +197,10 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=30) as client:
 
-        # ---------- CALLBACK ----------
+        # ---------- CALLBACK (MENU BUTTONS) ----------
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
-            msg_id = cq["message"]["message_id"]
             payload = cq.get("data", "")
 
             # acknowledge callback
@@ -209,48 +209,47 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
-            # MENU HANDLER
+            # MENU HANDLER (send as chat message)
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
+                    f"{TELEGRAM_API}/sendMessage",
                     json={
                         "chat_id": chat_id,
-                        "message_id": msg_id,
                         "text": "👇 Choose an option",
                         "reply_markup": build_menu(menu_key),
                     },
                 )
                 return {"ok": True}
 
-            # QUESTION / INFO HANDLER
+            # INFO HANDLER (send as chat message)
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
                 answer = ANSWERS.get(key, "Information coming soon.")
 
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
+                    f"{TELEGRAM_API}/sendMessage",
                     json={
                         "chat_id": chat_id,
-                        "message_id": msg_id,
                         "text": answer,
                         "reply_markup": build_menu("main"),
                     },
                 )
                 return {"ok": True}
 
-        # ---------- MESSAGE ----------
+        # ---------- NORMAL MESSAGE ----------
         message = data.get("message")
         if not message:
             return {"ok": True}
 
         chat_id = message["chat"]["id"]
-        text = message.get("text", "")
+        text = message.get("text", "").strip()
 
+        # /start command
         if text == "/start":
 
-            # 1️⃣ SEND IMAGE (optional)
-            image_path = os.path.join(DATA_DIR, "finux.png") 
+            # 1️⃣ Send image (optional)
+            image_path = os.path.join(DATA_DIR, "finux.png")
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
                     await client.post(
@@ -259,13 +258,26 @@ async def telegram_webhook(request: Request):
                         files={"photo": img},
                     )
 
-            # 2️⃣ SEND MENU ONLY (NO WELCOME TEXT)
+            # 2️⃣ Send menu
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
                     "text": "👇 Choose an option",
                     "reply_markup": build_menu("main"),
+                },
+            )
+            return {"ok": True}
+
+        # ---------- USER TYPED QUESTION ----------
+        if text:
+            answer = find_short_answer(text)
+
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": answer,
                 },
             )
 
