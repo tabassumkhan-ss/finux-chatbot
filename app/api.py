@@ -26,50 +26,24 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 # ===================== MENUS =====================
 
 MENUS = {
-    "main": {
-        "Deposit": "menu:deposit",
-        "Rewards": "menu:rewards",
-        "Referral": "menu:referral",
-        "Clubs": "menu:clubs",
-        "LP Benefits": "menu:lp",
-        "Registration": "menu:reg",
-        "Airdrop": "menu:airdrop",
-        "Self-staking": "menu:self-staking",
-        "Club Income": "menu:clubincome",
-        "Token Price": "menu:token",
-        "Withdrawal Policy": "menu:withdraw",
-        "Objectivies": "menu:obj",
-        "Finux Mining Project": "menu:fmp",
-        "Wallet & Security": "menu:wallet",
-        "Terms & Conditions": "menu:terms",
-        "Important Note": "menu:note",
-        " Fund Distribution": "menu:funds",
-        " Rank Wise Rewards": "menu:ranks",
-        " Dual Income System": "menu:dual_income",
-        " Others": "menu:others",
-    },
+    "main": MAIN_MENU,
+    "others": OTHERS_MENU,
+
     "deposit": {
         "Deposit Slab": "q:deposit_slab",
         "Self-Staking": "q:self_staking",
         "⬅️ Back": "menu:main",
     },
-    "funds": {
-        "MSTC": "q:mstc",
-        "USDCe": "q:usdce",
+
+    "rewards": {
+        "Rank Rewards": "q:rank_rewards",
+        "Club Rewards": "q:club_rewards",
         "⬅️ Back": "menu:main",
     },
-    "ranks": {
-        "Origin": "q:origin",
-        "Life Changer": "q:life_changer",
-        "⬅️ Back": "menu:main",
-    },
-    "dual_income": {
-        "Club Income": "q:club_income",
-        "⬅️ Back": "menu:main",
-    },
-    "others": {
-        "Airdrop": "q:airdrop",
-        "Wallet & Security": "q:wallet_security",
+
+    "referral": {
+        "How Referral Works": "q:referral",
+        "Referral Income": "q:referral_income",
         "⬅️ Back": "menu:main",
     },
 }
