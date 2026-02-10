@@ -263,7 +263,7 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "👇 Choose an option  to Explore Finux        ",
+                    "text": "👇 Choose an option  to Explore Finux                            ",
                     "reply_markup": build_menu("main"),
                 },
             )
