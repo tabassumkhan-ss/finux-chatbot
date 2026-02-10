@@ -225,7 +225,7 @@ async def telegram_webhook(request: Request):
             # INFO HANDLER (send as chat message)
             if payload.startswith("q:"):
                 key = payload.replace("q:", "")
-                answer = ANSWERS.get(key, "Information coming soon.")
+                answer = find_short_answer(key.replace("_", " "))
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
