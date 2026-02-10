@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from docx import Document
+from pypdf import PdfReader
 
 class ChatRequest(BaseModel):
     message: str
@@ -15,7 +17,46 @@ BASE_DIR = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
+# ===================== DOCUMENT LOADER =====================
 
+DOCUMENT_TEXT = []
+
+def load_documents():
+    texts = []
+
+    # PDF
+    pdf_path = os.path.join(DATA_DIR, "finux.pdf")
+    if os.path.exists(pdf_path):
+        reader = PdfReader(pdf_path)
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                texts.extend(text.split("\n"))
+
+    # DOCX
+    docx_path = os.path.join(DATA_DIR, "finux.docx")
+    if os.path.exists(docx_path):
+        doc = Document(docx_path)
+        for para in doc.paragraphs:
+            if para.text.strip():
+                texts.append(para.text)
+
+    return [t.strip() for t in texts if len(t.strip()) > 20]
+
+
+DOCUMENT_TEXT = load_documents()
+
+def find_short_answer(question: str) -> str:
+    q = question.lower()
+
+    for line in DOCUMENT_TEXT:
+        if q[:20] in line.lower() or any(w in line.lower() for w in q.split()):
+            return line[:180]  # VERY SHORT
+
+    return "Information not available in FINUX documents."
+
+
+logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 logging.basicConfig(level=logging.INFO)
 
 if os.path.exists(DATA_DIR):
@@ -122,12 +163,13 @@ async def serve_ui():
 
 @app.post("/chat")
 async def chat_api(payload: ChatRequest):
-    user_message = payload.message.strip()
+    question = payload.message.strip()
 
-    # TEMP RESPONSE (you can connect AI / logic later)
-    return {
-        "response": f"You asked: {user_message}"
-    }
+    if not question:
+        return {"response": "Please ask a question."}
+
+    answer = find_short_answer(question)
+    return {"response": answer}
 
 app.add_middleware(
     CORSMiddleware,
