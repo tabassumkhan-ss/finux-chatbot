@@ -272,7 +272,7 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "").strip()
 
         # /start command
-        if text == "/start":
+        if text.startswith("/start"): 
 
             # 1️⃣ Send image (optional)
             image_path = os.path.join(DATA_DIR, "finux.png")
