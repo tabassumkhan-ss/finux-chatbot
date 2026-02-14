@@ -190,14 +190,14 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 
 @app.get("/post-button")
 async def post_button():
-    channel_username = "@Finuxofficiallive"  
+    channel_username = "@Finuxofficiallive"
 
     async with httpx.AsyncClient() as client:
-        await client.post(
+        response = await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "",
+                "text": "",  # invisible text
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -211,7 +211,8 @@ async def post_button():
             },
         )
 
-    return {"status": "Button posted successfully"}
+    return response.json()
+
 
 # ===================== TELEGRAM WEBHOOK =====================
 
