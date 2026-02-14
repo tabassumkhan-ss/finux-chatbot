@@ -197,7 +197,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": " ",  # invisible text
+                "text": ". ",  # invisible text
                 "reply_markup": {
                     "inline_keyboard": [
                         [
