@@ -194,11 +194,11 @@ async def post_button():
 
     async with httpx.AsyncClient() as client:
         # 1️⃣ Send button message
-        response = await client.post(
+        send_response = await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": ".",  # minimal text
+                "text": ".",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -212,22 +212,30 @@ async def post_button():
             },
         )
 
-        result = response.json()
+        send_result = send_response.json()
 
-        # 2️⃣ If message sent successfully, pin it
-        if result.get("ok"):
-            message_id = result["result"]["message_id"]
+        if not send_result.get("ok"):
+            return {"send_error": send_result}
 
-            await client.post(
-                f"{TELEGRAM_API}/pinChatMessage",
-                json={
-                    "chat_id": channel_username,
-                    "message_id": message_id,
-                    "disable_notification": True
-                },
-            )
+        message_id = send_result["result"]["message_id"]
 
-    return result
+        # 2️⃣ Try pinning
+        pin_response = await client.post(
+            f"{TELEGRAM_API}/pinChatMessage",
+            json={
+                "chat_id": channel_username,
+                "message_id": message_id,
+                "disable_notification": True
+            },
+        )
+
+        pin_result = pin_response.json()
+
+    return {
+        "send_result": send_result,
+        "pin_result": pin_result
+    }
+
 
 @app.get("/check-pin")
 async def check_pin():
