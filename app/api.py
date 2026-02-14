@@ -188,6 +188,31 @@ app.add_middleware(
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")
 
+@app.get("/post-button")
+async def post_button():
+    channel_username = "@Finuxofficiallive"  
+
+    async with httpx.AsyncClient() as client:
+        await client.post(
+            f"{TELEGRAM_API}/sendMessage",
+            json={
+                "chat_id": channel_username,
+                "text": "🚀 Start FINUX Now!\n\nEarn rewards, referral income & more.",
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [
+                            {
+                                "text": "🚀 Open FINUX Bot",
+                                "url": "https://t.me/finuxchatbot?start=channel"
+                            }
+                        ]
+                    ]
+                }
+            },
+        )
+
+    return {"status": "Button posted successfully"}
+
 # ===================== TELEGRAM WEBHOOK =====================
 
 @app.post("/telegram")
