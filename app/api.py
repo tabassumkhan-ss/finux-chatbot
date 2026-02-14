@@ -197,12 +197,12 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "🚀 Start FINUX Now!\n\nEarn rewards, referral income & more.",
+                "text": "",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
                             {
-                                "text": "🚀 Open FINUX Bot",
+                                "text": "🚀 Open FINUX Chat Bot",
                                 "url": "https://t.me/finuxchatbot?start=channel"
                             }
                         ]
