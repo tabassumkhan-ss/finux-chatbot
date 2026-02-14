@@ -197,7 +197,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": ". ",  # invisible text
+                "text": ".",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -211,7 +211,22 @@ async def post_button():
             },
         )
 
-    return response.json()
+        result = response.json()
+
+        if result.get("ok"):
+            message_id = result["result"]["message_id"]
+
+            # Pin the message
+            await client.post(
+                f"{TELEGRAM_API}/pinChatMessage",
+                json={
+                    "chat_id": channel_username,
+                    "message_id": message_id,
+                    "disable_notification": True
+                },
+            )
+
+    return result
 
 
 # ===================== TELEGRAM WEBHOOK =====================
