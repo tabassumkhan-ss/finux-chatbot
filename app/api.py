@@ -249,6 +249,21 @@ async def check_pin():
 
     return response.json()
 
+@app.get("/check-admin")
+async def check_admin():
+    channel_username = "@Finuxofficiallive"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{TELEGRAM_API}/getChatMember",
+            json={
+                "chat_id": channel_username,
+                "user_id": 8579775227
+            },
+        )
+
+    return response.json()
+
 
 # ===================== TELEGRAM WEBHOOK =====================
 
