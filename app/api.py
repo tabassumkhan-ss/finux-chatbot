@@ -193,12 +193,13 @@ async def post_button():
     channel_username = "@Finuxofficiallive"
 
     async with httpx.AsyncClient() as client:
+
         # 1️⃣ Send button message
         send_response = await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": ".",
+                "text": "🚀 Welcome to FINUX Ecosystem\n\nTap below to activate your FINUX account 👇",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -219,7 +220,7 @@ async def post_button():
 
         message_id = send_result["result"]["message_id"]
 
-        # 2️⃣ Try pinning
+        # 2️⃣ Pin the message
         pin_response = await client.post(
             f"{TELEGRAM_API}/pinChatMessage",
             json={
@@ -235,7 +236,6 @@ async def post_button():
         "send_result": send_result,
         "pin_result": pin_result
     }
-
 
 @app.get("/check-pin")
 async def check_pin():
