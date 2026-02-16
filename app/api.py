@@ -71,7 +71,7 @@ if os.path.exists(DATA_DIR):
 else:
     logging.warning("DATA directory does not exist")
 
-# ===================== TELEGRAM =====================
+# ================ TELEGRAM ===============
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TELEGRAM_TOKEN:
