@@ -194,7 +194,7 @@ async def post_button():
 
     async with httpx.AsyncClient() as client:
 
-        # 1️⃣ Get current pinned message
+        # Get chat info
         chat_info = await client.post(
             f"{TELEGRAM_API}/getChat",
             json={"chat_id": channel_username}
@@ -202,17 +202,10 @@ async def post_button():
 
         chat_data = chat_info.json()
 
-        # 2️⃣ If pinned message exists, delete it
+        # Delete old pinned message if exists
         if "pinned_message" in chat_data.get("result", {}):
             old_message_id = chat_data["result"]["pinned_message"]["message_id"]
 
-            # Unpin
-            await client.post(
-                f"{TELEGRAM_API}/unpinChatMessage",
-                json={"chat_id": channel_username}
-            )
-
-            # Delete old message
             await client.post(
                 f"{TELEGRAM_API}/deleteMessage",
                 json={
@@ -221,12 +214,12 @@ async def post_button():
                 }
             )
 
-        # 3️⃣ Send new button message
+        # Send new button
         send_response = await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": ".",  # minimal text
+                "text": ".",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -241,14 +234,10 @@ async def post_button():
         )
 
         send_result = send_response.json()
-
-        if not send_result.get("ok"):
-            return {"send_error": send_result}
-
         new_message_id = send_result["result"]["message_id"]
 
-        # 4️⃣ Pin new message
-        pin_response = await client.post(
+        # Pin new message
+        await client.post(
             f"{TELEGRAM_API}/pinChatMessage",
             json={
                 "chat_id": channel_username,
@@ -257,12 +246,7 @@ async def post_button():
             },
         )
 
-        pin_result = pin_response.json()
-
-    return {
-        "status": "Clean pinned button updated",
-        "pin_result": pin_result
-    }
+    return {"status": "Pinned button refreshed cleanly"}
 
 @app.get("/check-admin")
 async def check_admin():
