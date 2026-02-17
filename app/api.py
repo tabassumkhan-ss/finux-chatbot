@@ -199,7 +199,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "🚀 Welcome to FINUX Ecosystem\n\nTap below to activate your FINUX account 👇",
+                "text": "Welcome to FINUX",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
