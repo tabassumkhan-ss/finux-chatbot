@@ -190,7 +190,7 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 
 @app.get("/post-button")
 async def post_button():
-    channel_username = "@Finuxofficiallive"
+    channel_username = "@finux_ADV"
 
     async with httpx.AsyncClient() as client:
 
@@ -239,7 +239,7 @@ async def post_button():
 
 @app.get("/check-pin")
 async def check_pin():
-    channel_username = "@Finuxofficiallive"
+    channel_username = "@finux_ADV"
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -251,7 +251,7 @@ async def check_pin():
 
 @app.get("/check-admin")
 async def check_admin():
-    channel_username = "@Finuxofficiallive"
+    channel_username = "@finux_ADV"
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
