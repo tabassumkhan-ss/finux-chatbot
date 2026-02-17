@@ -190,16 +190,43 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 
 @app.get("/post-button")
 async def post_button():
-    channel_username = "@finux_ADV"
+    channel_username = "@FINUX_ADV"
 
     async with httpx.AsyncClient() as client:
 
-        # 1️⃣ Send button message
+        # 1️⃣ Get current pinned message
+        chat_info = await client.post(
+            f"{TELEGRAM_API}/getChat",
+            json={"chat_id": channel_username}
+        )
+
+        chat_data = chat_info.json()
+
+        # 2️⃣ If pinned message exists, delete it
+        if "pinned_message" in chat_data.get("result", {}):
+            old_message_id = chat_data["result"]["pinned_message"]["message_id"]
+
+            # Unpin
+            await client.post(
+                f"{TELEGRAM_API}/unpinChatMessage",
+                json={"chat_id": channel_username}
+            )
+
+            # Delete old message
+            await client.post(
+                f"{TELEGRAM_API}/deleteMessage",
+                json={
+                    "chat_id": channel_username,
+                    "message_id": old_message_id
+                }
+            )
+
+        # 3️⃣ Send new button message
         send_response = await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "Welcome to FINUX",
+                "text": ".",  # minimal text
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -218,14 +245,14 @@ async def post_button():
         if not send_result.get("ok"):
             return {"send_error": send_result}
 
-        message_id = send_result["result"]["message_id"]
+        new_message_id = send_result["result"]["message_id"]
 
-        # 2️⃣ Pin the message
+        # 4️⃣ Pin new message
         pin_response = await client.post(
             f"{TELEGRAM_API}/pinChatMessage",
             json={
                 "chat_id": channel_username,
-                "message_id": message_id,
+                "message_id": new_message_id,
                 "disable_notification": True
             },
         )
@@ -233,21 +260,9 @@ async def post_button():
         pin_result = pin_response.json()
 
     return {
-        "send_result": send_result,
+        "status": "Clean pinned button updated",
         "pin_result": pin_result
     }
-
-@app.get("/check-pin")
-async def check_pin():
-    channel_username = "@finux_ADV"
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{TELEGRAM_API}/getChat",
-            json={"chat_id": channel_username},
-        )
-
-    return response.json()
 
 @app.get("/check-admin")
 async def check_admin():
