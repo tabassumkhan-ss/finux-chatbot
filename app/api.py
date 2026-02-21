@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
+from app.db import save_chat
 
 logging.basicConfig(level=logging.INFO)
 
@@ -170,20 +171,27 @@ async def serve_ui():
 
 @app.post("/chat")
 async def chat_api(payload: ChatRequest):
+
     question = payload.message.strip()
 
     if not question:
         return {"response": "Please ask a question."}
 
     answer = find_short_answer(question)
-    return {"response": answer}
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    # ✅ Save to DB
+    try:
+        save_chat(
+            "web",
+            "web_user",
+            "",
+            question,
+            answer
+        )
+    except Exception as e:
+        logging.error(f"DB save error (web): {e}")
+
+    return {"response": answer}
 
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")
@@ -347,14 +355,27 @@ async def telegram_webhook(request: Request):
 
         # ---------- USER TYPED QUESTION ----------
         if text:
-            answer = find_short_answer(text)
 
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": answer,
-                },
-            )
+         answer = find_short_answer(text)
+
+         await client.post(
+         f"{TELEGRAM_API}/sendMessage",
+         json={
+            "chat_id": chat_id,
+            "text": answer,
+        },
+    )
+
+    # ✅ Save to DB
+    try:
+        save_chat(
+            "telegram",
+            str(chat_id),
+            message.get("from", {}).get("username", ""),
+            text,
+            answer
+        )
+    except Exception as e:
+        logging.error(f"DB save error (telegram): {e}")
 
         return {"ok": True}
