@@ -148,7 +148,7 @@ def header_buttons():
     return [
         [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
         [
-            {"text": "Channel", "url": "https://t.me/FINUX_ADV"},
+            {"text": "Channel", "url": "https://t.me/Finuxofficiallive"},
             {"text": " Website", "url": "https://finux-chatbot-production.up.railway.app"},
         ],
     ]
@@ -190,7 +190,7 @@ app.mount("/static", StaticFiles(directory="data"), name="static")
 
 @app.get("/post-button")
 async def post_button():
-    channel_username = "@FINUX_ADV"
+    channel_username = "@Finuxofficiallive"
 
     async with httpx.AsyncClient() as client:
 
@@ -250,7 +250,7 @@ async def post_button():
 
 @app.get("/check-admin")
 async def check_admin():
-    channel_username = "@finux_ADV"
+    channel_username = "@Finuxofficiallive"
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
