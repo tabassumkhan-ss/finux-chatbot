@@ -103,44 +103,30 @@ OTHERS_MENU = {
     "⬅️ Back to Main": "menu:main",
 }
 
+MAIN_MENU = {
+    "🆕 Create Wallet": "q:create_wallet",
+    "💰 Deposit": "q:deposit",
+    "🪙 Minting": "q:minting",
+    "📦 Others": "menu:others",
+}
+
+OTHERS_MENU = {
+    "💧 Liquidity Pool": "q:liquidity_pool",
+    "🔐 FNX Self-Staking": "q:self_staking",
+    "💸 Withdraw": "q:withdraw",
+    "🎁 Airdrop": "q:airdrop",
+    "🤝 Affiliate Program": "q:affiliate",
+    "🏅 Ranks & Clubs": "q:ranks_clubs",
+    "💎 Triple Income System": "q:triple_income",
+    "📜 Terms & Conditions": "q:terms",
+    "❓ FAQ": "q:faq",
+    "🛠 Support": "q:support",
+    "⬅️ Back to Main": "menu:main",
+}
+
 MENUS = {
     "main": MAIN_MENU,
     "others": OTHERS_MENU,
-
-    "deposit": {
-        "Deposit Slab": "q:deposit_slab",
-        "Self-Staking": "q:self_staking",
-        "⬅️ Back": "menu:main",
-    },
-
-    "rewards": {
-        "Rank Rewards": "q:rank_rewards",
-        "Club Rewards": "q:club_rewards",
-        "⬅️ Back": "menu:main",
-    },
-
-        "referral": {
-        "How Referral Works": "q:referral",
-        "Referral Income": "q:referral_income",
-        "⬅️ Back": "menu:main",
-    },
-
-        "clubincome": {
-        "Club Income Info": "q:club_income",
-        "⬅️ Back": "menu:others",
-    },
-}
-
-ANSWERS = {
-    "deposit_slab": "Fixed investment tiers with benefits.",
-    "self_staking": "Stake FINUX to earn rewards.",
-    "mstc": "MSTC supports ecosystem growth.",
-    "usdce": "USDCe ensures stability.",
-    "origin": "Entry-level rank.",
-    "life_changer": "Higher rewards tier.",
-    "club_income": "Income from club activity.",
-    "airdrop": "Free tokens for users.",
-    "wallet_security": "Your assets are secured.",
 }
 
 # ===================== UI HELPERS =====================
@@ -281,7 +267,7 @@ async def telegram_webhook(request: Request):
 
     async with httpx.AsyncClient(timeout=30) as client:
 
-        # ---------- CALLBACK (MENU BUTTONS) ----------
+        # ================= CALLBACK HANDLER =================
         if "callback_query" in data:
             cq = data["callback_query"]
             chat_id = cq["message"]["chat"]["id"]
@@ -293,9 +279,10 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
-            # MENU HANDLER (send as chat message)
+            # MENU navigation
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
+
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
                     json={
@@ -306,10 +293,10 @@ async def telegram_webhook(request: Request):
                 )
                 return {"ok": True}
 
-            # INFO HANDLER (send as chat message)
+            # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
-                key = payload.replace("q:", "")
-                answer = find_short_answer(key.replace("_", " "))
+                topic = payload.replace("q:", "").replace("_", " ")
+                answer = find_short_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
@@ -319,9 +306,22 @@ async def telegram_webhook(request: Request):
                         "reply_markup": build_menu("main"),
                     },
                 )
+
+                # Save to DB
+                try:
+                    save_chat(
+                        "telegram",
+                        str(chat_id),
+                        "",
+                        topic,
+                        answer
+                    )
+                except Exception as e:
+                    logging.error(f"DB save error (callback): {e}")
+
                 return {"ok": True}
 
-        # ---------- NORMAL MESSAGE ----------
+        # ================= NORMAL MESSAGE =================
         message = data.get("message")
         if not message:
             return {"ok": True}
@@ -330,9 +330,8 @@ async def telegram_webhook(request: Request):
         text = message.get("text", "").strip()
 
         # /start command
-        if text.startswith("/start"): 
+        if text.startswith("/start"):
 
-            # 1️⃣ Send image (optional)
             image_path = os.path.join(DATA_DIR, "finux.png")
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img:
@@ -342,40 +341,38 @@ async def telegram_webhook(request: Request):
                         files={"photo": img},
                     )
 
-            # 2️⃣ Send menu
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "👇 Choose an option  to Explore Finux                            ",
+                    "text": "👇 Choose an option",
                     "reply_markup": build_menu("main"),
                 },
             )
             return {"ok": True}
 
-        # ---------- USER TYPED QUESTION ----------
+        # USER typed question
         if text:
+            answer = find_short_answer(text)
 
-         answer = find_short_answer(text)
+            await client.post(
+                f"{TELEGRAM_API}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": answer,
+                },
+            )
 
-         await client.post(
-         f"{TELEGRAM_API}/sendMessage",
-         json={
-            "chat_id": chat_id,
-            "text": answer,
-        },
-    )
-
-    # ✅ Save to DB
-    try:
-        save_chat(
-            "telegram",
-            str(chat_id),
-            message.get("from", {}).get("username", ""),
-            text,
-            answer
-        )
-    except Exception as e:
-        logging.error(f"DB save error (telegram): {e}")
+            # Save to DB
+            try:
+                save_chat(
+                    "telegram",
+                    str(chat_id),
+                    message.get("from", {}).get("username", ""),
+                    text,
+                    answer
+                )
+            except Exception as e:
+                logging.error(f"DB save error (telegram): {e}")
 
         return {"ok": True}
