@@ -74,24 +74,19 @@ def generate_answer(question: str) -> str:
     if doc_answer != "Information not available in FINUX documents.":
         return doc_answer
 
-    # 2️⃣ Gemini normal response (no restriction)
+    # 2️⃣ Gemini fallback
     try:
         response = model.generate_content(question)
 
-        if response.text:
-            return response.text.strip()[:500]  # limit length
+        if response and response.candidates:
+            content = response.candidates[0].content.parts[0].text
+            if content:
+                return content.strip()[:500]
 
     except Exception as e:
         logging.error(f"Gemini error: {e}")
 
     return "Sorry, I could not generate a response."
-
-logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
-
-if os.path.exists(DATA_DIR):
-    logging.info("DATA DIR CONTENTS: %s", os.listdir(DATA_DIR))
-else:
-    logging.warning("DATA directory does not exist")
 
 # ================ TELEGRAM ===============
 
