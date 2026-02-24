@@ -47,21 +47,25 @@ def load_documents():
     return [
     t.strip()
     for t in texts
-    if len(t.strip()) > 30 and "•" not in t
+    if t.strip()
 ]
 
 DOCUMENT_TEXT = load_documents()
 
 def find_short_answer(question: str) -> str:
-    q_words = [w for w in question.lower().split() if len(w) > 3]
+    question = question.lower().strip()
+
+    best_matches = []
 
     for line in DOCUMENT_TEXT:
         line_l = line.lower()
 
-        # must match at least one meaningful keyword
-        if any(w in line_l for w in q_words):
-            # return only first sentence, very short
-            return line.split(".")[0].strip()[:160]
+        if question in line_l:
+            best_matches.append(line)
+
+    if best_matches:
+        # Join first 2 related lines for better answer
+        return " ".join(best_matches[:2])[:300]
 
     return "Information not available in FINUX documents."
 
@@ -82,27 +86,6 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 
 # ===================== MENUS =====================
-
-MAIN_MENU = {
-    "💰 Deposit": "menu:deposit",
-    "🏆 Rewards": "menu:rewards",
-    "👥 Referral": "menu:referral",
-    "📦 Others": "menu:others",
-}
-
-OTHERS_MENU = {
-    "📈 Fund Distribution": "menu:funds",
-    "🏅 Rank Wise Rewards": "menu:ranks",
-    "🔁 Dual Income System": "menu:dual_income",
-    "🏦 Club Income": "menu:clubincome",
-    "🪙 Token Price": "menu:token",
-    "💸 Withdrawal Policy": "menu:withdraw",
-    "📜 Terms & Conditions": "menu:terms",
-    "🔐 Wallet & Security": "menu:wallet",
-    "🚀 FINUX Mining Project": "menu:fmp",
-    "⬅️ Back to Main": "menu:main",
-}
-
 MAIN_MENU = {
     "🆕 Create Wallet": "q:create_wallet",
     "💰 Deposit": "q:deposit",
@@ -295,7 +278,7 @@ async def telegram_webhook(request: Request):
 
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
-                topic = payload.replace("q:", "").replace("_", " ")
+                topic = payload.replace("q:", "").replace("_", " ") + " finux"
                 answer = find_short_answer(topic)
 
                 await client.post(
