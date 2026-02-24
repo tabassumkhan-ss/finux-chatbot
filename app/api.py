@@ -1,6 +1,7 @@
 import os
 import logging
 import httpx
+import google.generativeai as genai
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,18 +53,38 @@ def load_documents():
 
 DOCUMENT_TEXT = load_documents()
 
+# ================= HYBRID ANSWER ENGINE =================
+
 def find_short_answer(question: str) -> str:
     q_words = [w for w in question.lower().split() if len(w) > 3]
 
     for line in DOCUMENT_TEXT:
         line_l = line.lower()
 
-        # must match at least one meaningful keyword
         if any(w in line_l for w in q_words):
-            # return only first sentence, very short
             return line.split(".")[0].strip()[:160]
 
     return "Information not available in FINUX documents."
+
+def generate_answer(question: str) -> str:
+
+    # 1️⃣ Try FINUX document search first
+    doc_answer = find_short_answer(question)
+
+    if doc_answer != "Information not available in FINUX documents.":
+        return doc_answer
+
+    # 2️⃣ Gemini normal response (no restriction)
+    try:
+        response = model.generate_content(question)
+
+        if response.text:
+            return response.text.strip()[:500]  # limit length
+
+    except Exception as e:
+        logging.error(f"Gemini error: {e}")
+
+    return "Sorry, I could not generate a response."
 
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 
@@ -80,28 +101,18 @@ if not TELEGRAM_TOKEN:
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
+# ================= GEMINI =================
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is missing")
+
+genai.configure(api_key=GEMINI_API_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # ===================== MENUS =====================
-
-MAIN_MENU = {
-    "💰 Deposit": "menu:deposit",
-    "🏆 Rewards": "menu:rewards",
-    "👥 Referral": "menu:referral",
-    "📦 Others": "menu:others",
-}
-
-OTHERS_MENU = {
-    "📈 Fund Distribution": "menu:funds",
-    "🏅 Rank Wise Rewards": "menu:ranks",
-    "🔁 Dual Income System": "menu:dual_income",
-    "🏦 Club Income": "menu:clubincome",
-    "🪙 Token Price": "menu:token",
-    "💸 Withdrawal Policy": "menu:withdraw",
-    "📜 Terms & Conditions": "menu:terms",
-    "🔐 Wallet & Security": "menu:wallet",
-    "🚀 FINUX Mining Project": "menu:fmp",
-    "⬅️ Back to Main": "menu:main",
-}
 
 MAIN_MENU = {
     "🆕 Create Wallet": "q:create_wallet",
@@ -163,7 +174,7 @@ async def chat_api(payload: ChatRequest):
     if not question:
         return {"response": "Please ask a question."}
 
-    answer = find_short_answer(question)
+    answer = generate_answer(question)
 
     # ✅ Save to DB
     try:
@@ -296,7 +307,7 @@ async def telegram_webhook(request: Request):
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
                 topic = payload.replace("q:", "").replace("_", " ")
-                answer = find_short_answer(topic)
+                answer = generate_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
@@ -353,7 +364,7 @@ async def telegram_webhook(request: Request):
 
         # USER typed question
         if text:
-            answer = find_short_answer(text)
+            answer = generate_answer(text)
 
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
