@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
 from app.db import save_chat
-from google import genai
 
 logging.basicConfig(level=logging.INFO)
 
@@ -53,41 +52,25 @@ def load_documents():
 
 DOCUMENT_TEXT = load_documents()
 
-# ================= HYBRID ANSWER ENGINE =================
-
 def find_short_answer(question: str) -> str:
     q_words = [w for w in question.lower().split() if len(w) > 3]
 
     for line in DOCUMENT_TEXT:
         line_l = line.lower()
 
+        # must match at least one meaningful keyword
         if any(w in line_l for w in q_words):
+            # return only first sentence, very short
             return line.split(".")[0].strip()[:160]
 
     return "Information not available in FINUX documents."
 
-def generate_answer(question: str) -> str:
+logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 
-    # 1️⃣ Try document first
-    doc_answer = find_short_answer(question)
-
-    if doc_answer != "Information not available in FINUX documents.":
-        return doc_answer
-
-    # 2️⃣ Gemini fallback (NEW SDK)
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=question,
-        )
-
-        if response.text:
-            return response.text.strip()[:500]
-
-    except Exception as e:
-        logging.error(f"Gemini error: {e}")
-
-    return "Sorry, I could not generate a response."
+if os.path.exists(DATA_DIR):
+    logging.info("DATA DIR CONTENTS: %s", os.listdir(DATA_DIR))
+else:
+    logging.warning("DATA directory does not exist")
 
 # ================ TELEGRAM ===============
 
@@ -97,16 +80,28 @@ if not TELEGRAM_TOKEN:
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-# ================= GEMINI (NEW SDK) =================
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY is missing")
-
-client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ===================== MENUS =====================
+
+MAIN_MENU = {
+    "💰 Deposit": "menu:deposit",
+    "🏆 Rewards": "menu:rewards",
+    "👥 Referral": "menu:referral",
+    "📦 Others": "menu:others",
+}
+
+OTHERS_MENU = {
+    "📈 Fund Distribution": "menu:funds",
+    "🏅 Rank Wise Rewards": "menu:ranks",
+    "🔁 Dual Income System": "menu:dual_income",
+    "🏦 Club Income": "menu:clubincome",
+    "🪙 Token Price": "menu:token",
+    "💸 Withdrawal Policy": "menu:withdraw",
+    "📜 Terms & Conditions": "menu:terms",
+    "🔐 Wallet & Security": "menu:wallet",
+    "🚀 FINUX Mining Project": "menu:fmp",
+    "⬅️ Back to Main": "menu:main",
+}
 
 MAIN_MENU = {
     "🆕 Create Wallet": "q:create_wallet",
@@ -168,7 +163,7 @@ async def chat_api(payload: ChatRequest):
     if not question:
         return {"response": "Please ask a question."}
 
-    answer = generate_answer(question)
+    answer = find_short_answer(question)
 
     # ✅ Save to DB
     try:
@@ -301,7 +296,7 @@ async def telegram_webhook(request: Request):
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
                 topic = payload.replace("q:", "").replace("_", " ")
-                answer = generate_answer(topic)
+                answer = find_short_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
@@ -358,7 +353,7 @@ async def telegram_webhook(request: Request):
 
         # USER typed question
         if text:
-            answer = generate_answer(text)
+            answer = find_short_answer(text)
 
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
