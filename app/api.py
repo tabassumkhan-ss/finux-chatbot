@@ -1,7 +1,6 @@
 import os
 import logging
 import httpx
-import google.generativeai as genai
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +10,7 @@ from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
 from app.db import save_chat
+from google import genai
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,20 +68,21 @@ def find_short_answer(question: str) -> str:
 
 def generate_answer(question: str) -> str:
 
-    # 1️⃣ Try FINUX document search first
+    # 1️⃣ Try document first
     doc_answer = find_short_answer(question)
 
     if doc_answer != "Information not available in FINUX documents.":
         return doc_answer
 
-    # 2️⃣ Gemini fallback
+    # 2️⃣ Gemini fallback (NEW SDK)
     try:
-        response = model.generate_content(question)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=question,
+        )
 
-        if response and response.candidates:
-            content = response.candidates[0].content.parts[0].text
-            if content:
-                return content.strip()[:500]
+        if response.text:
+            return response.text.strip()[:500]
 
     except Exception as e:
         logging.error(f"Gemini error: {e}")
@@ -96,16 +97,14 @@ if not TELEGRAM_TOKEN:
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-# ================= GEMINI =================
+# ================= GEMINI (NEW SDK) =================
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY is missing")
 
-genai.configure(api_key=GEMINI_API_KEY)
-
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ===================== MENUS =====================
 
