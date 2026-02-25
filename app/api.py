@@ -55,20 +55,27 @@ DOCUMENT_TEXT = load_documents()
 def find_short_answer(question: str) -> str:
     question = question.lower().strip()
 
-    best_matches = []
+    matched_lines = []
 
-    for line in DOCUMENT_TEXT:
+    for i, line in enumerate(DOCUMENT_TEXT):
         line_l = line.lower()
 
+        # Direct match
         if question in line_l:
-            best_matches.append(line)
+            matched_lines.append(line)
 
-    if best_matches:
-        # Join first 2 related lines for better answer
-        return " ".join(best_matches[:2])[:300]
+            # Also grab next 2 lines for context
+            if i + 1 < len(DOCUMENT_TEXT):
+                matched_lines.append(DOCUMENT_TEXT[i + 1])
+            if i + 2 < len(DOCUMENT_TEXT):
+                matched_lines.append(DOCUMENT_TEXT[i + 2])
+
+            break
+
+    if matched_lines:
+        return " ".join(matched_lines)[:400]
 
     return "Information not available in FINUX documents."
-
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 
 if os.path.exists(DATA_DIR):
