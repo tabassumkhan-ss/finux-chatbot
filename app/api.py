@@ -285,7 +285,7 @@ async def telegram_webhook(request: Request):
 
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
-                topic = payload.replace("q:", "").replace("_", " ") + " finux"
+                topic = payload.replace("q:", "").replace("_", " ")
                 answer = find_short_answer(topic)
 
                 await client.post(
