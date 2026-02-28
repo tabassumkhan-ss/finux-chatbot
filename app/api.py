@@ -80,20 +80,20 @@ def find_short_answer(question: str) -> str:
 
 def generate_answer(question: str) -> str:
 
-    # 1️⃣ Try FINUX documents first
+    # 1️⃣ Try FINUX docs first
     doc_answer = find_short_answer(question)
 
     if doc_answer != "Information not available in FINUX documents.":
         return doc_answer
 
-    # 2️⃣ If not found → Gemini
+    # 2️⃣ Gemini fallback
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash-latest",
+            model="gemini-1.5-flash",
             contents=question
         )
 
-        if hasattr(response, "text") and response.text:
+        if response and hasattr(response, "text") and response.text:
             return response.text.strip()
 
     except Exception as e:
