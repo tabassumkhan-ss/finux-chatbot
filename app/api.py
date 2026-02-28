@@ -2,7 +2,7 @@ import os
 import logging
 import httpx
 from google import genai
-
+from google.genai import types
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -93,7 +93,7 @@ def generate_answer(question: str) -> str:
             contents=question
         )
 
-        if response and hasattr(response, "text") and response.text:
+        if response and response.text:
             return response.text.strip()
 
     except Exception as e:
@@ -123,7 +123,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY is missing")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(api_version="v1"))
 
 
 # ===================== MENUS =====================
