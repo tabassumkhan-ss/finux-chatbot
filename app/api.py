@@ -1,6 +1,7 @@
 import os
 import logging
 import httpx
+from google import genai
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,6 +77,32 @@ def find_short_answer(question: str) -> str:
         return " ".join(matched_lines)[:400]
 
     return "Information not available in FINUX documents."
+
+def ask_gemini(question: str) -> str:
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=question
+        )
+
+        if response.text:
+            return response.text.strip()
+
+    except Exception as e:
+        logging.error(f"Gemini error: {e}")
+
+    return "Sorry, I could not generate a response."
+
+def generate_answer(question: str) -> str:
+    # 1️⃣ Try FINUX documents
+    doc_answer = generate_answer(question)
+
+    if doc_answer != "Information not available in FINUX documents.":
+        return doc_answer
+
+    # 2️⃣ Fallback to Gemini
+    return ask_gemini(question)
+
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 
 if os.path.exists(DATA_DIR):
@@ -90,6 +117,15 @@ if not TELEGRAM_TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN is missing")
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+# ================= GEMINI =================
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is missing")
+
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 # ===================== MENUS =====================
@@ -153,7 +189,7 @@ async def chat_api(payload: ChatRequest):
     if not question:
         return {"response": "Please ask a question."}
 
-    answer = find_short_answer(question)
+    answer = generate_answer(question)
 
     # ✅ Save to DB
     try:
@@ -286,7 +322,7 @@ async def telegram_webhook(request: Request):
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
                 topic = payload.replace("q:", "").replace("_", " ")
-                answer = find_short_answer(topic)
+                answer = answer = find_short_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
@@ -343,7 +379,7 @@ async def telegram_webhook(request: Request):
 
         # USER typed question
         if text:
-            answer = find_short_answer(text)
+            answer = generate_answer(text)
 
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
