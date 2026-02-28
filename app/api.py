@@ -78,44 +78,28 @@ def find_short_answer(question: str) -> str:
 
     return "Information not available in FINUX documents."
 
-def ask_gemini(question: str) -> str:
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=question
-        )
-
-        if response.text:
-            return response.text.strip()
-
-    except Exception as e:
-        logging.error(f"Gemini error: {e}")
-
-    return "Sorry, I could not generate a response."
-
 def generate_answer(question: str) -> str:
 
-    # 1️⃣ First try FINUX documents
+    # 1️⃣ Try FINUX documents first
     doc_answer = find_short_answer(question)
 
     if doc_answer != "Information not available in FINUX documents.":
         return doc_answer
 
-    # 2️⃣ If not found → use Gemini
+    # 2️⃣ If not found → Gemini
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-1.5-flash-latest",
             contents=question
         )
 
-        if response.text:
+        if hasattr(response, "text") and response.text:
             return response.text.strip()
 
     except Exception as e:
         logging.error(f"Gemini error: {e}")
 
     return "Sorry, I could not generate a response."
-
 
 logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
 
