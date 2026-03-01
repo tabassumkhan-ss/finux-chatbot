@@ -54,27 +54,20 @@ def load_documents():
 DOCUMENT_TEXT = load_documents()
 
 def find_short_answer(question: str) -> str:
-    question = question.lower().strip()
+    question = question.lower()
 
-    matched_lines = []
+    keywords = [w for w in question.split() if len(w) > 3]
 
     for i, line in enumerate(DOCUMENT_TEXT):
         line_l = line.lower()
 
-        # Direct match
-        if question in line_l:
-            matched_lines.append(line)
+        if any(word in line_l for word in keywords):
+            result = line
 
-            # Also grab next 2 lines for context
             if i + 1 < len(DOCUMENT_TEXT):
-                matched_lines.append(DOCUMENT_TEXT[i + 1])
-            if i + 2 < len(DOCUMENT_TEXT):
-                matched_lines.append(DOCUMENT_TEXT[i + 2])
+                result += " " + DOCUMENT_TEXT[i + 1]
 
-            break
-
-    if matched_lines:
-        return " ".join(matched_lines)[:400]
+            return result[:350]
 
     return "Information not available in FINUX documents."
 
