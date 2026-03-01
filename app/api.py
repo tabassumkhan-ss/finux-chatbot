@@ -123,10 +123,11 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY is missing")
 
-client = genai.Client(api_key=GEMINI_API_KEY,
-    http_options=types.HttpOptions(api_version="v1"))
-print(client.models.list())
+client = genai.Client(api_key=GEMINI_API_KEY)
 
+# 🔍 DEBUG: List available models
+for m in client.models.list():
+    print(m.name)
 
 # ===================== MENUS =====================
 MAIN_MENU = {
