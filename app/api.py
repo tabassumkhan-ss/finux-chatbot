@@ -89,7 +89,7 @@ def generate_answer(question: str) -> str:
     # 2️⃣ Gemini fallback
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-flash-002",
             contents=question
         )
 
