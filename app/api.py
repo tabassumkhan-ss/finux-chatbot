@@ -54,42 +54,48 @@ def load_documents():
 DOCUMENT_TEXT = load_documents()
 
 def find_short_answer(question: str) -> str:
-    question = question.lower()
+    question = question.lower().strip()
 
-    keywords = [w for w in question.split() if len(w) > 3]
+    # Clean common question words
+    stop_words = {"what", "is", "how", "does", "the", "a", "an", "of", "to", "in"}
+    keywords = [w for w in question.split() if w not in stop_words and len(w) > 3]
+
+    best_match = ""
+    best_score = 0
 
     for i, line in enumerate(DOCUMENT_TEXT):
         line_l = line.lower()
 
-        if any(word in line_l for word in keywords):
-            result = line
+        score = sum(1 for word in keywords if word in line_l)
 
+        if score > best_score:
+            best_score = score
+            best_match = line
+
+            # also attach next line for context
             if i + 1 < len(DOCUMENT_TEXT):
-                result += " " + DOCUMENT_TEXT[i + 1]
+                best_match += " " + DOCUMENT_TEXT[i + 1]
 
-            return result[:350]
+    if best_score > 0:
+        # return only first 2 sentences max
+        sentences = best_match.split(".")
+        return ".".join(sentences[:2]).strip() + "."
 
-    return "Information not available in FINUX documents."
+    return ""
 
 def generate_answer(question: str) -> str:
 
-    # 1️⃣ Try FINUX document first
+    # 1️⃣ Try FINUX documents first
     doc_answer = find_short_answer(question)
 
-    if doc_answer != "Information not available in FINUX documents.":
+    if doc_answer:
         return doc_answer
 
-    # 2️⃣ If not found → Gemini (SHORT ANSWER MODE)
+    # 2️⃣ Fallback to Gemini (short answer style)
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=f"""
-Answer the following question in maximum 2 short sentences.
-Be clear and concise.
-
-Question:
-{question}
-"""
+            model="models/gemini-flash-latest",
+            contents=f"Answer in 1-2 short sentences only: {question}"
         )
 
         if response.text:
@@ -99,13 +105,6 @@ Question:
         logging.error(f"Gemini error: {e}")
 
     return "Sorry, I could not generate a response."
-
-logging.info("Loaded %d lines from FINUX documents", len(DOCUMENT_TEXT))
-
-if os.path.exists(DATA_DIR):
-    logging.info("DATA DIR CONTENTS: %s", os.listdir(DATA_DIR))
-else:
-    logging.warning("DATA directory does not exist")
 
 # ================ TELEGRAM ===============
 
@@ -322,7 +321,7 @@ async def telegram_webhook(request: Request):
             # DOCUMENT SEARCH from button
             if payload.startswith("q:"):
                 topic = payload.replace("q:", "").replace("_", " ")
-                answer = answer = find_short_answer(topic)
+                answer = generate_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
