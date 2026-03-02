@@ -161,7 +161,7 @@ def header_buttons():
         [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
         [
             {"text": "Channel", "url": "https://t.me/Finuxofficiallive"},
-            {"text": " Website", "url": "https://finux-chatbot-production.up.railway.app"},
+            {"text": " Website", "url": "https://finux.online/"},
         ],
     ]
 
