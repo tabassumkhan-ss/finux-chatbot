@@ -83,19 +83,22 @@ def find_short_answer(question: str) -> str:
 
     return ""
 
-def generate_answer(question: str) -> str:
-
-    # 1️⃣ Try FINUX documents first
-    doc_answer = find_short_answer(question)
-
-    if doc_answer:
-        return doc_answer
-
-    # 2️⃣ Fallback to Gemini (short answer style)
+def ask_gemini(question: str, context: str = None) -> str:
     try:
+        if context:
+            prompt = f"""
+Answer briefly (1-2 sentences) using this context:
+
+{context}
+
+Question: {question}
+"""
+        else:
+            prompt = f"Answer briefly in 1-2 sentences:\n{question}"
+
         response = client.models.generate_content(
-            model="models/gemini-flash-latest",
-            contents=f"Answer in 1-2 short sentences only: {question}"
+            model="gemini-flash-latest",
+            contents=prompt
         )
 
         if response.text:
@@ -105,6 +108,38 @@ def generate_answer(question: str) -> str:
         logging.error(f"Gemini error: {e}")
 
     return "Sorry, I could not generate a response."
+
+def generate_answer(question: str) -> str:
+
+    question_l = question.lower()
+
+    # Only use FINUX docs if FINUX related keywords are present
+    finux_keywords = [
+        "finux",
+        "fnx",
+        "minting",
+        "staking",
+        "liquidity",
+        "referral",
+        "airdrop",
+        "club income",
+        "affiliate",
+        "rank",
+        "wallet",
+        "withdraw",
+        "deposit"
+    ]
+
+    is_finux_question = any(k in question_l for k in finux_keywords)
+
+    if is_finux_question:
+        doc_context = find_short_answer(question)
+
+        if doc_context:
+            return ask_gemini(question, doc_context)
+
+    # Otherwise → General Gemini answer
+    return ask_gemini(question)
 
 # ================ TELEGRAM ===============
 
