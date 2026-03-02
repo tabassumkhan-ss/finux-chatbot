@@ -87,15 +87,14 @@ def generate_answer(question: str) -> str:
 
     # 1️⃣ Try FINUX documents first
     doc_answer = find_short_answer(question)
-
     if doc_answer:
         return doc_answer
 
-    # 2️⃣ Fallback to Gemini (short answer style)
+    # 2️⃣ Gemini fallback (very short answer enforced)
     try:
         response = client.models.generate_content(
             model="models/gemini-flash-latest",
-            contents=f"Answer in 1-2 short sentences only: {question}"
+            contents=f"Answer in maximum 2 short sentences. No bullet points. No formatting. Question: {question}"
         )
 
         if response.text:
@@ -122,10 +121,6 @@ if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY is missing")
 
 client = genai.Client(api_key=GEMINI_API_KEY)
-
-# 🔍 DEBUG: List available models
-for m in client.models.list():
-    print(m.name)
 
 # ===================== MENUS =====================
 MAIN_MENU = {
@@ -349,10 +344,23 @@ async def telegram_webhook(request: Request):
                 )
                 return {"ok": True}
 
-            # DOCUMENT SEARCH from button
+            # DOCUMENT / HARDCODED SEARCH
             if payload.startswith("q:"):
-                topic = payload.replace("q:", "").replace("_", " ")
-                answer = generate_answer(topic)
+
+                key = payload.replace("q:", "")
+
+                # 1️⃣ Hardcoded answers first
+                answer = HARDCODED_ANSWERS.get(key)
+
+                # 2️⃣ Document search
+                if not answer:
+                    topic = key.replace("_", " ")
+                    answer = find_short_answer(topic)
+
+                # 3️⃣ Gemini fallback
+                if not answer:
+                    topic = key.replace("_", " ")
+                    answer = generate_answer(topic)
 
                 await client.post(
                     f"{TELEGRAM_API}/sendMessage",
@@ -369,7 +377,7 @@ async def telegram_webhook(request: Request):
                         "telegram",
                         str(chat_id),
                         "",
-                        topic,
+                        key,
                         answer
                     )
                 except Exception as e:
@@ -419,7 +427,6 @@ async def telegram_webhook(request: Request):
                 },
             )
 
-            # Save to DB
             try:
                 save_chat(
                     "telegram",
