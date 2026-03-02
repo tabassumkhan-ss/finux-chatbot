@@ -83,22 +83,19 @@ def find_short_answer(question: str) -> str:
 
     return ""
 
-def ask_gemini(question: str, context: str = None) -> str:
+def generate_answer(question: str) -> str:
+
+    # 1️⃣ Try FINUX documents first
+    doc_answer = find_short_answer(question)
+
+    if doc_answer:
+        return doc_answer
+
+    # 2️⃣ Fallback to Gemini (short answer style)
     try:
-        if context:
-            prompt = f"""
-Answer briefly (1-2 sentences) using this context:
-
-{context}
-
-Question: {question}
-"""
-        else:
-            prompt = f"Answer briefly in 1-2 sentences:\n{question}"
-
         response = client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=prompt
+            model="models/gemini-flash-latest",
+            contents=f"Answer in 1-2 short sentences only: {question}"
         )
 
         if response.text:
@@ -108,38 +105,6 @@ Question: {question}
         logging.error(f"Gemini error: {e}")
 
     return "Sorry, I could not generate a response."
-
-def generate_answer(question: str) -> str:
-
-    question_l = question.lower()
-
-    # Only use FINUX docs if FINUX related keywords are present
-    finux_keywords = [
-        "finux",
-        "fnx",
-        "minting",
-        "staking",
-        "liquidity",
-        "referral",
-        "airdrop",
-        "club income",
-        "affiliate",
-        "rank",
-        "wallet",
-        "withdraw",
-        "deposit"
-    ]
-
-    is_finux_question = any(k in question_l for k in finux_keywords)
-
-    if is_finux_question:
-        doc_context = find_short_answer(question)
-
-        if doc_context:
-            return ask_gemini(question, doc_context)
-
-    # Otherwise → General Gemini answer
-    return ask_gemini(question)
 
 # ================ TELEGRAM ===============
 
@@ -181,12 +146,43 @@ OTHERS_MENU = {
     "📜 Terms & Conditions": "q:terms",
     "❓ FAQ": "q:faq",
     "🛠 Support": "q:support",
+    "Risk Disclaimer": "q:disclaimer",
     "⬅️ Back to Main": "menu:main",
 }
 
 MENUS = {
     "main": MAIN_MENU,
     "others": OTHERS_MENU,
+}
+
+HARDCODED_ANSWERS = {
+    "create_wallet": "Wallet is system-generated after registration. User must securely store private key/seed phrase. Company is not responsible for lost keys.",
+    
+    "deposit": "Minimum deposit: $20. Accepted: $20, $50, $100, $200, multiples of $100. Deposit split: 30% MSTC + 70% USDC (Polygon MEP-20). After deposit, 1 FNX minted automatically",
+    
+    "minting": "Minting in FINUX generates daily rewards through the ecosystem’s sustainable blockchain mechanism.",
+    
+    "liquidity_pool": "Pair: FNX + USDC. Requires equal FNX + USDC. Daily reward: Up to 5% MPY. Minimum withdrawal: 1 USDC (instant). Advantages: Stable trading, passive income, bonuses, ecosystem growth.",
+    
+    "self_staking": "Stake only FNX tokens. Daily reward: Up to 2% MPY. Minimum withdrawal: 1 USDC (instant).",
+    
+    "withdraw": "Withdraw anytime.50% FNX burned on withdrawal. 50% FNX added back to supply. USDC credited instantly",
+    
+    "airdrop": "Earn 50 FNX on 5 direct paid referrals. Wallet registration + verification required. Limited period. Duplicate referrals not counted.",
+    
+    "affiliate": "Rank 1: Origin (10%). Rank 2: Life Changer (16%). Rank 3: Advisor (20%). Rank 4: Visionary (23%). Rank 5: Creator (25%). Each rank requires specific team business & LP requirements. Monthly club income requires maintenance of team business.",
+    
+    "ranks_clubs": "Ranks & Clubs reward high-performing members with additional income benefits and recognition.",
+    
+    "triple_income": "Performance Incentive: 3x. Liquidity Pool Reward: 3x. FNX Staking: 2x. Performance income cap: 3x (retop-up required)",
+    
+    "terms": "Verified users only. Rewards based on company policy. Company may update program anytime. LP 50% counts in team business.",
+    
+    "faq": "FINUX FAQ provides answers to common user questions about wallets, income, and rewards.",
+    
+    "support": "For assistance, contact FINUX Support through the official website or Telegram channel.",
+
+    "disclaimer": "Crypto investments involve market risk. Returns are not guaranteed. Users must secure private keys. Participation is voluntary."
 }
 
 # ===================== UI HELPERS =====================
