@@ -124,7 +124,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ===================== MENUS =====================
 MAIN_MENU = {
-    "🆕 Create Wallet": "q:create_wallet",
+    "💼 Wallet": "menu:wallet",
     "💰 Deposit": "q:deposit",
     "🪙 Minting": "q:minting",
     "📦 Others": "menu:others",
@@ -145,13 +145,28 @@ OTHERS_MENU = {
     "⬅️ Back to Main": "menu:main",
 }
 
+WALLET_MENU = {
+    "What is a Wallet?": "q:wallet_info",
+    "How to Create a Wallet?": "q:wallet_create",
+    "Wallet Security": "q:wallet_security",
+    "Private Key / Seed Phrase": "q:wallet_private",
+    "⬅️ Back to Main": "menu:main",
+}
+
 MENUS = {
     "main": MAIN_MENU,
+    "wallet": WALLET_MENU,
     "others": OTHERS_MENU,
 }
 
 HARDCODED_ANSWERS = {
-    "create_wallet": "Wallet is system-generated after registration. User must securely store private key/seed phrase. Company is not responsible for lost keys.",
+    "wallet_info": "A Finux wallet is a digital wallet where your FNX tokens and rewards are stored. It is automatically generated when you register in the system.",
+
+"wallet_create": "Step 1: Download the wallet from the official website (finux.online). Step 2: Your wallet will be generated automatically. User must secure private key. Step 3: Sign up on Dex.",
+
+"wallet_security": "Finux wallet functions in a secure environment, but you must protect your private key or seed phrase. If you lose it, the company cannot recover your funds.",
+
+"wallet_private": "Private key / seed phrase is a secret code that allows access to your wallet. Never share it with anyone.",
     
     "deposit": "Minimum deposit: $20. Accepted: $20, $50, $100, $200, multiples of $100. Deposit split: 30% MSTC + 70% USDC (Polygon MEP-20). After deposit, 1 FNX minted automatically",
     
@@ -367,7 +382,7 @@ async def telegram_webhook(request: Request):
                     json={
                         "chat_id": chat_id,
                         "text": answer,
-                        "reply_markup": build_menu("main"),
+                        "reply_markup": build_menu("wallet"),
                     },
                 )
 
