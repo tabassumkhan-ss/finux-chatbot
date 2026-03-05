@@ -160,13 +160,13 @@ MENUS = {
 }
 
 HARDCODED_ANSWERS = {
-    "wallet_info": "💼 *What is a FINUX Wallet?*\n\nA FINUX wallet is a digital wallet where your *FNX tokens and rewards* are stored.\n\nIt is *automatically generated* when you register in the system.",
+    "wallet_info": "💼 *What is a FINUX Wallet?*\nA FINUX wallet is a digital wallet where your *FNX tokens and rewards* are stored.\nIt is *automatically generated* when you register in the system.",
 
-"wallet_create": "🛠 *How to Create a FINUX Wallet*\n\n1️⃣ Download the wallet from the official website:\nhttps://finux.online\n\n2️⃣ Your wallet will be generated automatically.\n⚠️ Secure your *private key / seed phrase*.\n\n3️⃣ Sign up on DEX to start using your wallet.",
+"wallet_create": "🛠 *How to Create a FINUX Wallet*\n1️⃣ Download the wallet from the official website:\nhttps://finux.online\n2️⃣ Your wallet will be generated automatically.\n⚠️ Secure your *private key / seed phrase*.\n3️⃣ Sign up on DEX to start using your wallet.",
 
-"wallet_security": "🔐 *Wallet Security*\n\nFINUX wallets operate in a secure blockchain environment.\n\nHowever, users must protect their *private key or seed phrase*.\n\n⚠️ If you lose it, the company *cannot recover your funds*.",
+"wallet_security": "🔐 *Wallet Security*\nFINUX wallets operate in a secure blockchain environment.\nHowever, users must protect their *private key or seed phrase*.\n⚠️ If you lose it, the company *cannot recover your funds*.",
 
-"wallet_private": "🗝 *Private Key / Seed Phrase*\n\nYour private key or seed phrase is a *secret code* that gives access to your wallet.\n\n⚠️ Never share it with anyone.\n\nAnyone with this key can *control your funds*.",
+"wallet_private": "🗝 *Private Key / Seed Phrase*\nYour private key or seed phrase is a *secret code* that gives access to your wallet.\n⚠️ Never share it with anyone.\nAnyone with this key can *control your funds*.",
     
     "deposit": "Minimum deposit: $20. Accepted: $20, $50, $100, $200, multiples of $100. Deposit split: 30% MSTC + 70% USDC (Polygon MEP-20). After deposit, 1 FNX minted automatically",
     
@@ -358,7 +358,8 @@ async def telegram_webhook(request: Request):
                  json={
                 "chat_id": chat_id,
                 "message_id": message_id,
-                "text": "👇 Choose an option",
+                "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
+"parse_mode": "Markdown",
                  "reply_markup": build_menu(menu_key),
     },
 )
@@ -433,7 +434,8 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "👇 Choose an option",
+                    "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
+"parse_mode": "Markdown",
                     "reply_markup": build_menu("main"),
                 },
             )
