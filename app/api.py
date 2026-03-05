@@ -160,13 +160,13 @@ MENUS = {
 }
 
 HARDCODED_ANSWERS = {
-    "wallet_info": "A Finux wallet is a digital wallet where your FNX tokens and rewards are stored. It is automatically generated when you register in the system.",
+    "wallet_info": "💼 *What is a FINUX Wallet?*\n\nA FINUX wallet is a digital wallet where your *FNX tokens and rewards* are stored.\n\nIt is *automatically generated* when you register in the system.",
 
-"wallet_create": "Step 1: Download the wallet from the official website (finux.online). Step 2: Your wallet will be generated automatically. User must secure private key. Step 3: Sign up on Dex.",
+"wallet_create": "🛠 *How to Create a FINUX Wallet*\n\n1️⃣ Download the wallet from the official website:\nhttps://finux.online\n\n2️⃣ Your wallet will be generated automatically.\n⚠️ Secure your *private key / seed phrase*.\n\n3️⃣ Sign up on DEX to start using your wallet.",
 
-"wallet_security": "Finux wallet functions in a secure environment, but you must protect your private key or seed phrase. If you lose it, the company cannot recover your funds.",
+"wallet_security": "🔐 *Wallet Security*\n\nFINUX wallets operate in a secure blockchain environment.\n\nHowever, users must protect their *private key or seed phrase*.\n\n⚠️ If you lose it, the company *cannot recover your funds*.",
 
-"wallet_private": "Private key / seed phrase is a secret code that allows access to your wallet. Never share it with anyone.",
+"wallet_private": "🗝 *Private Key / Seed Phrase*\n\nYour private key or seed phrase is a *secret code* that gives access to your wallet.\n\n⚠️ Never share it with anyone.\n\nAnyone with this key can *control your funds*.",
     
     "deposit": "Minimum deposit: $20. Accepted: $20, $50, $100, $200, multiples of $100. Deposit split: 30% MSTC + 70% USDC (Polygon MEP-20). After deposit, 1 FNX minted automatically",
     
@@ -349,14 +349,19 @@ async def telegram_webhook(request: Request):
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
 
+                
+                
+                message_id = cq["message"]["message_id"]
+
                 await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
-                    json={
-                        "chat_id": chat_id,
-                        "text": "👇 Choose an option",
-                        "reply_markup": build_menu(menu_key),
-                    },
-                )
+                f"{TELEGRAM_API}/editMessageText",
+                 json={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "text": "👇 Choose an option",
+                 "reply_markup": build_menu(menu_key),
+    },
+)
                 return {"ok": True}
 
             # DOCUMENT / HARDCODED SEARCH
@@ -377,14 +382,18 @@ async def telegram_webhook(request: Request):
                     topic = key.replace("_", " ")
                     answer = generate_answer(topic)
 
+                message_id = cq["message"]["message_id"]
+
                 await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
-                    json={
-                        "chat_id": chat_id,
-                        "text": answer,
-                        "reply_markup": build_menu("wallet"),
-                    },
-                )
+                f"{TELEGRAM_API}/editMessageText",
+                json={
+               "chat_id": chat_id,
+               "message_id": message_id,
+               "text": answer,
+               "parse_mode": "Markdown",
+                "reply_markup": build_menu("wallet") if key.startswith("wallet") else build_menu("main"),
+    },
+)
 
                 # Save to DB
                 try:
