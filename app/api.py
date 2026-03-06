@@ -126,7 +126,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 MAIN_MENU = {
     "💼 Wallet": "menu:wallet",
     "💰 Deposit": "menu:deposit",
-    "🪙 Minting": "q:minting",
+    "🪙 Minting": "menu:minting",
     "📦 Others": "menu:others",
 }
 
@@ -161,10 +161,18 @@ DEPOSIT_MENU = {
     "⬅ Back": "menu:main",
 }
 
+MINTING_MENU = {
+    "⚙️ What is Minting?": "q:minting_info",
+    "⏱ When Minting Happens?": "q:minting_time",
+    "📍 Minted Token Location": "q:minting_location",
+    "⬅ Back": "menu:main",
+}
+
 MENUS = {
     "main": MAIN_MENU,
     "wallet": WALLET_MENU,
     "deposit": DEPOSIT_MENU,
+    "minting": MINTING_MENU,
     "others": OTHERS_MENU,
 }
 
@@ -185,7 +193,11 @@ HARDCODED_ANSWERS = {
 
 "deposit_blockchain": "⛓ *Blockchain*\nThe system uses *MEP-20 blockchain contract*.",    
     
-    "minting": "Minting in FINUX generates daily rewards through the ecosystem’s sustainable blockchain mechanism.",
+"minting_info": "⚙️ *What is Minting?*\nMinting means creating a new FNX token in the system.",
+
+"minting_time": "⏱ *When Minting Happens?*\nAfter your deposit transaction is completed.",
+
+"minting_location": "📍 *Minted Token Location*\nThe system automatically credits the minted FNX token to your wallet.",    
     
     "liquidity_pool": "Pair: FNX + USDC. Requires equal FNX + USDC. Daily reward: Up to 5% MPY. Minimum withdrawal: 1 USDC (instant). Advantages: Stable trading, passive income, bonuses, ecosystem growth.",
     
@@ -419,6 +431,8 @@ async def telegram_webhook(request: Request):
                  menu_to_show = "wallet"
                 elif key.startswith("deposit"): 
                  menu_to_show = "deposit"
+                elif key.startswith("minting"):
+                 menu_to_show = "minting" 
 
                 await client.post(
                   f"{TELEGRAM_API}/editMessageText",
