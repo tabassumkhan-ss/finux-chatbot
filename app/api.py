@@ -412,14 +412,22 @@ async def telegram_webhook(request: Request):
 
                 message_id = cq["message"]["message_id"]
 
+                # decide which menu to show after answer
+                menu_to_show = "main"
+
+                if key.startswith("wallet"):
+                 menu_to_show = "wallet"
+                elif key.startswith("deposit"): 
+                 menu_to_show = "deposit"
+
                 await client.post(
-                f"{TELEGRAM_API}/editMessageText",
-                json={
-               "chat_id": chat_id,
-               "message_id": message_id,
-               "text": answer,
-               "parse_mode": "Markdown",
-                "reply_markup": build_menu("wallet") if key.startswith("wallet") else build_menu("main"),
+                  f"{TELEGRAM_API}/editMessageText",
+                   json={
+                    "chat_id": chat_id,
+                     "message_id": message_id,
+                     "text": answer,
+                     "parse_mode": "Markdown",
+                     "reply_markup": build_menu(menu_to_show),
     },
 )
 
