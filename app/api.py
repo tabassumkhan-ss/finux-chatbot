@@ -153,9 +153,18 @@ WALLET_MENU = {
     "⬅️ Back to Main": "menu:main",
 }
 
+DEPOSIT_MENU = {
+    "💰 Minimum Deposit": "q:deposit_min",
+    "📊 Accepted Deposit Plans": "q:deposit_plans",
+    "📦 Deposit Structure": "q:deposit_structure",
+    "⛓ Blockchain": "q:deposit_blockchain",
+    "⬅ Back": "menu:main",
+}
+
 MENUS = {
     "main": MAIN_MENU,
     "wallet": WALLET_MENU,
+    "deposit": DEPOSIT_MENU,
     "others": OTHERS_MENU,
 }
 
@@ -168,7 +177,13 @@ HARDCODED_ANSWERS = {
 
 "wallet_private": "Your private key or seed phrase is a *secret code* that gives access to your wallet.\n⚠️ Never share it with anyone.\nAnyone with this key can *control your funds*.",
     
-    "deposit": "Minimum deposit: $20. Accepted: $20, $50, $100, $200, multiples of $100. Deposit split: 30% MSTC + 70% USDC (Polygon MEP-20). After deposit, 1 FNX minted automatically",
+"deposit_min": "💰 *Minimum Deposit*\nThe minimum deposit is *$20*.",
+
+"deposit_plans": "📊 *Accepted Deposit Plans*\nYou can deposit:\n• $20\n• $50\n• $100\n• $200\n• Multiples of $100",
+
+"deposit_structure": "📦 *Deposit Structure*\nYour deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
+
+"deposit_blockchain": "⛓ *Blockchain*\nThe system uses *MEP-20 blockchain contract*.",    
     
     "minting": "Minting in FINUX generates daily rewards through the ecosystem’s sustainable blockchain mechanism.",
     
@@ -208,8 +223,20 @@ def header_buttons():
 
 def build_menu(menu_key):
     keyboard = header_buttons()
-    for label, action in MENUS.get(menu_key, {}).items():
-        keyboard.append([{"text": label, "callback_data": action}])
+
+    menu_items = list(MENUS.get(menu_key, {}).items())
+
+    row = []
+    for label, action in menu_items:
+        row.append({"text": label, "callback_data": action})
+
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+
+    if row:
+        keyboard.append(row)
+
     return {"inline_keyboard": keyboard}
 
 # ===================== FASTAPI =====================
