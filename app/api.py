@@ -133,16 +133,14 @@ MAIN_MENU = {
 OTHERS_MENU = {
     "💧 Liquidity Pool": "menu:lp",
     "🔐 FNX Self Staking": "menu:staking",
-    "💸 Withdraw": "q:withdraw",
-    "🎁 Airdrop": "q:airdrop",
-    "🤝 Affiliate Program": "q:affiliate",
-    "🏅 Ranks & Clubs": "q:ranks_clubs",
-    "💎 Triple Income System": "q:triple_income",
-    "📜 Terms & Conditions": "q:terms",
-    "❓ FAQ": "q:faq",
-    "🛠 Support": "q:support",
-    "Risk Disclaimer": "q:disclaimer",
-    "⬅️ Back to Main": "menu:main",
+    "💸 Withdraw": "menu:withdraw",
+    "🎁 Airdrop": "menu:airdrop",
+    "🤝 Affiliate Program": "menu:affiliate",
+    "🏅 Ranks & Clubs": "menu:ranks",
+    "💎 Triple Income System": "menu:triple_income",
+    "📜 Terms & Conditions": "q:terms_conditions",
+    "⚠ Risk Disclaimer": "q:risk_disclaimer",
+    "⬅ Back": "menu:main",
 }
 
 WALLET_MENU = {
@@ -183,6 +181,42 @@ STAKING_MENU = {
     "⬅ Back": "menu:others",
 }
 
+WITHDRAW_MENU = {
+    "💸 Can I withdraw anytime?": "q:withdraw_anytime",
+    "💰 Withdrawal currency": "q:withdraw_currency",
+    "🔥 Token burning mechanism": "q:withdraw_burn",
+    "⬅ Back": "menu:others",
+}
+
+AIRDROP_MENU = {
+    "🎁 Airdrop eligibility": "q:airdrop_eligibility",
+    "💰 Airdrop reward": "q:airdrop_reward",
+    "📋 Conditions": "q:airdrop_conditions",
+    "⬅ Back": "menu:others",
+}
+
+AFFILIATE_MENU = {
+    "🤝 What is the affiliate program": "q:affiliate_info",
+    "👥 Team business": "q:affiliate_team",
+    "📈 Why affiliate is important": "q:affiliate_importance",
+    "⬅ Back": "menu:others",
+}
+
+RANKS_MENU = {
+    "🏅 Rank Structure": "q:rank_structure",
+    "🎖 Club rewards": "q:club_rewards",
+    "📊 Rank requirements": "q:rank_requirements",
+    "⬅ Back": "menu:others",
+}
+
+TRIPLE_MENU = {
+    "💎 What is the Triple Income System": "q:triple_info",
+    "📉 What happens after reaching the limit": "q:triple_limit",
+    "⬅ Back": "menu:others",
+}
+
+
+
 MENUS = {
     "main": MAIN_MENU,
     "wallet": WALLET_MENU,
@@ -191,6 +225,11 @@ MENUS = {
     "others": OTHERS_MENU,
     "lp": LP_MENU,
     "staking": STAKING_MENU,
+    "withdraw": WITHDRAW_MENU,
+    "airdrop": AIRDROP_MENU,
+    "affiliate": AFFILIATE_MENU,
+    "ranks": RANKS_MENU,
+    "triple_income": TRIPLE_MENU,
 }
 
 HARDCODED_ANSWERS = {
@@ -230,24 +269,39 @@ HARDCODED_ANSWERS = {
 
 "staking_rewards": "💰 *Rewards from Staking*\nUp to *2% MPY (Monthly Percentage Yield)* daily reward.",    
     
-    "withdraw": "Withdraw anytime.50% FNX burned on withdrawal. 50% FNX added back to supply. USDC credited instantly",
-    
-    "airdrop": "Earn 50 FNX on 5 direct paid referrals. Wallet registration + verification required. Limited period. Duplicate referrals not counted.",
-    
-    "affiliate": "Rank 1: Origin (10%). Rank 2: Life Changer (16%). Rank 3: Advisor (20%). Rank 4: Visionary (23%). Rank 5: Creator (25%). Each rank requires specific team business & LP requirements. Monthly club income requires maintenance of team business.",
-    
-    "ranks_clubs": "Ranks & Clubs reward high-performing members with additional income benefits and recognition.",
-    
-    "triple_income": "Performance Incentive: 3x. Liquidity Pool Reward: 3x. FNX Staking: 2x. Performance income cap: 3x (retop-up required)",
-    
-    "terms": "Verified users only. Rewards based on company policy. Company may update program anytime. LP 50% counts in team business.",
-    
-    "faq": "FINUX FAQ provides answers to common user questions about wallets, income, and rewards.",
-    
-    "support": "For assistance, contact FINUX Support through the official website or Telegram channel.",
+"withdraw_anytime": "Yes, FNX rewards can be withdrawn anytime.",
 
-    "disclaimer": "Crypto investments involve market risk. Returns are not guaranteed. Users must secure private keys. Participation is voluntary."
-}
+"withdraw_currency": "You will receive *USDC* in your wallet instantly.",
+
+"withdraw_burn": "When you withdraw FNX:\n• 50% FNX is burned\n• 50% FNX goes back to supply.\nThis helps control token supply.",    
+    
+"airdrop_eligibility": "Yes, you must have at least *5 direct paid referrals*.",
+
+"airdrop_reward": "You receive *50 FNX tokens*.",
+
+"airdrop_conditions": "• Wallet must be registered\n• User must be verified\n• Duplicate referrals are not counted",   
+    
+"affiliate_info": "It is a referral program where you earn rewards by building a team.",
+
+"affiliate_team": "The total deposits made by your team.",
+
+"affiliate_importance": "It helps grow the community and increases earnings.",    
+    
+"rank_structure": "• Rank 1 — Origin\n• Rank 2 — Life Changer\n• Rank 3 — Advisor\n• Rank 4 — Visionary\n• Rank 5 — Creator",
+
+"club_rewards": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
+
+"rank_requirements": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",    
+    
+"triple_info": "Users can earn from three sources:\n• Performance income — up to 3x\n• Liquidity pool reward — up to 3x\n• FNX staking — up to 2x",
+
+"triple_limit": "After *3x performance income*, you must *retop-up* to continue earning.",    
+    
+"terms_conditions": "*General T&C*\n• Anyone can join the program\n• Rewards based on company policy\n• Company may update program anytime\n\n*Airdrop T&C*\n• Wallet registration + verification\n• Limited period\n• Duplicate referrals not counted\n\n*Additional T&C*\n• LP 50% counts in team business\n• Performance income limit: 3X\n• Retop-up required after limit\n• Retop-up gives 50% FNX",   
+    
+"risk_disclaimer": "• Crypto investments carry risk\n• Earnings are not guaranteed\n• Users must secure their wallets\n• Company is not responsible for lost private keys",    
+   
+ }
 
 # ===================== UI HELPERS =====================
 
@@ -464,6 +518,16 @@ async def telegram_webhook(request: Request):
                  menu_to_show = "lp"
                 elif key.startswith("staking"):
                  menu_to_show = "staking"
+                elif key.startswith("withdraw"):
+                 menu_to_show = "withdraw"
+                elif key.startswith("airdrop"):
+                 menu_to_show = "airdrop"
+                elif key.startswith("affiliate"):
+                 menu_to_show = "affiliate"
+                elif key.startswith("rank"):
+                 menu_to_show = "ranks"
+                elif key.startswith("triple"):
+                 menu_to_show = "triple_income"
 
                 await client.post(
                   f"{TELEGRAM_API}/editMessageText",
