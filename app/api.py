@@ -241,13 +241,13 @@ HARDCODED_ANSWERS = {
 
 "wallet_private": "Your private key or seed phrase is a *secret code* that gives access to your wallet.\n⚠️ Never share it with anyone.\nAnyone with this key can *control your funds*.",
     
-"deposit_min": "💰 *Minimum Deposit*\nThe minimum deposit is *$20*.",
+"deposit_min": "The minimum deposit is *$20*.",
 
-"deposit_plans": "📊 *Accepted Deposit Plans*\nYou can deposit:\n• $20\n• $50\n• $100\n• $200\n• Multiples of $100",
+"deposit_plans": "You can deposit:\n• $20\n• $50\n• $100\n• $200\n• Multiples of $100",
 
-"deposit_structure": "📦 *Deposit Structure*\nYour deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
+"deposit_structure": "Your deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
 
-"deposit_blockchain": "⛓ *Blockchain*\nThe system uses *MEP-20 blockchain contract*.",    
+"deposit_blockchain": "The system uses *MEP-20 blockchain contract*.",    
     
 "minting_info": "Minting means creating a new FNX token in the system.",
 
@@ -263,11 +263,11 @@ HARDCODED_ANSWERS = {
 
 "lp_rewards": "You can earn daily rewards up to *5% MPY (Monthly Percentage Yield)*.\nThese rewards are generated from the system's trading and ecosystem activity.",
     
-"staking_info": "🔐 *What is Staking?*\nIt means locking FNX tokens in the system to earn rewards.",
+"staking_info": "It means locking FNX tokens in the system to earn rewards.",
 
-"staking_work": "⚙ *How Staking Works*\nThe staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
+"staking_work": "The staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
 
-"staking_rewards": "💰 *Rewards from Staking*\nUp to *2% MPY (Monthly Percentage Yield)* daily reward.",    
+"staking_rewards": "Up to *2% MPY (Monthly Percentage Yield)* daily reward.",    
     
 "withdraw_anytime": "Yes, FNX rewards can be withdrawn anytime.",
 
