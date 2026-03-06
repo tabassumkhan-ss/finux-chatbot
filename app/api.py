@@ -131,8 +131,8 @@ MAIN_MENU = {
 }
 
 OTHERS_MENU = {
-    "💧 Liquidity Pool": "q:liquidity_pool",
-    "🔐 FNX Self-Staking": "q:self_staking",
+    "💧 Liquidity Pool": "menu:lp",
+    "🔐 FNX Self Staking": "menu:staking",
     "💸 Withdraw": "q:withdraw",
     "🎁 Airdrop": "q:airdrop",
     "🤝 Affiliate Program": "q:affiliate",
@@ -168,12 +168,29 @@ MINTING_MENU = {
     "⬅ Back": "menu:main",
 }
 
+LP_MENU = {
+    "💧 What is Liquidity Pool?": "q:lp_info",
+    "🔗 LP Pair": "q:lp_pair",
+    "⭐ Benefits of LP": "q:lp_benefits",
+    "💰 LP Rewards": "q:lp_rewards",
+    "⬅ Back": "menu:others",
+}
+
+STAKING_MENU = {
+    "🔐 What is Staking?": "q:staking_info",
+    "⚙ How Staking Works": "q:staking_work",
+    "💰 Rewards from Staking": "q:staking_rewards",
+    "⬅ Back": "menu:others",
+}
+
 MENUS = {
     "main": MAIN_MENU,
     "wallet": WALLET_MENU,
     "deposit": DEPOSIT_MENU,
     "minting": MINTING_MENU,
     "others": OTHERS_MENU,
+    "lp": LP_MENU,
+    "staking": STAKING_MENU,
 }
 
 HARDCODED_ANSWERS = {
@@ -193,15 +210,25 @@ HARDCODED_ANSWERS = {
 
 "deposit_blockchain": "⛓ *Blockchain*\nThe system uses *MEP-20 blockchain contract*.",    
     
-"minting_info": "⚙️ *What is Minting?*\nMinting means creating a new FNX token in the system.",
+"minting_info": "Minting means creating a new FNX token in the system.",
 
-"minting_time": "⏱ *When Minting Happens?*\nAfter your deposit transaction is completed.",
+"minting_time": "After your deposit transaction is completed.",
 
-"minting_location": "📍 *Minted Token Location*\nThe system automatically credits the minted FNX token to your wallet.",    
+"minting_location": "The system automatically credits the minted FNX token to your wallet.",    
     
-    "liquidity_pool": "Pair: FNX + USDC. Requires equal FNX + USDC. Daily reward: Up to 5% MPY. Minimum withdrawal: 1 USDC (instant). Advantages: Stable trading, passive income, bonuses, ecosystem growth.",
+    "lp_info": "A Liquidity Pool is where users provide tokens to help trading happen smoothly.",
+
+"lp_pair": "FNX + USDC pair is used.",
+
+"lp_benefits": "Stable trading\n• Daily passive income\n• High rewards\n• Community growth\n• Strong ecosystem support",
+
+"lp_rewards": "You can earn daily rewards up to *5% MPY (Monthly Percentage Yield)*.\nThese rewards are generated from the system's trading and ecosystem activity.",
     
-    "self_staking": "Stake only FNX tokens. Daily reward: Up to 2% MPY. Minimum withdrawal: 1 USDC (instant).",
+"staking_info": "🔐 *What is Staking?*\nIt means locking FNX tokens in the system to earn rewards.",
+
+"staking_work": "⚙ *How Staking Works*\nThe staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
+
+"staking_rewards": "💰 *Rewards from Staking*\nUp to *2% MPY (Monthly Percentage Yield)* daily reward.",    
     
     "withdraw": "Withdraw anytime.50% FNX burned on withdrawal. 50% FNX added back to supply. USDC credited instantly",
     
@@ -433,6 +460,10 @@ async def telegram_webhook(request: Request):
                  menu_to_show = "deposit"
                 elif key.startswith("minting"):
                  menu_to_show = "minting" 
+                elif key.startswith("lp"):
+                 menu_to_show = "lp"
+                elif key.startswith("staking"):
+                 menu_to_show = "staking"
 
                 await client.post(
                   f"{TELEGRAM_API}/editMessageText",
