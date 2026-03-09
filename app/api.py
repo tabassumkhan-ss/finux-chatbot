@@ -148,12 +148,11 @@ Use the provided context to answer the question.
 Context:
 {context}
 
-Instructions:
-- Answer in complete sentences.
-- Reply in 1–2 short sentences only.
-- Do NOT reply with single words.
-- Use the context to answer clearly.
-- Be conversational.
+Rules:
+- Answer in 1–2 short sentences
+- Always prioritize the provided FINUX context
+- Never invent FINUX rules
+- Never say information is missing if it appears in the context
 
 
 Question:
@@ -164,8 +163,6 @@ Question:
 
         prompt = f"""
 Answer the question in maximum 2 short sentences.
-Keep the answer under 40 words.
-Do not add explanations.
 
 Question:
 {question}
@@ -175,11 +172,7 @@ Question:
 
         response = client.models.generate_content(
             model="models/gemini-flash-latest",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-        temperature=0.3,
-        max_output_tokens=80
-             )
+            contents=prompt
         )
  
         if response.text:
