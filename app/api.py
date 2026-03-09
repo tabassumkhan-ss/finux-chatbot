@@ -143,11 +143,13 @@ You are the official FINUX assistant.
 Context:
 {context}
 
-Rules:
-- Answer in 1–2 short sentences
-- Always prioritize the provided FINUX context
-- Never invent FINUX rules
-- Never say information is missing if it appears in the context
+Instructions:
+- Reply in MAXIMUM 2 sentences.
+- Use simple conversational language.
+- Do NOT use bullet points.
+- Do NOT explain extra information.
+- If the answer exists in the context, answer directly.
+- Keep the reply under 40 words.
 
 Question:
 {question}
@@ -156,7 +158,9 @@ Question:
     else:
 
         prompt = f"""
-Answer the question in 1–2 short sentences.
+Answer the question in maximum 2 short sentences.
+Keep the answer under 40 words.
+Do not add explanations.
 
 Question:
 {question}
@@ -166,9 +170,13 @@ Question:
 
         response = client.models.generate_content(
             model="models/gemini-flash-latest",
-            contents=prompt
+            contents=prompt,
+            config=types.GenerateContentConfig(
+        temperature=0.3,
+        max_output_tokens=80
+             )
         )
-
+ 
         if response.text:
             return response.text.strip()
 
