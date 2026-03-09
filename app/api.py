@@ -84,7 +84,7 @@ index = faiss.IndexFlatL2(dimension)
 index.add(np.array(doc_embeddings))
 
 
-def semantic_search(question: str, top_k=3):
+def semantic_search(question: str, top_k=5):
 
     question_vector = embedding_model.encode([question])
 
@@ -137,19 +137,23 @@ def generate_answer(question: str):
 
         context = semantic_search(question)
 
+        if not context:
+         context = "FINUX is a decentralized ecosystem that offers staking, liquidity pools, referral rewards, and club income based on rank achievements."
+
         prompt = f"""
 You are the official FINUX assistant.
+
+Use the provided context to answer the question.
 
 Context:
 {context}
 
 Instructions:
-- Reply in MAXIMUM 2 sentences.
-- Use simple conversational language.
-- Do NOT use bullet points.
-- Do NOT explain extra information.
+- Answer in 1–2 clear sentences.
+- Be conversational and simple.
+- Do NOT return single words.
+- Do NOT repeat the question.
 - If the answer exists in the context, answer directly.
-- Keep the reply under 40 words.
 
 Question:
 {question}
