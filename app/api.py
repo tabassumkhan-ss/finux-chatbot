@@ -32,28 +32,46 @@ DOCUMENT_TEXT = []
 def load_documents():
     texts = []
 
-    # PDF
+    # PDF loader
     pdf_path = os.path.join(DATA_DIR, "finux.pdf")
     if os.path.exists(pdf_path):
         reader = PdfReader(pdf_path)
         for page in reader.pages:
             text = page.extract_text()
             if text:
-                texts.extend(text.split("\n"))
+                paragraphs = text.split("\n\n")
+                for p in paragraphs:
+                    if p.strip():
+                        texts.append(p.strip())
 
-    # DOCX
+    # DOCX loader
     docx_path = os.path.join(DATA_DIR, "finux.docx")
     if os.path.exists(docx_path):
         doc = Document(docx_path)
+
+        chunk = ""
+
         for para in doc.paragraphs:
-            if para.text.strip():
-                texts.append(para.text)
+
+            text = para.text.strip()
+
+            if not text:
+                continue
+
+            chunk += text + " "
+
+            if len(chunk) > 300:
+                texts.append(chunk.strip())
+                chunk = ""
+
+        if chunk:
+            texts.append(chunk.strip())
 
     return [
-    t.strip()
-    for t in texts
-    if t.strip()
-]
+        t.strip()
+        for t in texts
+        if t.strip()
+    ]
 
 DOCUMENT_TEXT = load_documents()
 
@@ -80,22 +98,65 @@ def semantic_search(question: str, top_k=3):
 
     return " ".join(results)
 
+def detect_intent(question: str):
+
+    q = question.lower()
+
+    finux_keywords = [
+        "finux",
+        "rank",
+        "origin",
+        "life changer",
+        "advisor",
+        "visionary",
+        "creator",
+        "staking",
+        "liquidity",
+        "lp",
+        "withdraw",
+        "deposit",
+        "minting",
+        "referral",
+        "club",
+        "income",
+        "reward"
+    ]
+
+    for word in finux_keywords:
+        if word in q:
+            return "finux"
+
+    return "general"
+
 def generate_answer(question: str):
 
-    context = semantic_search(question)
+    intent = detect_intent(question)
 
-    prompt = f"""
+    # FINUX question
+    if intent == "finux":
+
+        context = semantic_search(question)
+
+        prompt = f"""
 You are the official FINUX assistant.
-
-Use the context below to answer the question.
 
 Context:
 {context}
 
 Rules:
 - Answer in 1–2 short sentences
-- Be conversational
-- Do not invent information outside the context
+- Always prioritize the provided FINUX context
+- Never invent FINUX rules
+- Never say information is missing if it appears in the context
+
+Question:
+{question}
+"""
+
+    else:
+
+        prompt = f"""
+Answer the question in 1–2 short sentences.
 
 Question:
 {question}
