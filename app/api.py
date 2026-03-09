@@ -255,7 +255,7 @@ HARDCODED_ANSWERS = {
 
 "minting_location": "The system automatically credits the minted FNX token to your wallet.",    
     
-    "lp_info": "A Liquidity Pool is where users provide tokens to help trading happen smoothly.",
+"lp_info": "A Liquidity Pool is where users provide tokens to help trading happen smoothly.",
 
 "lp_pair": "FNX + USDC pair is used.",
 
