@@ -1,6 +1,8 @@
 import os
 import logging
 import httpx
+import faiss
+import numpy as np
 from google import genai
 from google.genai import types
 from fastapi import FastAPI, Request
@@ -11,6 +13,8 @@ from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
 from app.db import save_chat
+from sentence_transformers import SentenceTransformer
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -53,48 +57,55 @@ def load_documents():
 
 DOCUMENT_TEXT = load_documents()
 
-def find_short_answer(question: str) -> str:
-    question = question.lower().strip()
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # Clean common question words
-    stop_words = {"what", "is", "how", "does", "the", "a", "an", "of", "to", "in"}
-    keywords = [w for w in question.split() if w not in stop_words and len(w) > 3]
+doc_embeddings = embedding_model.encode(DOCUMENT_TEXT)
 
-    best_match = ""
-    best_score = 0
+dimension = doc_embeddings.shape[1]
+index = faiss.IndexFlatL2(dimension)
+index.add(np.array(doc_embeddings))
 
-    for i, line in enumerate(DOCUMENT_TEXT):
-        line_l = line.lower()
 
-        score = sum(1 for word in keywords if word in line_l)
+def semantic_search(question: str, top_k=3):
 
-        if score > best_score:
-            best_score = score
-            best_match = line
+    question_vector = embedding_model.encode([question])
 
-            # also attach next line for context
-            if i + 1 < len(DOCUMENT_TEXT):
-                best_match += " " + DOCUMENT_TEXT[i + 1]
+    distances, indices = index.search(np.array(question_vector), top_k)
 
-    if best_score > 0:
-        # return only first 2 sentences max
-        sentences = best_match.split(".")
-        return ".".join(sentences[:2]).strip() + "."
+    results = []
 
-    return ""
+    for idx in indices[0]:
+        if idx < len(DOCUMENT_TEXT):
+            results.append(DOCUMENT_TEXT[idx])
 
-def generate_answer(question: str) -> str:
+    return " ".join(results)
 
-    # 1️⃣ Try FINUX documents first
-    doc_answer = find_short_answer(question)
-    if doc_answer:
-        return doc_answer
+def generate_answer(question: str):
 
-    # 2️⃣ Gemini fallback (very short answer enforced)
+    context = semantic_search(question)
+
+    prompt = f"""
+You are the official FINUX assistant.
+
+Use the context below to answer the question.
+
+Context:
+{context}
+
+Rules:
+- Answer in 1–2 short sentences
+- Be conversational
+- Do not invent information outside the context
+
+Question:
+{question}
+"""
+
     try:
+
         response = client.models.generate_content(
             model="models/gemini-flash-latest",
-            contents=f"Answer in maximum 2 short sentences. No bullet points. No formatting. Question: {question}"
+            contents=prompt
         )
 
         if response.text:
