@@ -96,7 +96,7 @@ def semantic_search(question: str, top_k=5):
         if idx < len(DOCUMENT_TEXT):
             results.append(DOCUMENT_TEXT[idx])
 
-    return " ".join(results)
+    return "\n".join(results)
 
 def detect_intent(question: str):
 
@@ -149,11 +149,12 @@ Context:
 {context}
 
 Instructions:
-- Answer in 1–2 clear sentences.
-- Be conversational and simple.
-- Do NOT return single words.
-- Do NOT repeat the question.
-- If the answer exists in the context, answer directly.
+- Answer in complete sentences.
+- Reply in 1–2 short sentences only.
+- Do NOT reply with single words.
+- Use the context to answer clearly.
+- Be conversational.
+
 
 Question:
 {question}
