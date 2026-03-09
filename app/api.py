@@ -507,7 +507,7 @@ async def telegram_webhook(request: Request):
                 # 2️⃣ Document search
                 if not answer:
                     topic = key.replace("_", " ")
-                    answer = find_short_answer(topic)
+                    answer = semantic_search(topic)
 
                 # 3️⃣ Gemini fallback
                 if not answer:
