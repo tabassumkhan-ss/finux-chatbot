@@ -84,7 +84,7 @@ index = faiss.IndexFlatL2(dimension)
 index.add(np.array(doc_embeddings))
 
 
-def semantic_search(question: str, top_k=3):
+def semantic_search(question: str, top_k=2):
 
     question_vector = embedding_model.encode([question])
 
