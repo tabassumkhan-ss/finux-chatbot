@@ -17,6 +17,19 @@ header {
   padding: 12px;
   text-align: center;
   font-size: 20px;
+  position: relative;
+}
+
+#logout {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 #chat {
@@ -82,8 +95,9 @@ button {
 
 <body>
 
-<header>
+<header id="header">
   🤖 FINUX Assistant
+  <button id="logout" onclick="logout()">Logout</button>
 </header>
 
 <div id="chat"></div>
@@ -96,6 +110,45 @@ button {
 </footer>
 
 <script>
+
+function getUsernameFromToken() {
+  const token = localStorage.getItem("token");
+
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ✅ ADD THIS ALSO
+function showUser() {
+  const username = getUsernameFromToken();
+
+  if (username) {
+    document.getElementById("header").innerText =
+      "🤖 FINUX Assistant | 👤 " + username;
+  }
+}
+
+
+// 🔐 Check login
+let token = localStorage.getItem("token");
+
+if (!token) {
+  window.location.href = "/login";
+}
+
+// 🔓 Logout
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
+}
+
+// 💬 Add message
 function add(text, cls) {
   let div = document.createElement("div");
   div.className = "message " + cls;
@@ -104,6 +157,7 @@ function add(text, cls) {
   document.getElementById("chat").scrollTop = chat.scrollHeight;
 }
 
+// 🚀 Send message
 async function send() {
   let input = document.getElementById("input");
   let text = input.value.trim();
@@ -117,15 +171,18 @@ async function send() {
   try {
     let res = await fetch("/chat", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ message: text })   // ✅ FIXED
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ message: text })
     });
 
     let data = await res.json();
 
     document.getElementById("typing").style.display = "none";
 
-    add(data.response || "No response", "bot"); // ✅ FIXED
+    add(data.response || "No response", "bot");
 
   } catch (e) {
     document.getElementById("typing").style.display = "none";

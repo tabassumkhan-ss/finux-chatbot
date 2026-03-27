@@ -2,18 +2,27 @@ import os
 import psycopg2
 import logging
 
+# Load DATABASE URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-conn = None
-cursor = None
+logging.info(f"USING DB: {DATABASE_URL}")
 
-if DATABASE_URL:
+
+# ================= CONNECTION =================
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
+
+
+# ================= INIT DB =================
+
+def init_db():
     try:
-        conn = psycopg2.connect(DATABASE_URL)
-        conn.autocommit = True
-        cursor = conn.cursor()
+        conn = get_conn()
+        cur = conn.cursor()
 
-        cursor.execute("""
+        # chats table
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS chats (
             id SERIAL PRIMARY KEY,
             platform TEXT,
@@ -25,27 +34,92 @@ if DATABASE_URL:
         )
         """)
 
-        logging.info("Database connected")
+        # users table
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logging.info("✅ Database initialized")
 
     except Exception as e:
-        logging.error("DB connection failed:", e)
+        logging.error(f"❌ DB INIT ERROR: {e}")
 
-else:
-    logging.warning("DATABASE_URL not set — running without DB")
 
+# ================= CHAT =================
 
 def save_chat(platform, user_id, username, question, answer):
-    if not cursor:
-        return
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
 
-    cursor.execute(
-        """
-        INSERT INTO chats (platform, user_id, username, question, answer)
-        VALUES (%s,%s,%s,%s,%s)
-        """,
-        (platform, user_id, username, question, answer)
-    )
+        cur.execute(
+            """
+            INSERT INTO chats (platform, user_id, username, question, answer)
+            VALUES (%s,%s,%s,%s,%s)
+            """,
+            (platform, user_id, username, question, answer)
+        )
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    except Exception as e:
+        logging.error(f"❌ SAVE CHAT ERROR: {e}")
 
 
-def save_question(question):
-    pass
+# ================= USERS =================
+
+def create_user(username, password):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            INSERT INTO users (username, password)
+            VALUES (%s, %s)
+            """,
+            (username, password)
+        )
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    except Exception as e:
+        logging.error(f"❌ CREATE USER ERROR: {e}")
+        raise
+
+
+def get_user(username):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT username, password FROM users WHERE username=%s
+            """,
+            (username,)
+        )
+
+        user = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        return user
+
+    except Exception as e:
+        logging.error(f"❌ GET USER ERROR: {e}")
+        return None

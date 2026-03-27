@@ -1,5 +1,11 @@
-import os
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()   # load env FIRST
+
+logging.basicConfig(level=logging.INFO)
+
 import httpx
 import faiss
 import numpy as np
@@ -12,11 +18,9 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from docx import Document
 from pypdf import PdfReader
-from app.db import save_chat
 from sentence_transformers import SentenceTransformer
 
-
-logging.basicConfig(level=logging.INFO)
+from app.db import save_chat, init_db
 
 class ChatRequest(BaseModel):
     message: str
@@ -414,32 +418,61 @@ def build_menu(menu_key):
 
 app = FastAPI()
 
+@app.on_event("startup")
+def startup():
+  init_db()
+
+from app.auth import router as auth_router
+
+app.include_router(auth_router)
+
 @app.get("/")
 async def serve_ui():
     return FileResponse(os.path.join(DATA_DIR, "ui.html"))
 
+@app.get("/login")
+async def login_page():
+    return FileResponse(os.path.join(DATA_DIR, "login.html"))
+
+
+from fastapi import Header, HTTPException
+from jose import jwt
+
+SECRET_KEY = "finux-secret-key"
+ALGORITHM = "HS256"
+
+from jose import jwt, JWTError
 
 @app.post("/chat")
-async def chat_api(payload: ChatRequest):
+async def chat_api(payload: ChatRequest, request: Request):
+
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return {"response": "Please login first."}
+
+    try:
+        token = auth_header.split(" ")[1]
+        data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+        user = data.get("sub")
+
+    except JWTError:
+        return {"response": "Invalid or expired token. Please login again."}
 
     question = payload.message.strip()
-
-    if not question:
-        return {"response": "Please ask a question."}
-
     answer = generate_answer(question)
 
-    # ✅ Save to DB
+    # ✅ SAVE WITH USERNAME
     try:
         save_chat(
             "web",
-            "web_user",
+            user,   # 🔥 THIS IS THE FIX
             "",
             question,
             answer
         )
     except Exception as e:
-        logging.error(f"DB save error (web): {e}")
+        logging.error(f"DB save error: {e}")
 
     return {"response": answer}
 
