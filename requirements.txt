@@ -113,3 +113,5 @@ google-genai
 sentence-transformers
 faiss-cpu
 python-jose[cryptography]
+passlib[bcrypt]
+
