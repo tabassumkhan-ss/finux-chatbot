@@ -74,7 +74,8 @@ def login(user: UserLogin):
     else:
         username, hashed_password = db_user
 
-        if not verify_password(input_password, user.password):
+        # ✅ FIX HERE
+        if not verify_password(user.password, hashed_password):
             raise HTTPException(status_code=400, detail="Wrong password")
 
     token = create_token({"sub": user.username})
