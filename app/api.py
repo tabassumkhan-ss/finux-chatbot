@@ -476,6 +476,36 @@ async def chat_api(payload: ChatRequest, request: Request):
 
     return {"response": answer}
 
+@app.get("/history")
+def get_history(request: Request):
+
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return []
+
+    try:
+        token = auth_header.split(" ")[1]
+        data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+        user = data.get("sub")
+    except:
+        return []
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT question, answer FROM chats WHERE user_id=%s ORDER BY created_at",
+        (user,)
+    )
+
+    chats = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return chats
+
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")
 

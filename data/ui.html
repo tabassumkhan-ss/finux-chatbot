@@ -166,7 +166,6 @@ button {
 
 <script>
 
-let chats = JSON.parse(localStorage.getItem("chats") || "[]");
 let currentChat = [];
 
 function getUsernameFromToken() {
@@ -245,8 +244,7 @@ async function send() {
     currentChat.push({ role: "user", text: text });
     currentChat.push({ role: "bot", text: data.response });
 
-    localStorage.setItem("currentChat", JSON.stringify(currentChat));
-
+    
   } catch (e) {
     document.getElementById("typing").style.display = "none";
     add("Server error.", "bot");
@@ -255,32 +253,35 @@ async function send() {
 
 // 🆕 Start new chat
 function newChat() {
-  if (currentChat.length > 0) {
-    chats.push(currentChat);
-    localStorage.setItem("chats", JSON.stringify(chats));
-  }
-
   currentChat = [];
   document.getElementById("chat").innerHTML = "";
-  loadHistory();
 }
 
 // 📜 Load sidebar history
-function loadHistory() {
+async function loadHistory() {
+  const token = localStorage.getItem("token");
+
+  if (!token) return;
+
   let historyDiv = document.getElementById("history");
   historyDiv.innerHTML = "";
 
-  chats.forEach((chat, index) => {
-    let div = document.createElement("div");
-    div.innerText = chat[0]?.text || "New Chat";
-
-    div.onclick = () => {
-      currentChat = chat;
-      renderChat();
-    };
-
-    historyDiv.appendChild(div);
+  const res = await fetch("/history", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
   });
+
+  const data = await res.json();
+
+  currentChat = [];
+
+  data.forEach(item => {
+    currentChat.push({ role: "user", text: item[0] });
+    currentChat.push({ role: "bot", text: item[1] });
+  });
+
+  renderChat();
 }
 
 // 🖥 Render selected chat
@@ -294,7 +295,7 @@ function renderChat() {
 }
 
 showUser();
-loadHistory();
+window.onload = loadHistory;
 </script>
 
 </body>
