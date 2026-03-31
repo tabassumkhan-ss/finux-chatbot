@@ -499,12 +499,16 @@ def get_history(request: Request):
         (user,)
     )
 
-    chats = cur.fetchall()
+    rows = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    return chats
+    # 🔥 IMPORTANT: convert to JSON
+    return [
+        {"question": r[0], "answer": r[1]}
+        for r in rows
+    ]
 
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")

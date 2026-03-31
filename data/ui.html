@@ -255,6 +255,9 @@ async function send() {
 function newChat() {
   currentChat = [];
   document.getElementById("chat").innerHTML = "";
+
+  // 🔥 reload sidebar/history from DB
+  loadHistory();
 }
 
 // 📜 Load sidebar history
@@ -262,9 +265,6 @@ async function loadHistory() {
   const token = localStorage.getItem("token");
 
   if (!token) return;
-
-  let historyDiv = document.getElementById("history");
-  historyDiv.innerHTML = "";
 
   const res = await fetch("/history", {
     headers: {
@@ -274,14 +274,18 @@ async function loadHistory() {
 
   const data = await res.json();
 
+  console.log("HISTORY DATA:", data); // ✅ DEBUG
+
   currentChat = [];
+  document.getElementById("chat").innerHTML = "";
 
   data.forEach(item => {
-    currentChat.push({ role: "user", text: item[0] });
-    currentChat.push({ role: "bot", text: item[1] });
-  });
+    add(item.question, "user");
+    add(item.answer, "bot");
 
-  renderChat();
+    currentChat.push({ role: "user", text: item.question });
+    currentChat.push({ role: "bot", text: item.answer });
+  });
 }
 
 // 🖥 Render selected chat
