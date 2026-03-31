@@ -12,6 +12,7 @@ import numpy as np
 from google import genai
 from google.genai import types
 from fastapi import FastAPI, Request
+from app.db import get_conn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
