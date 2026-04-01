@@ -25,6 +25,7 @@ from app.db import save_chat, init_db
 
 class ChatRequest(BaseModel):
     message: str
+    session_id: str
 
 BASE_DIR = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
@@ -456,19 +457,21 @@ async def chat_api(payload: ChatRequest, request: Request):
         token = auth_header.split(" ")[1]
         data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
         user = data.get("sub")
-
     except JWTError:
         return {"response": "Invalid or expired token. Please login again."}
+
+    # ✅ NEW LINE
+    session_id = payload.session_id
 
     question = payload.message.strip()
     answer = generate_answer(question)
 
-    # ✅ SAVE WITH USERNAME
+    # ✅ UPDATED save_chat
     try:
         save_chat(
             "web",
-            user,   # 🔥 THIS IS THE FIX
-            "",
+            user,
+            session_id,   # 🔥 IMPORTANT CHANGE
             question,
             answer
         )

@@ -63,7 +63,7 @@ def save_chat(platform, user_id, username, question, answer):
 
         cur.execute(
             """
-            INSERT INTO chats (platform, user_id, username, question, answer)
+            INSERT INTO chats (platform, user_id,session_id, username, question, answer)
             VALUES (%s,%s,%s,%s,%s)
             """,
             (platform, user_id, username, question, answer)

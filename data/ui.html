@@ -230,7 +230,7 @@ async function send() {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + token
       },
-      body: JSON.stringify({ message: text })
+      body: JSON.stringify({ message: text, session_id: currentSession })
     });
 
     let data = await res.json();
