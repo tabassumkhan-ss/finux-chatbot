@@ -167,6 +167,7 @@ button {
 <script>
 
 let currentChat = [];
+let currentSession = null;
 
 function getUsernameFromToken() {
   const token = localStorage.getItem("token");
@@ -224,6 +225,9 @@ async function send() {
   document.getElementById("typing").style.display = "block";
 
   try {
+    if (!currentSession) {
+  currentSession = "session_" + Date.now();
+}
     let res = await fetch("/chat", {
       method: "POST",
       headers: {
@@ -253,6 +257,7 @@ async function send() {
 
 // 🆕 Start new chat
 function newChat() {
+  currentSession = "session_" + Date.now();
   currentChat = [];
   document.getElementById("chat").innerHTML = "";
 
