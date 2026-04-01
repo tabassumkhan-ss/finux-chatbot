@@ -56,17 +56,17 @@ def init_db():
 
 # ================= CHAT =================
 
-def save_chat(platform, user_id, username, question, answer):
+def save_chat(platform, user_id, session_id, question, answer):
     try:
         conn = get_conn()
         cur = conn.cursor()
 
         cur.execute(
             """
-            INSERT INTO chats (platform, user_id,session_id, username, question, answer)
-            VALUES (%s,%s,%s,%s,%s)
+            INSERT INTO chats (platform, user_id, session_id, question, answer)
+            VALUES (%s, %s, %s, %s, %s)
             """,
-            (platform, user_id, username, question, answer)
+            (platform, user_id, session_id, question, answer)
         )
 
         conn.commit()
@@ -74,7 +74,7 @@ def save_chat(platform, user_id, username, question, answer):
         conn.close()
 
     except Exception as e:
-        logging.error(f"❌ SAVE CHAT ERROR: {e}")
+        print("SAVE CHAT ERROR:", e)  
 
 
 # ================= USERS =================
