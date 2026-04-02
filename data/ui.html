@@ -187,7 +187,7 @@ function showUser() {
 
   if (username) {
     document.getElementById("title").innerText =
-      "🤖 FINUX Assistant | 👤 " + username;
+      "🤖 FINUX Assistant | Hello " + username;
   }
 }
 
@@ -243,8 +243,9 @@ async function send() {
 
     // ✅ show bot message
     add(data.response || "No response", "bot");
+    loadSessions();
 
-    // ✅ ADD THIS PART HERE 👇
+    
     currentChat.push({ role: "user", text: text });
     currentChat.push({ role: "bot", text: data.response });
 
@@ -260,16 +261,14 @@ function newChat() {
   currentSession = "session_" + Date.now();
   currentChat = [];
   document.getElementById("chat").innerHTML = "";
+  loadSessions();
 
 }
 
-// 📜 Load sidebar history
-async function loadHistory() {
+async function loadSessionChat(sessionId) {
   const token = localStorage.getItem("token");
 
-  if (!token) return;
-
-  const res = await fetch("/history", {
+  const res = await fetch("/session/" + sessionId, {
     headers: {
       "Authorization": "Bearer " + token
     }
@@ -277,17 +276,41 @@ async function loadHistory() {
 
   const data = await res.json();
 
-  console.log("HISTORY DATA:", data); // ✅ DEBUG
-
+  currentSession = sessionId;
   currentChat = [];
+
   document.getElementById("chat").innerHTML = "";
 
   data.forEach(item => {
-    add(item.question, "user");
-    add(item.answer, "bot");
+    add(item.q, "user");
+    add(item.a, "bot");
+  });
+}
 
-    currentChat.push({ role: "user", text: item.question });
-    currentChat.push({ role: "bot", text: item.answer });
+// 📜 Load sidebar history
+async function loadSessions() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("/sessions", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const sessions = await res.json();
+
+  let historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = "";
+
+  sessions.forEach(s => {
+    let div = document.createElement("div");
+
+    div.innerText = s.title;   // 🔥 show first question
+    div.style.cursor = "pointer";
+
+    div.onclick = () => loadSessionChat(s.session_id);
+
+    historyDiv.appendChild(div);
   });
 }
 
@@ -301,8 +324,11 @@ function renderChat() {
   });
 }
 
-showUser();
-window.onload = loadHistory;
+window.onload = function () {
+  showUser();
+  loadSessions();
+};
+
 </script>
 
 </body>

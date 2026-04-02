@@ -482,39 +482,63 @@ async def chat_api(payload: ChatRequest, request: Request):
 
     return {"response": answer}
 
-@app.get("/history")
-def get_history(request: Request):
+@app.get("/sessions")
+def get_sessions(request: Request):
 
     auth_header = request.headers.get("Authorization")
 
     if not auth_header:
         return []
 
-    try:
-        token = auth_header.split(" ")[1]
-        data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
-        user = data.get("sub")
-    except:
-        return []
+    token = auth_header.split(" ")[1]
+    data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+    user = data.get("sub")
 
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute(
-        "SELECT question, answer FROM chats WHERE user_id=%s ORDER BY created_at",
-        (user,)
-    )
+    cur.execute("""
+        SELECT DISTINCT session_id, MIN(question)
+        FROM chats
+        WHERE user_id=%s
+        GROUP BY session_id
+        ORDER BY MIN(created_at) DESC
+    """, (user,))
 
     rows = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    # 🔥 IMPORTANT: convert to JSON
     return [
-        {"question": r[0], "answer": r[1]}
-        for r in rows
+        {"session_id": r[0], "title": r[1][:40] if r[1] else "New Chat"}
+        for r in rows if r[0]
     ]
+
+@app.get("/session/{session_id}")
+def get_session_chat(session_id: str, request: Request):
+
+    token = request.headers.get("Authorization").split(" ")[1]
+    data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+    user = data.get("sub")
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT question, answer
+        FROM chats
+        WHERE user_id=%s AND session_id=%s
+        ORDER BY created_at
+    """, (user, session_id))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return [{"q": r[0], "a": r[1]} for r in rows]
+
 
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")
