@@ -498,12 +498,12 @@ def get_sessions(request: Request):
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT DISTINCT session_id, MIN(question)
-        FROM chats
-        WHERE user_id=%s
-        GROUP BY session_id
-        ORDER BY MIN(created_at) DESC
-    """, (user,))
+    SELECT session_id, MIN(question), MIN(created_at)
+    FROM chats
+    WHERE user_id=%s
+    GROUP BY session_id
+    ORDER BY MIN(created_at) DESC
+""", (user,))
 
     rows = cur.fetchall()
 
@@ -511,9 +511,9 @@ def get_sessions(request: Request):
     conn.close()
 
     return [
-        {"session_id": r[0], "title": r[1][:40] if r[1] else "New Chat"}
-        for r in rows if r[0]
-    ]
+    {"session_id": r[0], "title": r[1][:40] if r[1] else "New Chat"}
+    for r in rows if r[0]
+]
 
 @app.get("/session/{session_id}")
 def get_session_chat(session_id: str, request: Request):
