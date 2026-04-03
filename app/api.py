@@ -398,10 +398,51 @@ def header_buttons():
         ],
     ]
 
+def get_full_menu(menu_name):
+    base_menu = MENUS.get(menu_name, {}).copy()
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT label, target FROM custom_menus
+        WHERE parent=%s
+    """, (menu_name,))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    for label, target in rows:
+        base_menu[label] = target
+
+    return base_menu
+
+def get_full_answer(key):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT answer FROM custom_answers WHERE key=%s",
+        (key,)
+    )
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if row:
+        return row[0]
+
+    return HARDCODED_ANSWERS.get(key)
+
+
 def build_menu(menu_key):
     keyboard = header_buttons()
 
-    menu_items = list(MENUS.get(menu_key, {}).items())
+    menu_items = list(get_full_menu(menu_key).items())
 
     row = []
     for label, action in menu_items:
@@ -666,7 +707,7 @@ async def telegram_webhook(request: Request):
                 key = payload.replace("q:", "")
 
                 # 1️⃣ Hardcoded answers first
-                answer = HARDCODED_ANSWERS.get(key)
+                answer = get_full_answer(key)
 
                 # 2️⃣ Document search
                 if not answer:
