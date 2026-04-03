@@ -147,6 +147,7 @@ button {
     <header id="header">
       <span id="title">🤖 FINUX Assistant</span>
       <button id="logout" onclick="logout()">Logout</button>
+      <button onclick="showAdmin()">⚙ Admin Panel</button>
     </header>
 
     <div id="chat"></div>
@@ -223,6 +224,43 @@ function showWelcome() {
       <p style="font-size: 14px;">Ask me anything 🚀</p>
     </div>
   `;
+}
+
+function showAdmin() {
+  document.getElementById("chat").innerHTML = `
+    <h3>➕ Add Menu</h3>
+
+    <input id="label" placeholder="Menu Label"><br><br>
+    <input id="key" placeholder="Answer Key (e.g. wallet_backup)"><br><br>
+    <input id="parent" placeholder="Parent (main / wallet / others)"><br><br>
+    <textarea id="answer" placeholder="Answer"></textarea><br><br>
+
+    <button onclick="submitAdmin()">Save</button>
+  `;
+}
+
+async function submitAdmin() {
+  const token = localStorage.getItem("token");
+
+  const data = {
+    label: document.getElementById("label").value,
+    key: document.getElementById("key").value,
+    parent: document.getElementById("parent").value,
+    answer: document.getElementById("answer").value
+  };
+
+  const res = await fetch("/admin/add-full", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  alert(result.message || result.error);
 }
 
 // 🚀 Send message

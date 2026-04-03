@@ -457,6 +457,19 @@ def build_menu(menu_key):
 
     return {"inline_keyboard": keyboard}
 
+def is_admin(username):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("SELECT role FROM users WHERE username=%s", (username,))
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return row and row[0] == "admin"
+
+
 # ===================== FASTAPI =====================
 
 app = FastAPI()
@@ -579,6 +592,42 @@ def get_session_chat(session_id: str, request: Request):
     conn.close()
 
     return [{"q": r[0], "a": r[1]} for r in rows]
+
+@app.post("/admin/add-full")
+async def add_full(payload: dict, request: Request):
+
+    token = request.headers.get("Authorization").split(" ")[1]
+    data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+    username = data.get("sub")
+
+    if not is_admin(username):
+        return {"error": "Not authorized"}
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    # 1️⃣ Insert answer
+    cur.execute(
+        "INSERT INTO custom_answers (key, answer) VALUES (%s,%s)",
+        (payload["key"], payload["answer"])
+    )
+
+    # 2️⃣ Insert menu
+    cur.execute("""
+        INSERT INTO custom_menus (label, type, target, parent)
+        VALUES (%s,%s,%s,%s)
+    """, (
+        payload["label"],
+        "question",
+        f"q:{payload['key']}",
+        payload["parent"]
+    ))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"message": "✅ Menu added successfully"}
 
 
 # ✅ static folder
