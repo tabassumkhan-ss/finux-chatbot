@@ -371,7 +371,7 @@ HARDCODED_ANSWERS = {
 
 "affiliate_importance": "It helps grow the community and increases earnings.",    
     
-"rank_structure": "• Rank 1 — Origin\n• Rank 2 — Life Changer\n• Rank 3 — Advisor\n• Rank 4 — Visionary\n• Rank 5 — Creator",
+"rank_structure": "• Rank 1 — Origin 10%\n• Rank 2 — Life Changer 16%\n• Rank 3 — Advisor 20%\n• Rank 4 — Visionary 23%\n• Rank 5 — Creator 25%",
 
 "club_rewards": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
 
@@ -890,7 +890,7 @@ async def telegram_webhook(request: Request):
                  menu_to_show = "airdrop"
                 elif key.startswith("affiliate"):
                  menu_to_show = "affiliate"
-                elif key.startswith("rank"):
+                elif key in ["rank_structure", "club_rewards", "rank_requirements"]:
                  menu_to_show = "ranks"
                 elif key.startswith("triple"):
                  menu_to_show = "triple_income"
