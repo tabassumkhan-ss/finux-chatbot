@@ -593,6 +593,44 @@ def get_session_chat(session_id: str, request: Request):
 
     return [{"q": r[0], "a": r[1]} for r in rows]
 
+@app.get("/me")
+def get_me(request: Request):
+
+    from jose import JWTError, ExpiredSignatureError
+
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return {"error": "Not logged in"}
+
+    try:
+        token = auth_header.split(" ")[1]
+        data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+        username = data.get("sub")
+
+    except ExpiredSignatureError:
+        return {"error": "Session expired"}
+    except JWTError:
+        return {"error": "Invalid token"}
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT role FROM users WHERE username=%s",
+        (username,)
+    )
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "username": username,
+        "role": row[0] if row else "user"
+    }
+
 @app.post("/admin/add-full")
 async def add_full(payload: dict, request: Request):
 

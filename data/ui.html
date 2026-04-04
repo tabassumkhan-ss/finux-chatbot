@@ -147,7 +147,9 @@ button {
     <header id="header">
       <span id="title">🤖 FINUX Assistant</span>
       <button id="logout" onclick="logout()">Logout</button>
-      <button onclick="showAdmin()">⚙ Admin Panel</button>
+      <button id="adminBtn" onclick="showAdmin()" style="display:none;">
+  ⚙ Admin Panel
+</button>
     </header>
 
     <div id="chat"></div>
@@ -169,6 +171,20 @@ button {
 
 let currentChat = [];
 let currentSession = null;
+
+async function checkAdmin() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("/me", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  const data = await res.json();
+
+  if (data.role === "admin") {
+    document.getElementById("adminBtn").style.display = "block";
+  }
+}
 
 function getUsernameFromToken() {
   const token = localStorage.getItem("token");
@@ -428,6 +444,7 @@ window.onload = function () {
   showUser();
   loadSessions();
   showWelcome();
+  checkAdmin();
 };
 
 </script>
