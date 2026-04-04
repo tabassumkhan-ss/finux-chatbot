@@ -237,6 +237,10 @@ async function showAdmin() {
 
   let html = `<h3>📋 Manage Menus</h3>`;
 
+  if (menus.length === 0) {
+    html += `<p>No menus found</p>`;
+  }
+
   menus.forEach(m => {
     html += `
       <div style="margin-bottom:10px;">
@@ -294,6 +298,20 @@ async function submitAdmin() {
   const result = await res.json();
 
   alert(result.message || result.error);
+}
+
+function showAddForm() {
+  document.getElementById("chat").innerHTML = `
+    <h3>➕ Add Menu</h3>
+
+    <input id="label" placeholder="Menu Label"><br><br>
+    <input id="key" placeholder="Answer Key"><br><br>
+    <input id="parent" placeholder="Parent (main / wallet / others)"><br><br>
+    <textarea id="answer" placeholder="Answer"></textarea><br><br>
+
+    <button onclick="submitAdmin()">Save</button>
+    <button onclick="showAdmin()">⬅ Back</button>
+  `;
 }
 
 // 🚀 Send message
