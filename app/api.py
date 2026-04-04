@@ -630,6 +630,69 @@ async def add_full(payload: dict, request: Request):
     return {"message": "✅ Menu added successfully"}
 
 
+@app.post("/admin/delete-menu")
+async def delete_menu(payload: dict, request: Request):
+
+    token = request.headers.get("Authorization").split(" ")[1]
+    data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+    username = data.get("sub")
+
+    if not is_admin(username):
+        return {"error": "Not authorized"}
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    # delete menu
+    cur.execute(
+        "DELETE FROM custom_menus WHERE label=%s",
+        (payload["label"],)
+    )
+
+    # delete answer
+    cur.execute(
+        "DELETE FROM custom_answers WHERE key=%s",
+        (payload["key"],)
+    )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"message": "🗑 Menu deleted successfully"}
+
+@app.get("/admin/menus")
+def get_all_menus(request: Request):
+
+    token = request.headers.get("Authorization").split(" ")[1]
+    data = jwt.decode(token, "finux-secret-key", algorithms=["HS256"])
+    username = data.get("sub")
+
+    if not is_admin(username):
+        return []
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT label, target, parent FROM custom_menus
+    """)
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return [
+        {
+            "label": r[0],
+            "key": r[1].replace("q:", ""),
+            "parent": r[2]
+        }
+        for r in rows
+    ]
+
+
 # ✅ static folder
 app.mount("/static", StaticFiles(directory="data"), name="static")
 

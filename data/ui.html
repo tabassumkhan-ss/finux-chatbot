@@ -226,17 +226,50 @@ function showWelcome() {
   `;
 }
 
-function showAdmin() {
-  document.getElementById("chat").innerHTML = `
-    <h3>➕ Add Menu</h3>
+async function showAdmin() {
+  const token = localStorage.getItem("token");
 
-    <input id="label" placeholder="Menu Label"><br><br>
-    <input id="key" placeholder="Answer Key (e.g. wallet_backup)"><br><br>
-    <input id="parent" placeholder="Parent (main / wallet / others)"><br><br>
-    <textarea id="answer" placeholder="Answer"></textarea><br><br>
+  const res = await fetch("/admin/menus", {
+    headers: { "Authorization": "Bearer " + token }
+  });
 
-    <button onclick="submitAdmin()">Save</button>
-  `;
+  const menus = await res.json();
+
+  let html = `<h3>📋 Manage Menus</h3>`;
+
+  menus.forEach(m => {
+    html += `
+      <div style="margin-bottom:10px;">
+        <b>${m.label}</b> (${m.parent})
+        <button onclick="deleteMenu('${m.label}', '${m.key}')">❌ Delete</button>
+      </div>
+    `;
+  });
+
+  html += `<hr><button onclick="showAddForm()">➕ Add New</button>`;
+
+  document.getElementById("chat").innerHTML = html;
+}
+
+async function deleteMenu(label, key) {
+  const token = localStorage.getItem("token");
+
+  if (!confirm("Delete this menu?")) return;
+
+  const res = await fetch("/admin/delete-menu", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ label, key })
+  });
+
+  const result = await res.json();
+
+  alert(result.message || result.error);
+
+  showAdmin(); // 🔥 refresh list
 }
 
 async function submitAdmin() {
