@@ -892,6 +892,8 @@ async def telegram_webhook(request: Request):
                  menu_to_show = "affiliate"
                 elif key in ["rank_structure", "club_rewards", "rank_requirements"]:
                  menu_to_show = "ranks"
+                elif key.startswith("terms") or key.startswith("risk"):
+                 menu_to_show = "others" 
                 elif key.startswith("triple"):
                  menu_to_show = "triple_income"
 
