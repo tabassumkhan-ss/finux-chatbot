@@ -190,17 +190,27 @@ Question:
     return "Sorry, I could not generate a response."
 
 def translate(text, lang):
+    if not text:
+        return text
+
     if lang == "en":
         return text
 
-    prompt = f"Translate to {lang}: {text}"
+    try:
+        prompt = f"Translate to {lang}: {text}"
 
-    response = client.models.generate_content(
-        model="models/gemini-flash-latest",
-        contents=prompt
-    )
+        response = client.models.generate_content(
+            model="models/gemini-flash-latest",
+            contents=prompt
+        )
 
-    return response.text.strip()
+        if response.text:
+            return response.text.strip()
+
+    except Exception as e:
+        logging.error(f"Translation error: {e}")
+
+    return text  # fallback
 
 # ================ TELEGRAM ===============
 
@@ -570,7 +580,7 @@ async def chat_api(payload: ChatRequest, request: Request):
     answer = generate_answer(question)
     lang = get_user_language(user)
     answer = translate(answer, lang)
-    
+
     # ✅ UPDATED save_chat
     try:
         save_chat(
@@ -953,7 +963,7 @@ async def telegram_webhook(request: Request):
                 if not answer:
                  answer = "No information available."
 
-                 lang = get_user_language(str(chat_id))
+                lang = get_user_language(str(chat_id))
                 answer = translate(answer, lang)
 
                 message_id = cq["message"]["message_id"]
@@ -1033,7 +1043,7 @@ async def telegram_webhook(request: Request):
                 f"{TELEGRAM_API}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
+                    "text": "🌐 *Please choose your language:*",
 "parse_mode": "Markdown",
                     "reply_markup": {
     "inline_keyboard": [
