@@ -189,6 +189,19 @@ Question:
 
     return "Sorry, I could not generate a response."
 
+def translate(text, lang):
+    if lang == "en":
+        return text
+
+    prompt = f"Translate to {lang}: {text}"
+
+    response = client.models.generate_content(
+        model="models/gemini-flash-latest",
+        contents=prompt
+    )
+
+    return response.text.strip()
+
 # ================ TELEGRAM ===============
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -555,7 +568,9 @@ async def chat_api(payload: ChatRequest, request: Request):
 
     question = payload.message.strip()
     answer = generate_answer(question)
-
+    lang = get_user_language(user)
+    answer = translate(answer, lang)
+    
     # ✅ UPDATED save_chat
     try:
         save_chat(
@@ -938,6 +953,9 @@ async def telegram_webhook(request: Request):
                 if not answer:
                  answer = "No information available."
 
+                 lang = get_user_language(str(chat_id))
+                answer = translate(answer, lang)
+
                 message_id = cq["message"]["message_id"]
 
                 # decide which menu to show after answer
@@ -1029,6 +1047,8 @@ async def telegram_webhook(request: Request):
         # USER typed question
         if text:
             answer = generate_answer(text)
+            lang = get_user_language(str(chat_id))
+            answer = translate(answer, lang)
 
             await client.post(
                 f"{TELEGRAM_API}/sendMessage",
