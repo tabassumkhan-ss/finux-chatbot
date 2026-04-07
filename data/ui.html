@@ -130,7 +130,7 @@ button {
 </style>
 </head>
 
-<body>
+<body style="display:none;">
 
 <div id="container">
 
@@ -169,6 +169,14 @@ button {
 
 <script>
 
+const authToken = localStorage.getItem("token");
+
+if (!authToken) {
+  window.location.replace("/login");
+} else {
+  document.body.style.display = "block";
+}
+
 let currentChat = [];
 let currentSession = null;
 
@@ -206,13 +214,6 @@ function showUser() {
     document.getElementById("title").innerText =
       "🤖 FINUX Assistant | Hello " + username;
   }
-}
-
-// 🔐 Check login
-let token = localStorage.getItem("token");
-
-if (!token) {
-  window.location.href = "/login";
 }
 
 // 🔓 Logout
@@ -332,6 +333,7 @@ function showAddForm() {
 
 // 🚀 Send message
 async function send() {
+  const token = localStorage.getItem("token");
   let input = document.getElementById("input");
   let text = input.value.trim();
   if (!text) return;
