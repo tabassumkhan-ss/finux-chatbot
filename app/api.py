@@ -299,6 +299,12 @@ TRIPLE_MENU = {
     "⬅ Back": "menu:others",
 }
 
+LANGUAGE_MENU = {
+    "🇬🇧 English": "lang:en",
+    "🇮🇳 Hindi": "lang:hi",
+    "🇮🇳 Marathi": "lang:mr",
+    "🇮🇳 Bengali": "lang:bn",
+}
 
 
 MENUS = {
@@ -389,6 +395,7 @@ HARDCODED_ANSWERS = {
 
 # ===================== UI HELPERS =====================
 
+
 def header_buttons():
     return [
         [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
@@ -419,7 +426,29 @@ def get_full_menu(menu_name):
 
     return base_menu
 
-def get_full_answer(key):
+def get_user_language(user_id):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT language FROM users WHERE username=%s",
+        (user_id,)
+    )
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return row[0] if row else "en"
+
+def get_full_answer(key, user_id=None):
+    lang = "en"
+
+    if user_id:
+        lang = get_user_language(user_id)
+
+    # DB answer
     conn = get_conn()
     cur = conn.cursor()
 
@@ -436,7 +465,12 @@ def get_full_answer(key):
     if row:
         return row[0]
 
-    return HARDCODED_ANSWERS.get(key)
+    answer = HARDCODED_ANSWERS.get(key)
+
+    if isinstance(answer, dict):
+        return answer.get(lang, answer.get("en"))
+
+    return answer
 
 
 def build_menu(menu_key):
@@ -831,6 +865,38 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
+            if payload.startswith("lang:"):
+                lang = payload.split(":")[1]
+
+                # save in DB
+                conn = get_conn()
+                cur = conn.cursor()
+
+                cur.execute(
+                "INSERT INTO users (username, password, role) VALUES (%s, %s, %s) ON CONFLICT (username) DO NOTHING",
+                (str(chat_id), "telegram_user", "user")     
+            )
+                cur.execute(
+                "UPDATE users SET language=%s WHERE username=%s",
+                 (lang, str(chat_id))
+            )
+
+                conn.commit()
+                cur.close()
+                conn.close()
+
+                await client.post(
+                f"{TELEGRAM_API}/editMessageText",
+                json={
+                    "chat_id": chat_id,
+                     "message_id": cq["message"]["message_id"],
+                     "text": "✅ Language selected!\n\n Please choose an option:",
+                        "reply_markup": build_menu("main"),
+        },
+    )
+
+                return {"ok": True}
+            
             # MENU navigation
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
@@ -857,7 +923,7 @@ async def telegram_webhook(request: Request):
                 key = payload.replace("q:", "")
 
                 # 1️⃣ Hardcoded answers first
-                answer = get_full_answer(key)
+                answer = get_full_answer(key, str(chat_id))
 
                 # 2️⃣ Document search
                 if not answer:
@@ -868,6 +934,9 @@ async def telegram_webhook(request: Request):
                 if not answer:
                     topic = key.replace("_", " ")
                     answer = generate_answer(topic)
+
+                if not answer:
+                 answer = "No information available."
 
                 message_id = cq["message"]["message_id"]
 
@@ -948,7 +1017,11 @@ async def telegram_webhook(request: Request):
                     "chat_id": chat_id,
                     "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
 "parse_mode": "Markdown",
-                    "reply_markup": build_menu("main"),
+                    "reply_markup": {
+    "inline_keyboard": [
+        [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
+    ]
+},
                 },
             )
             return {"ok": True}
