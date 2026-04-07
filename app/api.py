@@ -421,6 +421,7 @@ HARDCODED_ANSWERS = {
 
 def header_buttons():
     return [
+        [{"text": "🌐 Change Language", "callback_data": "change_lang"}],
         [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"}],
         [
             {"text": "Channel", "url": "https://t.me/Finuxofficiallive"},
@@ -496,14 +497,25 @@ def get_full_answer(key, user_id=None):
     return answer
 
 
-def build_menu(menu_key):
-    keyboard = header_buttons()
+def build_menu(menu_key, user_id=None):
 
+    keyboard = header_buttons()
     menu_items = list(get_full_menu(menu_key).items())
 
+    lang = "en"
+    if user_id:
+        lang = get_user_language(user_id)
+
     row = []
+
     for label, action in menu_items:
-        row.append({"text": label, "callback_data": action})
+
+        translated_label = translate(label, lang)
+
+        row.append({
+            "text": translated_label,
+            "callback_data": action
+        })
 
         if len(row) == 2:
             keyboard.append(row)
@@ -890,64 +902,82 @@ async def telegram_webhook(request: Request):
                 json={"callback_query_id": cq["id"]},
             )
 
+            # 🌐 LANGUAGE SELECT
             if payload.startswith("lang:"):
                 lang = payload.split(":")[1]
 
-                # save in DB
                 conn = get_conn()
                 cur = conn.cursor()
 
+                # ensure user exists
                 cur.execute(
-                "INSERT INTO users (username, password, role) VALUES (%s, %s, %s) ON CONFLICT (username) DO NOTHING",
-                (str(chat_id), "telegram_user", "user")     
-            )
+                    "INSERT INTO users (username, password, role) VALUES (%s, %s, %s) ON CONFLICT (username) DO NOTHING",
+                    (str(chat_id), "telegram_user", "user")
+                )
+
+                # update language
                 cur.execute(
-                "UPDATE users SET language=%s WHERE username=%s",
-                 (lang, str(chat_id))
-            )
+                    "UPDATE users SET language=%s WHERE username=%s",
+                    (lang, str(chat_id))
+                )
 
                 conn.commit()
                 cur.close()
                 conn.close()
 
                 await client.post(
-                f"{TELEGRAM_API}/editMessageText",
-                json={
-                    "chat_id": chat_id,
-                     "message_id": cq["message"]["message_id"],
-                     "text": "✅ Language selected!\n\n Please choose an option:",
-                        "reply_markup": build_menu("main"),
-        },
-    )
+                    f"{TELEGRAM_API}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": cq["message"]["message_id"],
+                        "text": "✅ Language selected!\n\nPlease choose an option:",
+                        "reply_markup": build_menu("main", str(chat_id)),
+                    },
+                )
 
                 return {"ok": True}
-            
-            # MENU navigation
+
+            # 🌐 CHANGE LANGUAGE BUTTON
+            if payload == "change_lang":
+                await client.post(
+                    f"{TELEGRAM_API}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": cq["message"]["message_id"],
+                        "text": "🌐 *Please choose your language:*",
+                        "parse_mode": "Markdown",
+                        "reply_markup": {
+                            "inline_keyboard": [
+                                [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
+                            ]
+                        },
+                    },
+                )
+                return {"ok": True}
+
+            # 📂 MENU NAVIGATION
             if payload.startswith("menu:"):
                 menu_key = payload.replace("menu:", "")
-
-                
-                
                 message_id = cq["message"]["message_id"]
 
                 await client.post(
-                f"{TELEGRAM_API}/editMessageText",
-                 json={
-                "chat_id": chat_id,
-                "message_id": message_id,
-                "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
-"parse_mode": "Markdown",
-                 "reply_markup": build_menu(menu_key),
-    },
-)
+                    f"{TELEGRAM_API}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu(menu_key, str(chat_id)),
+                    },
+                )
+
                 return {"ok": True}
 
-            # DOCUMENT / HARDCODED SEARCH
+            # ❓ QUESTION HANDLER
             if payload.startswith("q:"):
-
                 key = payload.replace("q:", "")
 
-                # 1️⃣ Hardcoded answers first
+                # 1️⃣ Hardcoded
                 answer = get_full_answer(key, str(chat_id))
 
                 # 2️⃣ Document search
@@ -960,60 +990,56 @@ async def telegram_webhook(request: Request):
                     topic = key.replace("_", " ")
                     answer = generate_answer(topic)
 
+                # 4️⃣ Final fallback
                 if not answer:
-                 answer = "No information available."
+                    answer = "No information available."
 
+                # 🌐 Translate
                 lang = get_user_language(str(chat_id))
                 answer = translate(answer, lang)
 
                 message_id = cq["message"]["message_id"]
 
-                # decide which menu to show after answer
+                # determine menu
                 menu_to_show = "main"
 
                 if key.startswith("wallet"):
-                 menu_to_show = "wallet"
-                elif key.startswith("deposit"): 
-                 menu_to_show = "deposit"
+                    menu_to_show = "wallet"
+                elif key.startswith("deposit"):
+                    menu_to_show = "deposit"
                 elif key.startswith("minting"):
-                 menu_to_show = "minting" 
+                    menu_to_show = "minting"
                 elif key.startswith("lp"):
-                 menu_to_show = "lp"
+                    menu_to_show = "lp"
                 elif key.startswith("staking"):
-                 menu_to_show = "staking"
+                    menu_to_show = "staking"
                 elif key.startswith("withdraw"):
-                 menu_to_show = "withdraw"
+                    menu_to_show = "withdraw"
                 elif key.startswith("airdrop"):
-                 menu_to_show = "airdrop"
+                    menu_to_show = "airdrop"
                 elif key.startswith("affiliate"):
-                 menu_to_show = "affiliate"
+                    menu_to_show = "affiliate"
                 elif key in ["rank_structure", "club_rewards", "rank_requirements"]:
-                 menu_to_show = "ranks"
+                    menu_to_show = "ranks"
                 elif key.startswith("terms") or key.startswith("risk"):
-                 menu_to_show = "others" 
+                    menu_to_show = "others"
                 elif key.startswith("triple"):
-                 menu_to_show = "triple_income"
+                    menu_to_show = "triple_income"
 
                 await client.post(
-                  f"{TELEGRAM_API}/editMessageText",
-                   json={
-                    "chat_id": chat_id,
-                     "message_id": message_id,
-                     "text": answer,
-                     "parse_mode": "Markdown",
-                     "reply_markup": build_menu(menu_to_show),
-    },
-)
+                    f"{TELEGRAM_API}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "text": answer,
+                        "parse_mode": "Markdown",
+                        "reply_markup": build_menu(menu_to_show, str(chat_id)),
+                    },
+                )
 
-                # Save to DB
+                # save chat
                 try:
-                    save_chat(
-                        "telegram",
-                        str(chat_id),
-                        "",
-                        key,
-                        answer
-                    )
+                    save_chat("telegram", str(chat_id), "", key, answer)
                 except Exception as e:
                     logging.error(f"DB save error (callback): {e}")
 
@@ -1027,7 +1053,7 @@ async def telegram_webhook(request: Request):
         chat_id = message["chat"]["id"]
         text = message.get("text", "").strip()
 
-        # /start command
+        # /start
         if text.startswith("/start"):
 
             image_path = os.path.join(DATA_DIR, "finux.png")
@@ -1044,19 +1070,21 @@ async def telegram_webhook(request: Request):
                 json={
                     "chat_id": chat_id,
                     "text": "🌐 *Please choose your language:*",
-"parse_mode": "Markdown",
+                    "parse_mode": "Markdown",
                     "reply_markup": {
-    "inline_keyboard": [
-        [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
-    ]
-},
+                        "inline_keyboard": [
+                            [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
+                        ]
+                    },
                 },
             )
+
             return {"ok": True}
 
-        # USER typed question
+        # user message
         if text:
             answer = generate_answer(text)
+
             lang = get_user_language(str(chat_id))
             answer = translate(answer, lang)
 
