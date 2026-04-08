@@ -224,6 +224,48 @@ def translate(text, lang):
 
     return text
 
+def translate_batch(texts, lang):
+    if lang == "en":
+        return texts
+
+    # 🔥 create cache key
+    cache_key = f"{lang}:{'|'.join(texts)}"
+
+    # ✅ return cached if exists
+    if cache_key in BATCH_CACHE:
+        return BATCH_CACHE[cache_key]
+
+    try:
+        joined = "\n".join(texts)
+
+        prompt = f"""
+Translate UI labels to {lang}.
+Keep it SHORT (1-2 words only).
+No explanation.
+
+{joined}
+"""
+
+        response = client.models.generate_content(
+            model="models/gemini-flash-latest",
+            contents=prompt
+        )
+
+        if response.text:
+            lines = response.text.strip().split("\n")
+
+            if len(lines) == len(texts):
+
+                # 🔥 SAVE IN CACHE
+                BATCH_CACHE[cache_key] = lines
+
+                return lines
+
+    except Exception as e:
+        logging.error(f"Batch translation error: {e}")
+
+    return texts
+
 # ================ TELEGRAM ===============
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -428,6 +470,7 @@ HARDCODED_ANSWERS = {
    
  }
 
+BATCH_CACHE = {}
 TRANSLATION_CACHE = {}
 
 # ===================== UI HELPERS =====================
@@ -520,11 +563,13 @@ def build_menu(menu_key, user_id=None):
     if user_id:
         lang = get_user_language(user_id)
 
+    labels = [label for label, _ in menu_items]
+
+    translated_labels = translate_batch(labels, lang)
+
     row = []
 
-    for label, action in menu_items:
-
-        translated_label = translate(label, lang)
+    for (label, action), translated_label in zip(menu_items, translated_labels):
 
         row.append({
             "text": translated_label,
