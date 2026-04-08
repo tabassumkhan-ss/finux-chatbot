@@ -378,29 +378,69 @@ LANGUAGE_MENU = {
 }
 
 HARDCODED_ANSWERS = {
-    "wallet_info": "A FINUX wallet is a digital wallet where your *FNX tokens and rewards* are stored.\nIt is *automatically generated* when you register in the system.",
+   "wallet_info": {
+    "en": "A FINUX wallet is a digital wallet where your FNX tokens and rewards are stored.",
+    "hi": "FINUX वॉलेट एक डिजिटल वॉलेट है जहाँ आपके FNX टोकन और रिवॉर्ड सुरक्षित रहते हैं।",
+    "mr": "FINUX वॉलेट हे एक डिजिटल वॉलेट आहे जिथे तुमचे FNX टोकन आणि रिवॉर्ड साठवले जातात.",
+    "bn": "FINUX ওয়ালেট একটি ডিজিটাল ওয়ালেট যেখানে আপনার FNX টোকেন এবং রিওয়ার্ড সংরক্ষিত থাকে।"
+},
 
-"wallet_create": "1️⃣ Download the wallet from the official website:\nhttps://finux.online\n2️⃣ Your wallet will be generated automatically.\n⚠️ Secure your *private key / seed phrase*.\n3️⃣ Sign up on DEX to start using your wallet.",
+"wallet_create": {
+    "en": "Download wallet from official website. Secure your private key.",
+    "hi": "ऑफिशियल वेबसाइट से वॉलेट डाउनलोड करें और अपनी प्राइवेट की सुरक्षित रखें।",
+    "mr": "अधिकृत वेबसाइटवरून वॉलेट डाउनलोड करा आणि तुमची प्रायव्हेट की सुरक्षित ठेवा.",
+    "bn": "অফিসিয়াল ওয়েবসাইট থেকে ওয়ালেট ডাউনলোড করুন এবং আপনার প্রাইভেট কি সুরক্ষিত রাখুন।"
+},
 
-"wallet_security": "FINUX wallets operate in a secure blockchain environment.\nHowever, users must protect their *private key or seed phrase*.\n⚠️ If you lose it, the company *cannot recover your funds*.",
+"wallet_security": {
+    "en": "Keep your private key safe. If lost, funds cannot be recovered.",
+    "hi": "अपनी प्राइवेट की सुरक्षित रखें, खोने पर फंड वापस नहीं मिलेंगे।",
+    "mr": "तुमची प्रायव्हेट की सुरक्षित ठेवा, हरवल्यास निधी परत मिळणार नाही.",
+    "bn": "আপনার প্রাইভেট কি নিরাপদ রাখুন, হারালে ফান্ড ফিরে পাবেন না।"
+},
 
-"wallet_private": "Your private key or seed phrase is a *secret code* that gives access to your wallet.\n⚠️ Never share it with anyone.\nAnyone with this key can *control your funds*.",
+"wallet_private": {
+    "en": "Private key gives full control of your wallet. Never share it.",
+    "hi": "प्राइवेट की आपके वॉलेट का पूरा नियंत्रण देती है, इसे कभी शेयर न करें।",
+    "mr": "प्रायव्हेट की तुमच्या वॉलेटवर पूर्ण नियंत्रण देते, कधीही शेअर करू नका.",
+    "bn": "প্রাইভেট কি আপনার ওয়ালেটের সম্পূর্ণ নিয়ন্ত্রণ দেয়, কখনও শেয়ার করবেন না।"
+},
     
-"deposit_min": "The minimum deposit is *$20*.",
+"deposit_min": {
+    "en": "Minimum deposit is $20.",
+    "hi": "न्यूनतम जमा $20 है।",
+    "mr": "किमान जमा $20 आहे.",
+    "bn": "ন্যূনতম জমা $20।"
+},
 
-"deposit_plans": "You can deposit:\n• $20\n• $50\n• $100\n• $200\n• Multiples of $100",
+"deposit_plans": {
+    "en": "You can deposit $20, $50, $100, $200 or multiples of $100.",
+    "hi": "आप $20, $50, $100, $200 या $100 के गुणक जमा कर सकते हैं।",
+    "mr": "$20, $50, $100, $200 किंवा $100 च्या पटीत जमा करू शकता.",
+    "bn": "আপনি $20, $50, $100, $200 বা $100 এর গুণিতক জমা করতে পারেন।"
+},
 
 "deposit_structure": "Your deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
 
 "deposit_blockchain": "The system uses *MEP-20 blockchain contract*.",    
     
-"minting_info": "Minting means creating a new FNX token in the system.",
+"minting_info": {
+    "en": "Minting means creating new FNX tokens.",
+    "hi": "मिंटिंग का मतलब नए FNX टोकन बनाना है।",
+    "mr": "मिंटिंग म्हणजे नवीन FNX टोकन तयार करणे.",
+    "bn": "মিন্টিং মানে নতুন FNX টোকেন তৈরি করা।"
+},
 
 "minting_time": "After your deposit transaction is completed.",
 
 "minting_location": "The system automatically credits the minted FNX token to your wallet.",    
     
-"lp_info": "A Liquidity Pool is where users provide tokens to help trading happen smoothly.",
+"lp_info": {
+    "en": "Liquidity Pool helps smooth trading.",
+    "hi": "लिक्विडिटी पूल ट्रेडिंग को आसान बनाता है।",
+    "mr": "लिक्विडिटी पूल ट्रेडिंग सोपे करते.",
+    "bn": "লিকুইডিটি পুল ট্রেডিং সহজ করে।"
+},
 
 "lp_pair": "FNX + USDC pair is used.",
 
@@ -408,13 +448,23 @@ HARDCODED_ANSWERS = {
 
 "lp_rewards": "You can earn daily rewards up to *5% MPY (Monthly Percentage Yield)*.\nThese rewards are generated from the system's trading and ecosystem activity.",
     
-"staking_info": "It means locking FNX tokens in the system to earn rewards.",
+"staking_info": {
+    "en": "Staking means locking FNX tokens to earn rewards.",
+    "hi": "स्टेकिंग का मतलब FNX टोकन लॉक करके रिवॉर्ड कमाना है।",
+    "mr": "स्टेकिंग म्हणजे FNX टोकन लॉक करून रिवॉर्ड मिळवणे.",
+    "bn": "স্টেকিং মানে FNX টোকেন লক করে রিওয়ার্ড আয় করা।"
+},
 
 "staking_work": "The staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
 
 "staking_rewards": "Up to *2% MPY (Monthly Percentage Yield)* daily reward.",    
     
-"withdraw_anytime": "Yes, FNX rewards can be withdrawn anytime.",
+"withdraw_anytime": {
+    "en": "Yes, you can withdraw anytime.",
+    "hi": "हाँ, आप कभी भी निकाल सकते हैं।",
+    "mr": "होय, तुम्ही कधीही पैसे काढू शकता.",
+    "bn": "হ্যাঁ, আপনি যেকোনো সময় উত্তোলন করতে পারেন।"
+},
 
 "withdraw_currency": "You will receive *USDC* in your wallet instantly.",
 
@@ -426,25 +476,47 @@ HARDCODED_ANSWERS = {
 
 "airdrop_conditions": "• Wallet must be registered\n• User must be verified\n• Duplicate referrals are not counted",   
     
-"affiliate_info": "It is a referral program where you earn rewards by building a team.",
+"affiliate_info": {
+    "en": "Affiliate program lets you earn by building a team.",
+    "hi": "एफिलिएट प्रोग्राम से आप टीम बनाकर कमाई कर सकते हैं।",
+    "mr": "अ‍ॅफिलिएट प्रोग्रामद्वारे टीम बनवून कमाई करता येते.",
+    "bn": "অ্যাফিলিয়েট প্রোগ্রাম আপনাকে দল গড়ে আয় করতে দেয়।"
+},
 
 "affiliate_team": "The total deposits made by your team.",
 
 "affiliate_importance": "It helps grow the community and increases earnings.",    
     
-"rank_structure": "• Rank 1 — Origin 10%\n• Rank 2 — Life Changer 16%\n• Rank 3 — Advisor 20%\n• Rank 4 — Visionary 23%\n• Rank 5 — Creator 25%",
+"rank_structure": {
+    "en": "Ranks: Origin, Life Changer, Advisor, Visionary, Creator.",
+    "hi": "रैंक: ओरिजिन, लाइफ चेंजर, एडवाइजर, विजनरी, क्रिएटर।",
+    "mr": "रँक: ओरिजिन, लाइफ चेंजर, अ‍ॅडव्हायझर, व्हिजनरी, क्रिएटर.",
+    "bn": "র‍্যাঙ্ক: অরিজিন, লাইফ চেঞ্জার, অ্যাডভাইজার, ভিশনারি, ক্রিয়েটর।"
+},
 
 "club_rewards": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
 
 "rank_requirements": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",    
     
-"triple_info": "Users can earn from three sources:\n• Performance income — up to 3x\n• Liquidity pool reward — up to 3x\n• FNX staking — up to 2x",
+"triple_info": {
+    "en": "Earn from performance, LP and staking.",
+    "hi": "परफॉर्मेंस, LP और स्टेकिंग से कमाई करें।",
+    "mr": "परफॉर्मन्स, LP आणि स्टेकिंगमधून कमाई करा.",
+    "bn": "পারফরম্যান্স, LP এবং স্টেকিং থেকে আয় করুন।"
+},
+
 
 "triple_limit": "After *3x performance income*, you must *retop-up* to continue earning.",    
     
 "terms_conditions": "*General T&C*\n• Anyone can join the program\n• Rewards based on company policy\n• Company may update program anytime\n\n*Airdrop T&C*\n• Wallet registration + verification\n• Limited period\n• Duplicate referrals not counted\n\n*Additional T&C*\n• LP 50% counts in team business\n• Performance income limit: 3X\n• Retop-up required after limit\n• Retop-up gives 50% FNX",   
     
-"risk_disclaimer": "• Crypto investments carry risk\n• Earnings are not guaranteed\n• Users must secure their wallets\n• Company is not responsible for lost private keys",    
+"risk_disclaimer": {
+    "en": "Crypto investments carry risk.",
+    "hi": "क्रिप्टो निवेश में जोखिम होता है।",
+    "mr": "क्रिप्टो गुंतवणुकीत जोखीम असते.",
+    "bn": "ক্রিপ্টো বিনিয়োগে ঝুঁকি রয়েছে।"
+}
+
    
  }
 
