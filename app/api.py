@@ -196,6 +196,13 @@ def translate(text, lang):
     if lang == "en":
         return text
 
+    # 🔥 create cache key
+    cache_key = f"{lang}:{text}"
+
+    # ✅ return from cache if exists
+    if cache_key in TRANSLATION_CACHE:
+        return TRANSLATION_CACHE[cache_key]
+
     try:
         prompt = f"Translate to {lang}: {text}"
 
@@ -205,12 +212,17 @@ def translate(text, lang):
         )
 
         if response.text:
-            return response.text.strip()
+            translated = response.text.strip()
+
+            # 🔥 store in cache
+            TRANSLATION_CACHE[cache_key] = translated
+
+            return translated
 
     except Exception as e:
         logging.error(f"Translation error: {e}")
 
-    return text  # fallback
+    return text
 
 # ================ TELEGRAM ===============
 
@@ -415,6 +427,8 @@ HARDCODED_ANSWERS = {
 "risk_disclaimer": "• Crypto investments carry risk\n• Earnings are not guaranteed\n• Users must secure their wallets\n• Company is not responsible for lost private keys",    
    
  }
+
+TRANSLATION_CACHE = {}
 
 # ===================== UI HELPERS =====================
 
