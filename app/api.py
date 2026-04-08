@@ -299,20 +299,11 @@ OTHERS_MENU = [
 ]
 
 WALLET_MENU = [
-    {
-        "label": {
-            "en": "What is a Wallet?",
-            "hi": "वॉलेट क्या है?"
-        },
-        "action": "q:wallet_info"
-    },
-    {
-        "label": {
-            "en": "How to Create a Wallet?",
-            "hi": "वॉलेट कैसे बनाएं?"
-        },
-        "action": "q:wallet_create"
-    }
+    {"label": {"en": "What is Wallet?", "hi": "वॉलेट क्या है?"}, "action": "q:wallet_info"},
+    {"label": {"en": "Create Wallet", "hi": "वॉलेट बनाएं"}, "action": "q:wallet_create"},
+    {"label": {"en": "Wallet Security", "hi": "सुरक्षा"}, "action": "q:wallet_security"},
+    {"label": {"en": "Private Key", "hi": "प्राइवेट की"}, "action": "q:wallet_private"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
 ]
 
 DEPOSIT_MENU = [
