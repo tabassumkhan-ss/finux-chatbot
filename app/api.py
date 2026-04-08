@@ -10,7 +10,6 @@ import httpx
 import faiss
 import numpy as np
 from google import genai
-from google.genai import types
 from fastapi import FastAPI, Request
 from app.db import get_conn
 from fastapi.middleware.cors import CORSMiddleware
@@ -224,47 +223,6 @@ def translate(text, lang):
 
     return text
 
-def translate_batch(texts, lang):
-    if lang == "en":
-        return texts
-
-    # 🔥 create cache key
-    cache_key = f"{lang}:{'|'.join(texts)}"
-
-    # ✅ return cached if exists
-    if cache_key in BATCH_CACHE:
-        return BATCH_CACHE[cache_key]
-
-    try:
-        joined = "\n".join(texts)
-
-        prompt = f"""
-Translate UI labels to {lang}.
-Keep it SHORT (1-2 words only).
-No explanation.
-
-{joined}
-"""
-
-        response = client.models.generate_content(
-            model="models/gemini-flash-latest",
-            contents=prompt
-        )
-
-        if response.text:
-            lines = response.text.strip().split("\n")
-
-            if len(lines) == len(texts):
-
-                # 🔥 SAVE IN CACHE
-                BATCH_CACHE[cache_key] = lines
-
-                return lines
-
-    except Exception as e:
-        logging.error(f"Batch translation error: {e}")
-
-    return texts
 
 # ================ TELEGRAM ===============
 
@@ -284,119 +242,148 @@ if not GEMINI_API_KEY:
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ===================== MENUS =====================
-MAIN_MENU = {
-    "💼 Wallet": "menu:wallet",
-    "💰 Deposit": "menu:deposit",
-    "🪙 Minting": "menu:minting",
-    "📦 Others": "menu:others",
-}
+MAIN_MENU = [
+    {
+        "label": {
+            "en": "💼 Wallet",
+            "hi": "💼 वॉलेट",
+            "mr": "💼 बटवा",
+            "bn": "💼 ওয়ালেট"
+        },
+        "action": "menu:wallet"
+    },
+    {
+        "label": {
+            "en": "💰 Deposit",
+            "hi": "💰 जमा",
+            "mr": "💰 जमा",
+            "bn": "💰 জমা"
+        },
+        "action": "menu:deposit"
+    },
+    {
+        "label": {
+            "en": "🪙 Minting",
+            "hi": "🪙 मिंटिंग",
+            "mr": "🪙 टांकन",
+            "bn": "🪙 মিন্টিং"
+        },
+        "action": "menu:minting"
+    },
+    {
+        "label": {
+            "en": "📦 Others",
+            "hi": "📦 अन्य",
+            "mr": "📦 इतर",
+            "bn": "📦 অন্যান্য"
+        },
+        "action": "menu:others"
+    }
+]
 
-OTHERS_MENU = {
-    "💧 Liquidity Pool": "menu:lp",
-    "🔐 FNX Self Staking": "menu:staking",
-    "💸 Withdraw": "menu:withdraw",
-    "🎁 Airdrop": "menu:airdrop",
-    "🤝 Affiliate Program": "menu:affiliate",
-    "🏅 Ranks & Clubs": "menu:ranks",
-    "💎 Triple Income System": "menu:triple_income",
-    "📜 Terms & Conditions": "q:terms_conditions",
-    "⚠ Risk Disclaimer": "q:risk_disclaimer",
-    "⬅ Back": "menu:main",
-}
+OTHERS_MENU = [
+    {
+        "label": {
+            "en": "💧 Liquidity Pool",
+            "hi": "💧 लिक्विडिटी पूल"
+        },
+        "action": "menu:lp"
+    },
+    {
+        "label": {
+            "en": "🔐 FNX Self Staking",
+            "hi": "🔐 FNX स्टेकिंग"
+        },
+        "action": "menu:staking"
+    }
+]
 
-WALLET_MENU = {
-    "What is a Wallet?": "q:wallet_info",
-    "How to Create a Wallet?": "q:wallet_create",
-    "Wallet Security": "q:wallet_security",
-    "Private Key / Seed Phrase": "q:wallet_private",
-    "⬅️ Back to Main": "menu:main",
-}
+WALLET_MENU = [
+    {
+        "label": {
+            "en": "What is a Wallet?",
+            "hi": "वॉलेट क्या है?"
+        },
+        "action": "q:wallet_info"
+    },
+    {
+        "label": {
+            "en": "How to Create a Wallet?",
+            "hi": "वॉलेट कैसे बनाएं?"
+        },
+        "action": "q:wallet_create"
+    }
+]
 
-DEPOSIT_MENU = {
-    "💰 Minimum Deposit": "q:deposit_min",
-    "📊 Accepted Deposit Plans": "q:deposit_plans",
-    "📦 Deposit Structure": "q:deposit_structure",
-    "⛓ Blockchain": "q:deposit_blockchain",
-    "⬅ Back": "menu:main",
-}
+DEPOSIT_MENU = [
+    {"label": {"en": "💰 Minimum Deposit", "hi": "💰 न्यूनतम जमा"}, "action": "q:deposit_min"},
+    {"label": {"en": "📊 Accepted Deposit Plans", "hi": "📊 जमा योजनाएं"}, "action": "q:deposit_plans"},
+    {"label": {"en": "📦 Deposit Structure", "hi": "📦 जमा संरचना"}, "action": "q:deposit_structure"},
+    {"label": {"en": "⛓ Blockchain", "hi": "⛓ ब्लॉकचेन"}, "action": "q:deposit_blockchain"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
+]
 
-MINTING_MENU = {
-    "⚙️ What is Minting?": "q:minting_info",
-    "⏱ When Minting Happens?": "q:minting_time",
-    "📍 Minted Token Location": "q:minting_location",
-    "⬅ Back": "menu:main",
-}
+MINTING_MENU = [
+    {"label": {"en": "⚙️ What is Minting?", "hi": "⚙️ मिंटिंग क्या है?"}, "action": "q:minting_info"},
+    {"label": {"en": "⏱ When Minting Happens?", "hi": "⏱ मिंटिंग कब होती है?"}, "action": "q:minting_time"},
+    {"label": {"en": "📍 Minted Token Location", "hi": "📍 टोकन कहाँ मिलता है?"}, "action": "q:minting_location"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
+]
 
-LP_MENU = {
-    "💧 What is Liquidity Pool?": "q:lp_info",
-    "🔗 LP Pair": "q:lp_pair",
-    "⭐ Benefits of LP": "q:lp_benefits",
-    "💰 LP Rewards": "q:lp_rewards",
-    "⬅ Back": "menu:others",
-}
+LP_MENU = [
+    {"label": {"en": "💧 What is Liquidity Pool?", "hi": "💧 लिक्विडिटी पूल क्या है?"}, "action": "q:lp_info"},
+    {"label": {"en": "🔗 LP Pair", "hi": "🔗 एलपी पेयर"}, "action": "q:lp_pair"},
+    {"label": {"en": "⭐ Benefits of LP", "hi": "⭐ लाभ"}, "action": "q:lp_benefits"},
+    {"label": {"en": "💰 LP Rewards", "hi": "💰 रिवार्ड"}, "action": "q:lp_rewards"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-STAKING_MENU = {
-    "🔐 What is Staking?": "q:staking_info",
-    "⚙ How Staking Works": "q:staking_work",
-    "💰 Rewards from Staking": "q:staking_rewards",
-    "⬅ Back": "menu:others",
-}
+STAKING_MENU = [
+    {"label": {"en": "🔐 What is Staking?", "hi": "🔐 स्टेकिंग क्या है?"}, "action": "q:staking_info"},
+    {"label": {"en": "⚙ How Staking Works", "hi": "⚙ कैसे काम करता है"}, "action": "q:staking_work"},
+    {"label": {"en": "💰 Rewards from Staking", "hi": "💰 रिवार्ड"}, "action": "q:staking_rewards"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-WITHDRAW_MENU = {
-    "💸 Can I withdraw anytime?": "q:withdraw_anytime",
-    "💰 Withdrawal currency": "q:withdraw_currency",
-    "🔥 Token burning mechanism": "q:withdraw_burn",
-    "⬅ Back": "menu:others",
-}
+WITHDRAW_MENU = [
+    {"label": {"en": "💸 Can I withdraw anytime?", "hi": "💸 क्या कभी भी निकाल सकते हैं?"}, "action": "q:withdraw_anytime"},
+    {"label": {"en": "💰 Withdrawal currency", "hi": "💰 निकासी करेंसी"}, "action": "q:withdraw_currency"},
+    {"label": {"en": "🔥 Token burning mechanism", "hi": "🔥 टोकन बर्न सिस्टम"}, "action": "q:withdraw_burn"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-AIRDROP_MENU = {
-    "🎁 Airdrop eligibility": "q:airdrop_eligibility",
-    "💰 Airdrop reward": "q:airdrop_reward",
-    "📋 Conditions": "q:airdrop_conditions",
-    "⬅ Back": "menu:others",
-}
+AIRDROP_MENU = [
+    {"label": {"en": "🎁 Airdrop eligibility", "hi": "🎁 पात्रता"}, "action": "q:airdrop_eligibility"},
+    {"label": {"en": "💰 Airdrop reward", "hi": "💰 इनाम"}, "action": "q:airdrop_reward"},
+    {"label": {"en": "📋 Conditions", "hi": "📋 शर्तें"}, "action": "q:airdrop_conditions"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-AFFILIATE_MENU = {
-    "🤝 What is the affiliate program": "q:affiliate_info",
-    "👥 Team business": "q:affiliate_team",
-    "📈 Why affiliate is important": "q:affiliate_importance",
-    "⬅ Back": "menu:others",
-}
+AFFILIATE_MENU = [
+    {"label": {"en": "🤝 Affiliate Program", "hi": "🤝 एफिलिएट प्रोग्राम"}, "action": "q:affiliate_info"},
+    {"label": {"en": "👥 Team Business", "hi": "👥 टीम बिजनेस"}, "action": "q:affiliate_team"},
+    {"label": {"en": "📈 Importance", "hi": "📈 महत्व"}, "action": "q:affiliate_importance"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-RANKS_MENU = {
-    "🏅 Rank Structure": "q:rank_structure",
-    "🎖 Club rewards": "q:club_rewards",
-    "📊 Rank requirements": "q:rank_requirements",
-    "⬅ Back": "menu:others",
-}
+RANKS_MENU = [
+    {"label": {"en": "🏅 Rank Structure", "hi": "🏅 रैंक संरचना"}, "action": "q:rank_structure"},
+    {"label": {"en": "🎖 Club Rewards", "hi": "🎖 क्लब रिवार्ड"}, "action": "q:club_rewards"},
+    {"label": {"en": "📊 Requirements", "hi": "📊 आवश्यकताएँ"}, "action": "q:rank_requirements"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
-TRIPLE_MENU = {
-    "💎 What is the Triple Income System": "q:triple_info",
-    "📉 What happens after reaching the limit": "q:triple_limit",
-    "⬅ Back": "menu:others",
-}
+TRIPLE_MENU = [
+    {"label": {"en": "💎 Triple Income System", "hi": "💎 ट्रिपल इनकम सिस्टम"}, "action": "q:triple_info"},
+    {"label": {"en": "📉 After Limit", "hi": "📉 लिमिट के बाद"}, "action": "q:triple_limit"},
+    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+]
 
 LANGUAGE_MENU = {
     "🇬🇧 English": "lang:en",
     "🇮🇳 Hindi": "lang:hi",
     "🇮🇳 Marathi": "lang:mr",
     "🇮🇳 Bengali": "lang:bn",
-}
-
-
-MENUS = {
-    "main": MAIN_MENU,
-    "wallet": WALLET_MENU,
-    "deposit": DEPOSIT_MENU,
-    "minting": MINTING_MENU,
-    "others": OTHERS_MENU,
-    "lp": LP_MENU,
-    "staking": STAKING_MENU,
-    "withdraw": WITHDRAW_MENU,
-    "airdrop": AIRDROP_MENU,
-    "affiliate": AFFILIATE_MENU,
-    "ranks": RANKS_MENU,
-    "triple_income": TRIPLE_MENU,
 }
 
 HARDCODED_ANSWERS = {
@@ -470,7 +457,7 @@ HARDCODED_ANSWERS = {
    
  }
 
-BATCH_CACHE = {}
+
 TRANSLATION_CACHE = {}
 
 # ===================== UI HELPERS =====================
@@ -487,25 +474,31 @@ def header_buttons():
     ]
 
 def get_full_menu(menu_name):
-    base_menu = MENUS.get(menu_name, {}).copy()
-
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT label, target FROM custom_menus
-        WHERE parent=%s
-    """, (menu_name,))
-
-    rows = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    for label, target in rows:
-        base_menu[label] = target
-
-    return base_menu
+    if menu_name == "main":
+        return MAIN_MENU
+    elif menu_name == "wallet":
+        return WALLET_MENU
+    elif menu_name == "deposit":
+        return DEPOSIT_MENU
+    elif menu_name == "minting":
+        return MINTING_MENU
+    elif menu_name == "others":
+        return OTHERS_MENU
+    elif menu_name == "lp":
+        return LP_MENU
+    elif menu_name == "staking":
+        return STAKING_MENU
+    elif menu_name == "withdraw":
+        return WITHDRAW_MENU
+    elif menu_name == "airdrop":
+        return AIRDROP_MENU
+    elif menu_name == "affiliate":
+        return AFFILIATE_MENU
+    elif menu_name == "ranks":
+        return RANKS_MENU
+    elif menu_name == "triple_income":
+        return TRIPLE_MENU
+    return []
 
 def get_user_language(user_id):
     conn = get_conn()
@@ -557,22 +550,24 @@ def get_full_answer(key, user_id=None):
 def build_menu(menu_key, user_id=None):
 
     keyboard = header_buttons()
-    menu_items = list(get_full_menu(menu_key).items())
+    menu_items = get_full_menu(menu_key)
 
     lang = "en"
     if user_id:
         lang = get_user_language(user_id)
 
-    labels = [label for label, _ in menu_items]
-
-    translated_labels = translate_batch(labels, lang)
-
     row = []
 
-    for (label, action), translated_label in zip(menu_items, translated_labels):
+    for item in menu_items:
+
+        label_dict = item["label"]
+        action = item["action"]
+
+        # 🔥 pick correct language
+        text = label_dict.get(lang, label_dict.get("en"))
 
         row.append({
-            "text": translated_label,
+            "text": text,
             "callback_data": action
         })
 
