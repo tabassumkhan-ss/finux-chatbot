@@ -529,12 +529,15 @@ TRANSLATION_CACHE = {}
 def header_buttons():
     return [
         [{"text": "🌐 Change Language", "callback_data": "change_lang"}],
-        [{"text": " Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-         {"text": "❓ Why Finux?", "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"}
-        ],
+
         [
-            {"text": "Channel", "url": "https://t.me/Finuxofficiallive"},
-            {"text": " Website", "url": "https://finux.online/"},
+            {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
+            {"text": "❓ Why Finux?", "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"}
+        ],
+
+        [
+            {"text": "📢 Channel", "url": "https://t.me/Finuxofficiallive"},
+            {"text": "🌐 Website", "url": "https://finux.online/"},
         ],
     ]
 
@@ -922,7 +925,7 @@ def get_all_menus(request: Request):
 
 
 # ✅ static folder
-app.mount("/static", StaticFiles(directory="data"), name="static")
+app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
 
 @app.get("/post-button")
 async def post_button():
