@@ -533,7 +533,7 @@ def header_buttons():
         [
             {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
             {
-                "text": "❓ Why Finux?",
+                "text": "❓ Why Finux ?",
                 "web_app": {
                     "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"
                 }
