@@ -532,7 +532,7 @@ def header_buttons():
 
         [
             {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-            
+            {"text": "❓ Why Finux?", "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"}
         ],
 
         [
@@ -925,7 +925,7 @@ def get_all_menus(request: Request):
 
 
 # ✅ static folder
-app.mount("/static", StaticFiles(directory="data"), name="static")
+app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
 
 @app.get("/post-button")
 async def post_button():
