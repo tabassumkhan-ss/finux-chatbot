@@ -532,12 +532,17 @@ def header_buttons():
 
         [
             {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-            {"text": "❓ Why Finux?", "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"}
+            {
+                "text": "❓ Why Finux?",
+                "web_app": {
+                    "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"
+                }
+            }
         ],
 
         [
             {"text": "📢 Channel", "url": "https://t.me/Finuxofficiallive"},
-            {"text": "🌐 Website", "url": "https://finux.online/"},
+            {"text": "🌐 Website", "url": "https://finux.online/"}
         ],
     ]
 
