@@ -189,21 +189,18 @@ Question:
     return "Sorry, I could not generate a response."
 
 def translate(text, lang):
-    if not text:
+    if not text or lang == "en":
         return text
 
-    if lang == "en":
-        return text
-
-    # 🔥 create cache key
-    cache_key = f"{lang}:{text}"
-
-    # ✅ return from cache if exists
-    if cache_key in TRANSLATION_CACHE:
-        return TRANSLATION_CACHE[cache_key]
+    language_name = LANG_NAMES.get(lang, "English")
 
     try:
-        prompt = f"Translate to {lang}: {text}"
+        prompt = f"""
+Translate the following text into {language_name}.
+Keep formatting, emojis, and line breaks same.
+
+{text}
+"""
 
         response = client.models.generate_content(
             model="models/gemini-flash-latest",
@@ -211,18 +208,12 @@ def translate(text, lang):
         )
 
         if response.text:
-            translated = response.text.strip()
-
-            # 🔥 store in cache
-            TRANSLATION_CACHE[cache_key] = translated
-
-            return translated
+            return response.text.strip()
 
     except Exception as e:
         logging.error(f"Translation error: {e}")
 
     return text
-
 
 # ================ TELEGRAM ===============
 
@@ -375,10 +366,10 @@ LANGUAGE_MENU = {
     "🇮🇳 Hindi": "lang:hi",
     "🇮🇳 Marathi": "lang:mr",
     "🇮🇳 Bengali": "lang:bn",
-    "🇻🇳 Tiếng Việt": "lang:vi",
+    "🇻🇳 Vietnamese": "lang:vi",
     "🇵🇭 Filipino": "lang:tl",
-    "🇷🇺 Русский": "lang:ru",
-    "🇹🇭 ไทย": "lang:th"
+    "🇷🇺 Russian": "lang:ru",
+    "🇹🇭 Thai": "lang:th"
 }
 
 def build_language_menu():
