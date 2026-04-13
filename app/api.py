@@ -375,7 +375,28 @@ LANGUAGE_MENU = {
     "🇮🇳 Hindi": "lang:hi",
     "🇮🇳 Marathi": "lang:mr",
     "🇮🇳 Bengali": "lang:bn",
+    "🇻🇳 Tiếng Việt": "lang:vi",
+    "🇵🇭 Filipino": "lang:tl",
+    "🇷🇺 Русский": "lang:ru",
+    "🇹🇭 ไทย": "lang:th"
 }
+
+def build_language_menu():
+    items = list(LANGUAGE_MENU.items())
+    keyboard = []
+    row = []
+
+    for label, value in items:
+        row.append({"text": label, "callback_data": value})
+
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+
+    if row:  # if odd number
+        keyboard.append(row)
+
+    return {"inline_keyboard": keyboard}
 
 HARDCODED_ANSWERS = {
    "wallet_info": {
@@ -1073,11 +1094,7 @@ async def telegram_webhook(request: Request):
                         "message_id": cq["message"]["message_id"],
                         "text": "🌐 *Please choose your language:*",
                         "parse_mode": "Markdown",
-                        "reply_markup": {
-                            "inline_keyboard": [
-                                [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
-                            ]
-                        },
+                        "reply_markup": build_language_menu()
                     },
                 )
                 return {"ok": True}
@@ -1198,11 +1215,7 @@ async def telegram_webhook(request: Request):
                     "chat_id": chat_id,
                     "text": "🌐 *Please choose your language:*",
                     "parse_mode": "Markdown",
-                    "reply_markup": {
-                        "inline_keyboard": [
-                            [{"text": k, "callback_data": v}] for k, v in LANGUAGE_MENU.items()
-                        ]
-                    },
+                    "reply_markup": build_language_menu()
                 },
             )
 
