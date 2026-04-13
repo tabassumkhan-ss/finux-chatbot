@@ -188,6 +188,17 @@ Question:
 
     return "Sorry, I could not generate a response."
 
+LANG_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "mr": "Marathi",
+    "bn": "Bengali",
+    "vi": "Vietnamese",
+    "tl": "Filipino",
+    "ru": "Russian",
+    "th": "Thai"
+}
+
 def translate(text, lang):
     if not text or lang == "en":
         return text
@@ -238,8 +249,12 @@ MAIN_MENU = [
         "label": {
             "en": "💼 Wallet",
             "hi": "💼 वॉलेट",
-            "mr": "💼 बटवा",
-            "bn": "💼 ওয়ালেট"
+            "mr": "💼 वॉलेट",
+            "bn": "💼 ওয়ালেট",
+            "vi": "💼 Ví",
+            "tl": "💼 Wallet",
+            "ru": "💼 Кошелек",
+            "th": "💼 กระเป๋าเงิน"
         },
         "action": "menu:wallet"
     },
@@ -248,7 +263,11 @@ MAIN_MENU = [
             "en": "💰 Deposit",
             "hi": "💰 जमा",
             "mr": "💰 जमा",
-            "bn": "💰 জমা"
+            "bn": "💰 জমা",
+            "vi": "💰 Nạp tiền",
+            "tl": "💰 Deposito",
+            "ru": "💰 Депозит",
+            "th": "💰 ฝากเงิน"
         },
         "action": "menu:deposit"
     },
@@ -256,8 +275,12 @@ MAIN_MENU = [
         "label": {
             "en": "🪙 Minting",
             "hi": "🪙 मिंटिंग",
-            "mr": "🪙 टांकन",
-            "bn": "🪙 মিন্টিং"
+            "mr": "🪙 मिंटिंग",
+            "bn": "🪙 মিন্টিং",
+            "vi": "🪙 Đúc token",
+            "tl": "🪙 Minting",
+            "ru": "🪙 Минтинг",
+            "th": "🪙 การสร้างเหรียญ"
         },
         "action": "menu:minting"
     },
@@ -266,7 +289,11 @@ MAIN_MENU = [
             "en": "📦 Others",
             "hi": "📦 अन्य",
             "mr": "📦 इतर",
-            "bn": "📦 অন্যান্য"
+            "bn": "📦 অন্যান্য",
+            "vi": "📦 Khác",
+            "tl": "📦 Iba pa",
+            "ru": "📦 Другое",
+            "th": "📦 อื่นๆ"
         },
         "action": "menu:others"
     }
@@ -276,55 +303,369 @@ OTHERS_MENU = [
     {
         "label": {
             "en": "💧 Liquidity Pool",
-            "hi": "💧 लिक्विडिटी पूल"
+            "hi": "💧 लिक्विडिटी पूल",
+            "mr": "💧 लिक्विडिटी पूल",
+            "bn": "💧 লিকুইডিটি পুল",
+            "vi": "💧 Thanh khoản",
+            "tl": "💧 Liquidity Pool",
+            "ru": "💧 Пул ликвидности",
+            "th": "💧 สภาพคล่อง"
         },
         "action": "menu:lp"
     },
     {
         "label": {
-            "en": "🔐 FNX Self Staking",
-            "hi": "🔐 FNX स्टेकिंग"
+            "en": "🔐 Staking",
+            "hi": "🔐 स्टेकिंग",
+            "mr": "🔐 स्टेकिंग",
+            "bn": "🔐 স্টেকিং",
+            "vi": "🔐 Staking",
+            "tl": "🔐 Staking",
+            "ru": "🔐 Стейкинг",
+            "th": "🔐 การ Stake"
         },
         "action": "menu:staking"
+    },
+    {
+        "label": {
+            "en": "💸 Withdraw",
+            "hi": "💸 निकासी",
+            "mr": "💸 पैसे काढा",
+            "bn": "💸 উত্তোলন",
+            "vi": "💸 Rút tiền",
+            "tl": "💸 Withdraw",
+            "ru": "💸 Вывод",
+            "th": "💸 ถอนเงิน"
+        },
+        "action": "menu:withdraw"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:main"
     }
 ]
 
 WALLET_MENU = [
-    {"label": {"en": "What is Wallet?", "hi": "वॉलेट क्या है?"}, "action": "q:wallet_info"},
-    {"label": {"en": "Create Wallet", "hi": "वॉलेट बनाएं"}, "action": "q:wallet_create"},
-    {"label": {"en": "Wallet Security", "hi": "सुरक्षा"}, "action": "q:wallet_security"},
-    {"label": {"en": "Private Key", "hi": "प्राइवेट की"}, "action": "q:wallet_private"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
+    {
+        "label": {
+            "en": "What is Wallet?",
+            "hi": "वॉलेट क्या है?",
+            "mr": "वॉलेट म्हणजे काय?",
+            "bn": "ওয়ালেট কি?",
+            "vi": "Ví là gì?",
+            "tl": "Ano ang Wallet?",
+            "ru": "Что такое кошелек?",
+            "th": "กระเป๋าเงินคืออะไร?"
+        },
+        "action": "q:wallet_info"
+    },
+    {
+        "label": {
+            "en": "Create Wallet",
+            "hi": "वॉलेट बनाएं",
+            "mr": "वॉलेट तयार करा",
+            "bn": "ওয়ালেট তৈরি করুন",
+            "vi": "Tạo ví",
+            "tl": "Gumawa ng Wallet",
+            "ru": "Создать кошелек",
+            "th": "สร้างกระเป๋าเงิน"
+        },
+        "action": "q:wallet_create"
+    },
+    {
+        "label": {
+            "en": "Wallet Security",
+            "hi": "वॉलेट सुरक्षा",
+            "mr": "वॉलेट सुरक्षा",
+            "bn": "ওয়ালেট নিরাপত্তা",
+            "vi": "Bảo mật ví",
+            "tl": "Seguridad ng Wallet",
+            "ru": "Безопасность кошелька",
+            "th": "ความปลอดภัยของกระเป๋าเงิน"
+        },
+        "action": "q:wallet_security"
+    },
+    {
+        "label": {
+            "en": "Private Key",
+            "hi": "प्राइवेट की",
+            "mr": "प्रायव्हेट की",
+            "bn": "প্রাইভেট কি",
+            "vi": "Khóa riêng",
+            "tl": "Private Key",
+            "ru": "Приватный ключ",
+            "th": "คีย์ส่วนตัว"
+        },
+        "action": "q:wallet_private"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:main"
+    }
 ]
 
 DEPOSIT_MENU = [
-    {"label": {"en": "💰 Minimum Deposit", "hi": "💰 न्यूनतम जमा"}, "action": "q:deposit_min"},
-    {"label": {"en": "📊 Accepted Deposit Plans", "hi": "📊 जमा योजनाएं"}, "action": "q:deposit_plans"},
-    {"label": {"en": "📦 Deposit Structure", "hi": "📦 जमा संरचना"}, "action": "q:deposit_structure"},
-    {"label": {"en": "⛓ Blockchain", "hi": "⛓ ब्लॉकचेन"}, "action": "q:deposit_blockchain"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
+    {
+        "label": {
+            "en": "💰 Minimum Deposit",
+            "hi": "💰 न्यूनतम जमा",
+            "mr": "💰 किमान जमा",
+            "bn": "💰 ন্যূনতম জমা",
+            "vi": "💰 Nạp tối thiểu",
+            "tl": "💰 Minimum na Deposito",
+            "ru": "💰 Минимальный депозит",
+            "th": "💰 ฝากขั้นต่ำ"
+        },
+        "action": "q:deposit_min"
+    },
+    {
+        "label": {
+            "en": "📊 Deposit Plans",
+            "hi": "📊 जमा योजनाएं",
+            "mr": "📊 जमा योजना",
+            "bn": "📊 জমার পরিকল্পনা",
+            "vi": "📊 Gói nạp tiền",
+            "tl": "📊 Mga Plano ng Deposito",
+            "ru": "📊 Планы депозита",
+            "th": "📊 แผนการฝาก"
+        },
+        "action": "q:deposit_plans"
+    },
+    {
+        "label": {
+            "en": "📦 Deposit Structure",
+            "hi": "📦 जमा संरचना",
+            "mr": "📦 जमा संरचना",
+            "bn": "📦 জমার গঠন",
+            "vi": "📦 Cấu trúc nạp",
+            "tl": "📦 Istruktura ng Deposito",
+            "ru": "📦 Структура депозита",
+            "th": "📦 โครงสร้างการฝาก"
+        },
+        "action": "q:deposit_structure"
+    },
+    {
+        "label": {
+            "en": "⛓ Blockchain",
+            "hi": "⛓ ब्लॉकचेन",
+            "mr": "⛓ ब्लॉकचेन",
+            "bn": "⛓ ব্লকচেইন",
+            "vi": "⛓ Blockchain",
+            "tl": "⛓ Blockchain",
+            "ru": "⛓ Блокчейн",
+            "th": "⛓ บล็อกเชน"
+        },
+        "action": "q:deposit_blockchain"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:main"
+    }
 ]
 
 MINTING_MENU = [
-    {"label": {"en": "⚙️ What is Minting?", "hi": "⚙️ मिंटिंग क्या है?"}, "action": "q:minting_info"},
-    {"label": {"en": "⏱ When Minting Happens?", "hi": "⏱ मिंटिंग कब होती है?"}, "action": "q:minting_time"},
-    {"label": {"en": "📍 Minted Token Location", "hi": "📍 टोकन कहाँ मिलता है?"}, "action": "q:minting_location"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:main"},
+    {
+        "label": {
+            "en": "⚙️ What is Minting?",
+            "hi": "⚙️ मिंटिंग क्या है?",
+            "mr": "⚙️ मिंटिंग म्हणजे काय?",
+            "bn": "⚙️ মিন্টিং কী?",
+            "vi": "⚙️ Minting là gì?",
+            "tl": "⚙️ Ano ang Minting?",
+            "ru": "⚙️ Что такое минтинг?",
+            "th": "⚙️ การ Mint คืออะไร?"
+        },
+        "action": "q:minting_info"
+    },
+    {
+        "label": {
+            "en": "⏱ When Minting Happens?",
+            "hi": "⏱ मिंटिंग कब होती है?",
+            "mr": "⏱ मिंटिंग कधी होते?",
+            "bn": "⏱ মিন্টিং কখন হয়?",
+            "vi": "⏱ Khi nào mint?",
+            "tl": "⏱ Kailan nangyayari ang Minting?",
+            "ru": "⏱ Когда происходит минтинг?",
+            "th": "⏱ การ Mint เกิดขึ้นเมื่อไร?"
+        },
+        "action": "q:minting_time"
+    },
+    {
+        "label": {
+            "en": "📍 Token Location",
+            "hi": "📍 टोकन कहाँ मिलता है?",
+            "mr": "📍 टोकन कुठे मिळतो?",
+            "bn": "📍 টোকেন কোথায় পাওয়া যায়?",
+            "vi": "📍 Token ở đâu?",
+            "tl": "📍 Saan napupunta ang Token?",
+            "ru": "📍 Где находятся токены?",
+            "th": "📍 โทเค็นอยู่ที่ไหน?"
+        },
+        "action": "q:minting_location"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:main"
+    }
 ]
 
 LP_MENU = [
-    {"label": {"en": "💧 What is Liquidity Pool?", "hi": "💧 लिक्विडिटी पूल क्या है?"}, "action": "q:lp_info"},
-    {"label": {"en": "🔗 LP Pair", "hi": "🔗 एलपी पेयर"}, "action": "q:lp_pair"},
-    {"label": {"en": "⭐ Benefits of LP", "hi": "⭐ लाभ"}, "action": "q:lp_benefits"},
-    {"label": {"en": "💰 LP Rewards", "hi": "💰 रिवार्ड"}, "action": "q:lp_rewards"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "💧 What is LP?",
+            "hi": "💧 लिक्विडिटी पूल क्या है?",
+            "mr": "💧 लिक्विडिटी पूल म्हणजे काय?",
+            "bn": "💧 লিকুইডিটি পুল কী?",
+            "vi": "💧 LP là gì?",
+            "tl": "💧 Ano ang LP?",
+            "ru": "💧 Что такое LP?",
+            "th": "💧 LP คืออะไร?"
+        },
+        "action": "q:lp_info"
+    },
+    {
+        "label": {
+            "en": "🔗 LP Pair",
+            "hi": "🔗 एलपी पेयर",
+            "mr": "🔗 एलपी पेअर",
+            "bn": "🔗 এলপি পেয়ার",
+            "vi": "🔗 Cặp LP",
+            "tl": "🔗 LP Pair",
+            "ru": "🔗 Пара LP",
+            "th": "🔗 คู่ LP"
+        },
+        "action": "q:lp_pair"
+    },
+    {
+        "label": {
+            "en": "⭐ Benefits",
+            "hi": "⭐ लाभ",
+            "mr": "⭐ फायदे",
+            "bn": "⭐ সুবিধা",
+            "vi": "⭐ Lợi ích",
+            "tl": "⭐ Benepisyo",
+            "ru": "⭐ Преимущества",
+            "th": "⭐ ประโยชน์"
+        },
+        "action": "q:lp_benefits"
+    },
+    {
+        "label": {
+            "en": "💰 Rewards",
+            "hi": "💰 रिवार्ड",
+            "mr": "💰 रिवॉर्ड",
+            "bn": "💰 পুরস্কার",
+            "vi": "💰 Phần thưởng",
+            "tl": "💰 Gantimpala",
+            "ru": "💰 Награды",
+            "th": "💰 รางวัล"
+        },
+        "action": "q:lp_rewards"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 STAKING_MENU = [
-    {"label": {"en": "🔐 What is Staking?", "hi": "🔐 स्टेकिंग क्या है?"}, "action": "q:staking_info"},
-    {"label": {"en": "⚙ How Staking Works", "hi": "⚙ कैसे काम करता है"}, "action": "q:staking_work"},
-    {"label": {"en": "💰 Rewards from Staking", "hi": "💰 रिवार्ड"}, "action": "q:staking_rewards"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "🔐 What is Staking?",
+            "hi": "🔐 स्टेकिंग क्या है?",
+            "mr": "🔐 स्टेकिंग म्हणजे काय?",
+            "bn": "🔐 স্টেকিং কী?",
+            "vi": "🔐 Staking là gì?",
+            "tl": "🔐 Ano ang Staking?",
+            "ru": "🔐 Что такое стейкинг?",
+            "th": "🔐 การ Stake คืออะไร?"
+        },
+        "action": "q:staking_info"
+    },
+    {
+        "label": {
+            "en": "⚙ How it Works",
+            "hi": "⚙ कैसे काम करता है",
+            "mr": "⚙ कसे कार्य करते",
+            "bn": "⚙ কিভাবে কাজ করে",
+            "vi": "⚙ Cách hoạt động",
+            "tl": "⚙ Paano gumagana",
+            "ru": "⚙ Как это работает",
+            "th": "⚙ วิธีการทำงาน"
+        },
+        "action": "q:staking_work"
+    },
+    {
+        "label": {
+            "en": "💰 Rewards",
+            "hi": "💰 रिवार्ड",
+            "mr": "💰 रिवॉर्ड",
+            "bn": "💰 পুরস্কার",
+            "vi": "💰 Phần thưởng",
+            "tl": "💰 Gantimpala",
+            "ru": "💰 Награды",
+            "th": "💰 รางวัล"
+        },
+        "action": "q:staking_rewards"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 WITHDRAW_MENU = [
@@ -394,14 +735,22 @@ HARDCODED_ANSWERS = {
     "en": "A FINUX wallet is a digital wallet where your FNX tokens and rewards are stored.",
     "hi": "FINUX वॉलेट एक डिजिटल वॉलेट है जहाँ आपके FNX टोकन और रिवॉर्ड सुरक्षित रहते हैं।",
     "mr": "FINUX वॉलेट हे एक डिजिटल वॉलेट आहे जिथे तुमचे FNX टोकन आणि रिवॉर्ड साठवले जातात.",
-    "bn": "FINUX ওয়ালেট একটি ডিজিটাল ওয়ালেট যেখানে আপনার FNX টোকেন এবং রিওয়ার্ড সংরক্ষিত থাকে।"
+    "bn": "FINUX ওয়ালেট একটি ডিজিটাল ওয়ালেট যেখানে আপনার FNX টোকেন সংরক্ষিত হয়।",
+    "vi": "Ví FINUX là ví kỹ thuật số nơi lưu trữ FNX và phần thưởng của bạn.",
+    "tl": "Ang FINUX wallet ay isang digital wallet kung saan nakaimbak ang FNX tokens at rewards.",
+    "ru": "FINUX кошелек — это цифровой кошелек для хранения токенов FNX и вознаграждений.",
+    "th": "กระเป๋า FINUX เป็นกระเป๋าดิจิทัลสำหรับเก็บโทเค็น FNX และรางวัลของคุณ"
 },
 
 "wallet_create": {
     "en": "Download wallet from official website. Secure your private key.",
     "hi": "ऑफिशियल वेबसाइट से वॉलेट डाउनलोड करें और अपनी प्राइवेट की सुरक्षित रखें।",
     "mr": "अधिकृत वेबसाइटवरून वॉलेट डाउनलोड करा आणि तुमची प्रायव्हेट की सुरक्षित ठेवा.",
-    "bn": "অফিসিয়াল ওয়েবসাইট থেকে ওয়ালেট ডাউনলোড করুন এবং আপনার প্রাইভেট কি সুরক্ষিত রাখুন।"
+    "bn": "অফিসিয়াল ওয়েবসাইট থেকে ওয়ালেট ডাউনলোড করুন এবং প্রাইভেট কি সুরক্ষিত রাখুন।",
+    "vi": "Tải ví từ website chính thức và bảo mật khóa riêng của bạn.",
+    "tl": "I-download ang wallet mula sa opisyal na website at panatilihing ligtas ang private key.",
+    "ru": "Скачайте кошелек с официального сайта и защитите приватный ключ.",
+    "th": "ดาวน์โหลดกระเป๋าจากเว็บไซต์ทางการและเก็บคีย์ส่วนตัวให้ปลอดภัย"
 },
 
 "wallet_security": {
@@ -422,14 +771,22 @@ HARDCODED_ANSWERS = {
     "en": "Minimum deposit is $20.",
     "hi": "न्यूनतम जमा $20 है।",
     "mr": "किमान जमा $20 आहे.",
-    "bn": "ন্যূনতম জমা $20।"
+    "bn": "ন্যূনতম জমা $20।",
+    "vi": "Số tiền nạp tối thiểu là $20.",
+    "tl": "Ang minimum na deposito ay $20.",
+    "ru": "Минимальный депозит составляет $20.",
+    "th": "ยอดฝากขั้นต่ำคือ $20"
 },
 
 "deposit_plans": {
     "en": "You can deposit $20, $50, $100, $200 or multiples of $100.",
-    "hi": "आप $20, $50, $100, $200 या $100 के गुणक जमा कर सकते हैं।",
+    "hi": "$20, $50, $100, $200 या $100 के गुणक जमा कर सकते हैं।",
     "mr": "$20, $50, $100, $200 किंवा $100 च्या पटीत जमा करू शकता.",
-    "bn": "আপনি $20, $50, $100, $200 বা $100 এর গুণিতক জমা করতে পারেন।"
+    "bn": "$20, $50, $100, $200 বা $100 এর গুণিতক জমা করা যায়।",
+    "vi": "Bạn có thể nạp $20, $50, $100, $200 hoặc bội số của $100.",
+    "tl": "Maaari kang magdeposito ng $20, $50, $100, $200 o multiples ng $100.",
+    "ru": "Вы можете внести $20, $50, $100, $200 или кратно $100.",
+    "th": "คุณสามารถฝาก $20, $50, $100, $200 หรือทวีคูณของ $100"
 },
 
 "deposit_structure": "Your deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
@@ -440,7 +797,11 @@ HARDCODED_ANSWERS = {
     "en": "Minting means creating new FNX tokens.",
     "hi": "मिंटिंग का मतलब नए FNX टोकन बनाना है।",
     "mr": "मिंटिंग म्हणजे नवीन FNX टोकन तयार करणे.",
-    "bn": "মিন্টিং মানে নতুন FNX টোকেন তৈরি করা।"
+    "bn": "মিন্টিং মানে নতুন FNX টোকেন তৈরি করা।",
+    "vi": "Minting là quá trình tạo token FNX mới.",
+    "tl": "Ang minting ay paggawa ng bagong FNX tokens.",
+    "ru": "Минтинг означает создание новых токенов FNX.",
+    "th": "Minting คือการสร้างโทเค็น FNX ใหม่"
 },
 
 "minting_time": "After your deposit transaction is completed.",
@@ -451,7 +812,11 @@ HARDCODED_ANSWERS = {
     "en": "Liquidity Pool helps smooth trading.",
     "hi": "लिक्विडिटी पूल ट्रेडिंग को आसान बनाता है।",
     "mr": "लिक्विडिटी पूल ट्रेडिंग सोपे करते.",
-    "bn": "লিকুইডিটি পুল ট্রেডিং সহজ করে।"
+    "bn": "লিকুইডিটি পুল ট্রেডিং সহজ করে।",
+    "vi": "Liquidity Pool giúp giao dịch mượt mà hơn.",
+    "tl": "Ang Liquidity Pool ay nagpapadali ng trading.",
+    "ru": "Пул ликвидности обеспечивает плавную торговлю.",
+    "th": "Liquidity Pool ช่วยให้การซื้อขายราบรื่น"
 },
 
 "lp_pair": "FNX + USDC pair is used.",
@@ -464,7 +829,11 @@ HARDCODED_ANSWERS = {
     "en": "Staking means locking FNX tokens to earn rewards.",
     "hi": "स्टेकिंग का मतलब FNX टोकन लॉक करके रिवॉर्ड कमाना है।",
     "mr": "स्टेकिंग म्हणजे FNX टोकन लॉक करून रिवॉर्ड मिळवणे.",
-    "bn": "স্টেকিং মানে FNX টোকেন লক করে রিওয়ার্ড আয় করা।"
+    "bn": "স্টেকিং মানে FNX টোকেন লক করে রিওয়ার্ড আয় করা।",
+    "vi": "Staking là khóa FNX để nhận thưởng.",
+    "tl": "Ang staking ay pag-lock ng FNX para kumita.",
+    "ru": "Стейкинг — это блокировка FNX для получения наград.",
+    "th": "Staking คือการล็อก FNX เพื่อรับรางวัล"
 },
 
 "staking_work": "The staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
