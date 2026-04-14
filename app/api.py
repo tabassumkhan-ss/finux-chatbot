@@ -22,6 +22,8 @@ from sentence_transformers import SentenceTransformer
 
 from app.db import save_chat, init_db
 
+TRANSLATION_CACHE = {}
+
 class ChatRequest(BaseModel):
     message: str
     session_id: str
@@ -82,14 +84,20 @@ DOCUMENT_TEXT = load_documents()
 
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-doc_embeddings = embedding_model.encode(DOCUMENT_TEXT)
+if DOCUMENT_TEXT:
+    doc_embeddings = embedding_model.encode(DOCUMENT_TEXT)
 
-dimension = doc_embeddings.shape[1]
-index = faiss.IndexFlatL2(dimension)
-index.add(np.array(doc_embeddings))
+    dimension = doc_embeddings.shape[1]
+    index = faiss.IndexFlatL2(dimension)
+    index.add(np.array(doc_embeddings))
+else:
+    index = None
 
 
 def semantic_search(question: str, top_k=2):
+
+    if not index:
+        return ""
 
     question_vector = embedding_model.encode([question])
 
@@ -203,6 +211,11 @@ def translate(text, lang):
     if not text or lang == "en":
         return text
 
+    cache_key = f"{text}:{lang}"
+
+    if cache_key in TRANSLATION_CACHE:
+        return TRANSLATION_CACHE[cache_key]
+
     language_name = LANG_NAMES.get(lang, "English")
 
     try:
@@ -219,7 +232,9 @@ Keep formatting, emojis, and line breaks same.
         )
 
         if response.text:
-            return response.text.strip()
+            translated = response.text.strip()
+            TRANSLATION_CACHE[cache_key] = translated
+            return translated
 
     except Exception as e:
         logging.error(f"Translation error: {e}")
@@ -669,37 +684,265 @@ STAKING_MENU = [
 ]
 
 WITHDRAW_MENU = [
-    {"label": {"en": "💸 Can I withdraw anytime?", "hi": "💸 क्या कभी भी निकाल सकते हैं?"}, "action": "q:withdraw_anytime"},
-    {"label": {"en": "💰 Withdrawal currency", "hi": "💰 निकासी करेंसी"}, "action": "q:withdraw_currency"},
-    {"label": {"en": "🔥 Token burning mechanism", "hi": "🔥 टोकन बर्न सिस्टम"}, "action": "q:withdraw_burn"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "💸 Can I withdraw anytime?",
+            "hi": "💸 क्या मैं कभी भी निकाल सकता हूँ?",
+            "mr": "💸 मी कधीही पैसे काढू शकतो का?",
+            "bn": "💸 আমি কি যেকোনো সময় উত্তোলন করতে পারি?",
+            "vi": "💸 Tôi có thể rút tiền bất cứ lúc nào không?",
+            "tl": "💸 Maaari ba akong mag-withdraw anumang oras?",
+            "ru": "💸 Могу ли я выводить средства в любое время?",
+            "th": "💸 ฉันสามารถถอนเงินได้ทุกเมื่อหรือไม่?"
+        },
+        "action": "q:withdraw_anytime"
+    },
+    {
+        "label": {
+            "en": "💰 Withdrawal currency",
+            "hi": "💰 निकासी मुद्रा",
+            "mr": "💰 पैसे काढण्याची चलन",
+            "bn": "💰 উত্তোলনের মুদ্রা",
+            "vi": "💰 Loại tiền rút",
+            "tl": "💰 Currency ng withdrawal",
+            "ru": "💰 Валюта вывода",
+            "th": "💰 สกุลเงินที่ใช้ถอน"
+        },
+        "action": "q:withdraw_currency"
+    },
+    {
+        "label": {
+            "en": "🔥 Token burning mechanism",
+            "hi": "🔥 टोकन बर्निंग मैकेनिज्म",
+            "mr": "🔥 टोकन बर्निंग मेकॅनिझम",
+            "bn": "🔥 টোকেন বার্নিং প্রক্রিয়া",
+            "vi": "🔥 Cơ chế đốt token",
+            "tl": "🔥 Mekanismo ng token burning",
+            "ru": "🔥 Механизм сжигания токенов",
+            "th": "🔥 กลไกการเผาโทเค็น"
+        },
+        "action": "q:withdraw_burn"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 AIRDROP_MENU = [
-    {"label": {"en": "🎁 Airdrop eligibility", "hi": "🎁 पात्रता"}, "action": "q:airdrop_eligibility"},
-    {"label": {"en": "💰 Airdrop reward", "hi": "💰 इनाम"}, "action": "q:airdrop_reward"},
-    {"label": {"en": "📋 Conditions", "hi": "📋 शर्तें"}, "action": "q:airdrop_conditions"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "🎁 Airdrop eligibility",
+            "hi": "🎁 एयरड्रॉप पात्रता",
+            "mr": "🎁 एअरड्रॉप पात्रता",
+            "bn": "🎁 এয়ারড্রপ যোগ্যতা",
+            "vi": "🎁 Điều kiện airdrop",
+            "tl": "🎁 Airdrop eligibility",
+            "ru": "🎁 Условия аирдропа",
+            "th": "🎁 คุณสมบัติรับแอร์ดรอป"
+        },
+        "action": "q:airdrop_eligibility"
+    },
+    {
+        "label": {
+            "en": "🎁 Airdrop reward",
+            "hi": "🎁 एयरड्रॉप रिवॉर्ड",
+            "mr": "🎁 एअरड्रॉप रिवॉर्ड",
+            "bn": "🎁 এয়ারড্রপ পুরস্কার",
+            "vi": "🎁 Phần thưởng airdrop",
+            "tl": "🎁 Airdrop reward",
+            "ru": "🎁 Награда аирдропа",
+            "th": "🎁 รางวัลแอร์ดรอป"
+        },
+        "action": "q:airdrop_reward"
+    },
+    {
+        "label": {
+            "en": "📜 Airdrop conditions",
+            "hi": "📜 एयरड्रॉप शर्तें",
+            "mr": "📜 एअरड्रॉप अटी",
+            "bn": "📜 এয়ারড্রপ শর্তাবলী",
+            "vi": "📜 Điều kiện airdrop",
+            "tl": "📜 Airdrop conditions",
+            "ru": "📜 Условия аирдропа",
+            "th": "📜 เงื่อนไขแอร์ดรอป"
+        },
+        "action": "q:airdrop_conditions"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 AFFILIATE_MENU = [
-    {"label": {"en": "🤝 Affiliate Program", "hi": "🤝 एफिलिएट प्रोग्राम"}, "action": "q:affiliate_info"},
-    {"label": {"en": "👥 Team Business", "hi": "👥 टीम बिजनेस"}, "action": "q:affiliate_team"},
-    {"label": {"en": "📈 Importance", "hi": "📈 महत्व"}, "action": "q:affiliate_importance"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "👥 Affiliate info",
+            "hi": "👥 एफिलिएट जानकारी",
+            "mr": "👥 एफिलिएट माहिती",
+            "bn": "👥 অ্যাফিলিয়েট তথ্য",
+            "vi": "👥 Thông tin affiliate",
+            "tl": "👥 Affiliate info",
+            "ru": "👥 Информация об аффилиатах",
+            "th": "👥 ข้อมูลแอฟฟิลิเอต"
+        },
+        "action": "q:affiliate_info"
+    },
+    {
+        "label": {
+            "en": "👥 Team business",
+            "hi": "👥 टीम बिजनेस",
+            "mr": "👥 टीम बिझनेस",
+            "bn": "👥 টিম বিজনেস",
+            "vi": "👥 Doanh số đội nhóm",
+            "tl": "👥 Team business",
+            "ru": "👥 Командный оборот",
+            "th": "👥 ธุรกิจทีม"
+        },
+        "action": "q:affiliate_team"
+    },
+    {
+        "label": {
+            "en": "📈 Importance",
+            "hi": "📈 महत्व",
+            "mr": "📈 महत्त्व",
+            "bn": "📈 গুরুত্ব",
+            "vi": "📈 Tầm quan trọng",
+            "tl": "📈 Importance",
+            "ru": "📈 Важность",
+            "th": "📈 ความสำคัญ"
+        },
+        "action": "q:affiliate_importance"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 RANKS_MENU = [
-    {"label": {"en": "🏅 Rank Structure", "hi": "🏅 रैंक संरचना"}, "action": "q:rank_structure"},
-    {"label": {"en": "🎖 Club Rewards", "hi": "🎖 क्लब रिवार्ड"}, "action": "q:club_rewards"},
-    {"label": {"en": "📊 Requirements", "hi": "📊 आवश्यकताएँ"}, "action": "q:rank_requirements"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "🏆 Rank structure",
+            "hi": "🏆 रैंक संरचना",
+            "mr": "🏆 रँक स्ट्रक्चर",
+            "bn": "🏆 র‍্যাঙ্ক স্ট্রাকচার",
+            "vi": "🏆 Cấu trúc cấp bậc",
+            "tl": "🏆 Rank structure",
+            "ru": "🏆 Структура рангов",
+            "th": "🏆 โครงสร้างระดับ"
+        },
+        "action": "q:rank_structure"
+    },
+    {
+        "label": {
+            "en": "🎯 Rank requirements",
+            "hi": "🎯 रैंक आवश्यकताएं",
+            "mr": "🎯 रँक आवश्यकता",
+            "bn": "🎯 র‍্যাঙ্ক প্রয়োজনীয়তা",
+            "vi": "🎯 Yêu cầu cấp bậc",
+            "tl": "🎯 Rank requirements",
+            "ru": "🎯 Требования рангов",
+            "th": "🎯 ข้อกำหนดระดับ"
+        },
+        "action": "q:rank_requirements"
+    },
+    {
+        "label": {
+            "en": "🎉 Club rewards",
+            "hi": "🎉 क्लब रिवॉर्ड",
+            "mr": "🎉 क्लब रिवॉर्ड",
+            "bn": "🎉 ক্লাব পুরস্কার",
+            "vi": "🎉 Phần thưởng club",
+            "tl": "🎉 Club rewards",
+            "ru": "🎉 Клубные награды",
+            "th": "🎉 รางวัลคลับ"
+        },
+        "action": "q:club_rewards"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 TRIPLE_MENU = [
-    {"label": {"en": "💎 Triple Income System", "hi": "💎 ट्रिपल इनकम सिस्टम"}, "action": "q:triple_info"},
-    {"label": {"en": "📉 After Limit", "hi": "📉 लिमिट के बाद"}, "action": "q:triple_limit"},
-    {"label": {"en": "⬅ Back", "hi": "⬅ वापस"}, "action": "menu:others"},
+    {
+        "label": {
+            "en": "💰 Triple income",
+            "hi": "💰 ट्रिपल इनकम",
+            "mr": "💰 ट्रिपल इनकम",
+            "bn": "💰 ট্রিপল ইনকাম",
+            "vi": "💰 Thu nhập 3 nguồn",
+            "tl": "💰 Triple income",
+            "ru": "💰 Тройной доход",
+            "th": "💰 รายได้ 3 ทาง"
+        },
+        "action": "q:triple_info"
+    },
+    {
+        "label": {
+            "en": "⚠ Income limit",
+            "hi": "⚠ आय सीमा",
+            "mr": "⚠ उत्पन्न मर्यादा",
+            "bn": "⚠ আয়ের সীমা",
+            "vi": "⚠ Giới hạn thu nhập",
+            "tl": "⚠ Income limit",
+            "ru": "⚠ Лимит дохода",
+            "th": "⚠ ขีดจำกัดรายได้"
+        },
+        "action": "q:triple_limit"
+    },
+    {
+        "label": {
+            "en": "⬅ Back",
+            "hi": "⬅ वापस",
+            "mr": "⬅ मागे",
+            "bn": "⬅ পিছনে",
+            "vi": "⬅ Quay lại",
+            "tl": "⬅ Bumalik",
+            "ru": "⬅ Назад",
+            "th": "⬅ กลับ"
+        },
+        "action": "menu:others"
+    }
 ]
 
 LANGUAGE_MENU = {
@@ -757,14 +1000,22 @@ HARDCODED_ANSWERS = {
     "en": "Keep your private key safe. If lost, funds cannot be recovered.",
     "hi": "अपनी प्राइवेट की सुरक्षित रखें, खोने पर फंड वापस नहीं मिलेंगे।",
     "mr": "तुमची प्रायव्हेट की सुरक्षित ठेवा, हरवल्यास निधी परत मिळणार नाही.",
-    "bn": "আপনার প্রাইভেট কি নিরাপদ রাখুন, হারালে ফান্ড ফিরে পাবেন না।"
+    "bn": "আপনার প্রাইভেট কি নিরাপদ রাখুন, হারালে ফান্ড ফিরে পাবেন না।",
+    "vi": "Hãy giữ khóa riêng của bạn an toàn. Nếu mất, không thể khôi phục tài sản.",
+    "tl": "Panatilihing ligtas ang iyong private key. Kapag nawala, hindi na mababawi ang pondo.",
+    "ru": "Храните свой приватный ключ в безопасности. При утере средства восстановить невозможно.",
+    "th": "เก็บคีย์ส่วนตัวของคุณให้ปลอดภัย หากสูญหายจะไม่สามารถกู้คืนเงินได้"
 },
 
 "wallet_private": {
     "en": "Private key gives full control of your wallet. Never share it.",
     "hi": "प्राइवेट की आपके वॉलेट का पूरा नियंत्रण देती है, इसे कभी शेयर न करें।",
     "mr": "प्रायव्हेट की तुमच्या वॉलेटवर पूर्ण नियंत्रण देते, कधीही शेअर करू नका.",
-    "bn": "প্রাইভেট কি আপনার ওয়ালেটের সম্পূর্ণ নিয়ন্ত্রণ দেয়, কখনও শেয়ার করবেন না।"
+    "bn": "প্রাইভেট কি আপনার ওয়ালেটের সম্পূর্ণ নিয়ন্ত্রণ দেয়, কখনও শেয়ার করবেন না।",
+    "vi": "Khóa riêng cho phép toàn quyền kiểm soát ví của bạn. Không bao giờ chia sẻ nó.",
+    "tl": "Ang private key ay nagbibigay ng buong kontrol sa iyong wallet. Huwag itong ibahagi kailanman.",
+    "ru": "Приватный ключ дает полный контроль над вашим кошельком. Никогда не передавайте его.",
+    "th": "คีย์ส่วนตัวให้สิทธิ์ควบคุมกระเป๋าของคุณทั้งหมด ห้ามแชร์กับผู้อื่น"
 },
     
 "deposit_min": {
@@ -789,9 +1040,27 @@ HARDCODED_ANSWERS = {
     "th": "คุณสามารถฝาก $20, $50, $100, $200 หรือทวีคูณของ $100"
 },
 
-"deposit_structure": "Your deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
+"deposit_structure": {
+    "en": "Your deposit is split into:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
+    "hi": "आपकी जमा राशि इस प्रकार विभाजित होती है:\n• 30% MSTC\n• 70% USDC (Polygon नेटवर्क)",
+    "mr": "तुमची जमा रक्कम अशा प्रकारे विभागली जाते:\n• 30% MSTC\n• 70% USDC (Polygon नेटवर्क)",
+    "bn": "আপনার জমা এইভাবে ভাগ করা হয়:\n• 30% MSTC\n• 70% USDC (Polygon নেটওয়ার্ক)",
+    "vi": "Khoản nạp của bạn được chia thành:\n• 30% MSTC\n• 70% USDC (Mạng Polygon)",
+    "tl": "Ang iyong deposito ay hinahati sa:\n• 30% MSTC\n• 70% USDC (Polygon Network)",
+    "ru": "Ваш депозит делится на:\n• 30% MSTC\n• 70% USDC (сеть Polygon)",
+    "th": "เงินฝากของคุณจะแบ่งเป็น:\n• 30% MSTC\n• 70% USDC (เครือข่าย Polygon)"
+},
 
-"deposit_blockchain": "The system uses *MEP-20 blockchain contract*.",    
+"deposit_blockchain": {
+    "en": "The system uses *MEP-20 blockchain contract*.",
+    "hi": "सिस्टम *MEP-20 ब्लॉकचेन कॉन्ट्रैक्ट* का उपयोग करता है।",
+    "mr": "सिस्टम *MEP-20 ब्लॉकचेन कॉन्ट्रॅक्ट* वापरते.",
+    "bn": "সিস্টেম *MEP-20 ব্লকচেইন কনট্রাক্ট* ব্যবহার করে।",
+    "vi": "Hệ thống sử dụng hợp đồng blockchain *MEP-20*.",
+    "tl": "Gumagamit ang system ng *MEP-20 blockchain contract*.",
+    "ru": "Система использует контракт блокчейна *MEP-20*.",
+    "th": "ระบบใช้สัญญาบล็อกเชน *MEP-20*"
+},
     
 "minting_info": {
     "en": "Minting means creating new FNX tokens.",
@@ -804,9 +1073,27 @@ HARDCODED_ANSWERS = {
     "th": "Minting คือการสร้างโทเค็น FNX ใหม่"
 },
 
-"minting_time": "After your deposit transaction is completed.",
+"minting_time": {
+    "en": "After your deposit transaction is completed.",
+    "hi": "आपकी जमा लेन-देन पूरी होने के बाद।",
+    "mr": "तुमचा जमा व्यवहार पूर्ण झाल्यानंतर.",
+    "bn": "আপনার জমা লেনদেন সম্পন্ন হওয়ার পর।",
+    "vi": "Sau khi giao dịch nạp tiền của bạn hoàn tất.",
+    "tl": "Pagkatapos makumpleto ang iyong deposito na transaksyon.",
+    "ru": "После завершения вашей депозитной транзакции.",
+    "th": "หลังจากธุรกรรมการฝากของคุณเสร็จสมบูรณ์"
+},
 
-"minting_location": "The system automatically credits the minted FNX token to your wallet.",    
+"minting_location": {
+    "en": "The system automatically credits the minted FNX token to your wallet.",
+    "hi": "सिस्टम स्वचालित रूप से मिंट किए गए FNX टोकन को आपके वॉलेट में जमा करता है।",
+    "mr": "सिस्टम स्वयंचलितपणे मिंट केलेले FNX टोकन तुमच्या वॉलेटमध्ये जमा करते.",
+    "bn": "সিস্টেম স্বয়ংক্রিয়ভাবে মিন্ট করা FNX টোকেন আপনার ওয়ালেটে জমা করে।",
+    "vi": "Hệ thống tự động ghi nhận token FNX đã mint vào ví của bạn.",
+    "tl": "Awtomatikong ilalagay ng system ang minted FNX token sa iyong wallet.",
+    "ru": "Система автоматически зачисляет созданные токены FNX в ваш кошелек.",
+    "th": "ระบบจะโอนโทเค็น FNX ที่สร้างขึ้นไปยังกระเป๋าของคุณโดยอัตโนมัติ"
+},
     
 "lp_info": {
     "en": "Liquidity Pool helps smooth trading.",
@@ -819,11 +1106,38 @@ HARDCODED_ANSWERS = {
     "th": "Liquidity Pool ช่วยให้การซื้อขายราบรื่น"
 },
 
-"lp_pair": "FNX + USDC pair is used.",
+"lp_pair": {
+    "en": "FNX + USDC pair is used.",
+    "hi": "FNX + USDC पेयर का उपयोग किया जाता है।",
+    "mr": "FNX + USDC पेअर वापरले जाते.",
+    "bn": "FNX + USDC পেয়ার ব্যবহার করা হয়।",
+    "vi": "Sử dụng cặp FNX + USDC.",
+    "tl": "Ginagamit ang FNX + USDC na pares.",
+    "ru": "Используется пара FNX + USDC.",
+    "th": "ใช้คู่ FNX + USDC"
+},
 
-"lp_benefits": "Stable trading\n• Daily passive income\n• High rewards\n• Community growth\n• Strong ecosystem support",
+"lp_benefits": {
+    "en": "Stable trading\n• Daily passive income\n• High rewards\n• Community growth\n• Strong ecosystem support",
+    "hi": "स्थिर ट्रेडिंग\n• दैनिक निष्क्रिय आय\n• उच्च रिवॉर्ड\n• कम्युनिटी ग्रोथ\n• मजबूत इकोसिस्टम सपोर्ट",
+    "mr": "स्थिर ट्रेडिंग\n• दररोज निष्क्रिय उत्पन्न\n• उच्च रिवॉर्ड\n• कम्युनिटी वाढ\n• मजबूत इकोसिस्टम सपोर्ट",
+    "bn": "স্থিতিশীল ট্রেডিং\n• দৈনিক প্যাসিভ আয়\n• উচ্চ পুরস্কার\n• কমিউনিটি বৃদ্ধি\n• শক্তিশালী ইকোসিস্টেম সাপোর্ট",
+    "vi": "Giao dịch ổn định\n• Thu nhập thụ động hàng ngày\n• Phần thưởng cao\n• Phát triển cộng đồng\n• Hệ sinh thái mạnh mẽ",
+    "tl": "Matatag na trading\n• Araw-araw na passive income\n• Mataas na reward\n• Paglago ng komunidad\n• Malakas na ecosystem support",
+    "ru": "Стабильная торговля\n• Ежедневный пассивный доход\n• Высокие награды\n• Рост сообщества\n• Сильная экосистема",
+    "th": "การซื้อขายที่เสถียร\n• รายได้แบบพาสซีฟรายวัน\n• รางวัลสูง\n• การเติบโตของชุมชน\n• ระบบนิเวศที่แข็งแกร่ง"
+},
 
-"lp_rewards": "You can earn daily rewards up to *5% MPY (Monthly Percentage Yield)*.\nThese rewards are generated from the system's trading and ecosystem activity.",
+"lp_rewards": {
+    "en": "You can earn daily rewards up to *5% MPY (Monthly Percentage Yield)*.\nThese rewards are generated from the system's trading and ecosystem activity.",
+    "hi": "आप दैनिक *5% MPY (Monthly Percentage Yield)* तक रिवॉर्ड कमा सकते हैं।\nये रिवॉर्ड सिस्टम की ट्रेडिंग और इकोसिस्टम गतिविधियों से उत्पन्न होते हैं।",
+    "mr": "तुम्ही दररोज *5% MPY (Monthly Percentage Yield)* पर्यंत रिवॉर्ड मिळवू शकता.\nहे रिवॉर्ड सिस्टमच्या ट्रेडिंग आणि इकोसिस्टम क्रियाकलापांमधून मिळतात.",
+    "bn": "আপনি দৈনিক *5% MPY (Monthly Percentage Yield)* পর্যন্ত পুরস্কার পেতে পারেন।\nএই পুরস্কার সিস্টেমের ট্রেডিং এবং ইকোসিস্টেম কার্যক্রম থেকে আসে।",
+    "vi": "Bạn có thể kiếm phần thưởng hàng ngày lên đến *5% MPY (Monthly Percentage Yield)*.\nPhần thưởng này được tạo ra từ hoạt động giao dịch và hệ sinh thái.",
+    "tl": "Maaari kang kumita ng hanggang *5% MPY (Monthly Percentage Yield)* araw-araw.\nAng mga reward na ito ay mula sa trading at ecosystem activity.",
+    "ru": "Вы можете получать до *5% MPY (Monthly Percentage Yield)* ежедневно.\nЭти награды генерируются за счет торговой и экосистемной активности.",
+    "th": "คุณสามารถรับรางวัลรายวันสูงสุด *5% MPY (Monthly Percentage Yield)*.\nรางวัลเหล่านี้มาจากกิจกรรมการซื้อขายและระบบนิเวศ"
+},
     
 "staking_info": {
     "en": "Staking means locking FNX tokens to earn rewards.",
@@ -836,66 +1150,210 @@ HARDCODED_ANSWERS = {
     "th": "Staking คือการล็อก FNX เพื่อรับรางวัล"
 },
 
-"staking_work": "The staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
+"staking_work": {
+    "en": "The staking process is very simple:\n• Deposit funds into the platform\n• FNX tokens are minted and credited to your wallet\n• Stake your FNX tokens in the Self-Staking section\n• The system generates daily rewards automatically\n• You can withdraw rewards anytime",
+    "hi": "स्टेकिंग प्रक्रिया बहुत सरल है:\n• प्लेटफॉर्म में फंड जमा करें\n• FNX टोकन मिंट होकर आपके वॉलेट में जमा होते हैं\n• अपने FNX टोकन को सेल्फ-स्टेकिंग सेक्शन में स्टेक करें\n• सिस्टम प्रतिदिन स्वचालित रूप से रिवॉर्ड उत्पन्न करता है\n• आप कभी भी रिवॉर्ड निकाल सकते हैं",
+    "mr": "स्टेकिंग प्रक्रिया खूप सोपी आहे:\n• प्लॅटफॉर्ममध्ये निधी जमा करा\n• FNX टोकन मिंट होऊन तुमच्या वॉलेटमध्ये जमा होतात\n• तुमचे FNX टोकन सेल्फ-स्टेकिंग विभागात स्टेक करा\n• सिस्टम दररोज आपोआप रिवॉर्ड तयार करते\n• तुम्ही कधीही रिवॉर्ड काढू शकता",
+    "bn": "স্টেকিং প্রক্রিয়া খুব সহজ:\n• প্ল্যাটফর্মে ফান্ড জমা করুন\n• FNX টোকেন মিন্ট হয়ে আপনার ওয়ালেটে জমা হয়\n• আপনার FNX টোকেন সেলফ-স্টেকিং সেকশনে স্টেক করুন\n• সিস্টেম প্রতিদিন স্বয়ংক্রিয়ভাবে পুরস্কার তৈরি করে\n• আপনি যেকোনো সময় পুরস্কার তুলতে পারেন",
+    "vi": "Quy trình staking rất đơn giản:\n• Nạp tiền vào nền tảng\n• Token FNX được mint và chuyển vào ví của bạn\n• Stake FNX trong phần Self-Staking\n• Hệ thống tự động tạo phần thưởng hàng ngày\n• Bạn có thể rút phần thưởng bất cứ lúc nào",
+    "tl": "Napakasimple ng proseso ng staking:\n• Magdeposito ng pondo sa platform\n• Ang FNX tokens ay mina-mint at inilalagay sa iyong wallet\n• I-stake ang FNX tokens sa Self-Staking section\n• Awtomatikong nagbibigay ng daily rewards ang system\n• Maaari mong i-withdraw ang rewards anumang oras",
+    "ru": "Процесс стейкинга очень простой:\n• Внесите средства на платформу\n• Токены FNX создаются и зачисляются в ваш кошелек\n• Разместите FNX в разделе Self-Staking\n• Система автоматически генерирует ежедневные награды\n• Вы можете выводить награды в любое время",
+    "th": "กระบวนการ Stake นั้นง่ายมาก:\n• ฝากเงินเข้าสู่แพลตฟอร์ม\n• โทเค็น FNX จะถูกสร้างและโอนเข้ากระเป๋าของคุณ\n• นำ FNX ไป Stake ในส่วน Self-Staking\n• ระบบจะสร้างรางวัลรายวันโดยอัตโนมัติ\n• คุณสามารถถอนรางวัลได้ตลอดเวลา"
+},
 
-"staking_rewards": "Up to *2% MPY (Monthly Percentage Yield)* daily reward.",    
+"staking_rewards": {
+    "en": "Up to *2% MPY (Monthly Percentage Yield)* daily reward.",
+    "hi": "दैनिक *2% MPY (Monthly Percentage Yield)* तक रिवॉर्ड।",
+    "mr": "दररोज *2% MPY (Monthly Percentage Yield)* पर्यंत रिवॉर्ड.",
+    "bn": "দৈনিক *2% MPY (Monthly Percentage Yield)* পর্যন্ত পুরস্কার।",
+    "vi": "Phần thưởng hàng ngày lên đến *2% MPY (Monthly Percentage Yield)*.",
+    "tl": "Hanggang *2% MPY (Monthly Percentage Yield)* na daily reward.",
+    "ru": "Ежедневная награда до *2% MPY (Monthly Percentage Yield)*.",
+    "th": "รางวัลรายวันสูงสุด *2% MPY (Monthly Percentage Yield)*"
+},    
     
 "withdraw_anytime": {
-    "en": "Yes, you can withdraw anytime.",
-    "hi": "हाँ, आप कभी भी निकाल सकते हैं।",
-    "mr": "होय, तुम्ही कधीही पैसे काढू शकता.",
-    "bn": "হ্যাঁ, আপনি যেকোনো সময় উত্তোলন করতে পারেন।"
+    "en": "Yes, FNX rewards can be withdrawn anytime.",
+    "hi": "हाँ, FNX रिवॉर्ड कभी भी निकाले जा सकते हैं।",
+    "mr": "होय, FNX रिवॉर्ड कधीही काढता येतात.",
+    "bn": "হ্যাঁ, FNX পুরস্কার যেকোনো সময় উত্তোলন করা যায়।",
+    "vi": "Có, phần thưởng FNX có thể rút bất cứ lúc nào.",
+    "tl": "Oo, maaaring i-withdraw ang FNX rewards anumang oras.",
+    "ru": "Да, вознаграждения FNX можно выводить в любое время.",
+    "th": "ใช่ คุณสามารถถอนรางวัล FNX ได้ทุกเมื่อ"
 },
 
-"withdraw_currency": "You will receive *USDC* in your wallet instantly.",
+"withdraw_currency": {
+    "en": "You will receive *USDC* in your wallet instantly.",
+    "hi": "आपको तुरंत अपने वॉलेट में *USDC* प्राप्त होगा।",
+    "mr": "तुम्हाला लगेच तुमच्या वॉलेटमध्ये *USDC* मिळेल.",
+    "bn": "আপনি আপনার ওয়ালেটে সাথে সাথে *USDC* পাবেন।",
+    "vi": "Bạn sẽ nhận được *USDC* ngay lập tức trong ví của mình.",
+    "tl": "Makakatanggap ka ng *USDC* agad sa iyong wallet.",
+    "ru": "Вы получите *USDC* мгновенно в свой кошелек.",
+    "th": "คุณจะได้รับ *USDC* ในกระเป๋าของคุณทันที"
+},
 
-"withdraw_burn": "When you withdraw FNX:\n• 50% FNX is burned\n• 50% FNX goes back to supply.\nThis helps control token supply.",    
+"withdraw_burn": {
+    "en": "When you withdraw FNX:\n• 50% FNX is burned\n• 50% FNX goes back to supply.\nThis helps control token supply.",
+    "hi": "जब आप FNX निकालते हैं:\n• 50% FNX बर्न होता है\n• 50% FNX सप्लाई में वापस जाता है\nइससे टोकन सप्लाई नियंत्रित रहती है।",
+    "mr": "जेव्हा तुम्ही FNX काढता:\n• 50% FNX बर्न होतो\n• 50% FNX सप्लायमध्ये परत जातो\nयामुळे टोकन सप्लाय नियंत्रित राहतो.",
+    "bn": "আপনি যখন FNX উত্তোলন করেন:\n• 50% FNX বার্ন হয়\n• 50% FNX আবার সাপ্লাইতে ফিরে যায়\nএটি টোকেন সাপ্লাই নিয়ন্ত্রণে সাহায্য করে।",
+    "vi": "Khi bạn rút FNX:\n• 50% FNX bị đốt\n• 50% FNX quay lại nguồn cung\nĐiều này giúp kiểm soát nguồn cung token.",
+    "tl": "Kapag nag-withdraw ka ng FNX:\n• 50% FNX ay sinusunog\n• 50% FNX ay bumabalik sa supply\nNakakatulong ito sa pagkontrol ng supply.",
+    "ru": "При выводе FNX:\n• 50% FNX сжигается\n• 50% FNX возвращается в оборот\nЭто помогает контролировать предложение токена.",
+    "th": "เมื่อคุณถอน FNX:\n• 50% FNX จะถูกเผา\n• 50% FNX จะกลับเข้าสู่ระบบ\nสิ่งนี้ช่วยควบคุมปริมาณโทเค็น"
+},    
     
-"airdrop_eligibility": "Yes, you must have at least *5 direct paid referrals*.",
+"airdrop_eligibility": {
+    "en": "Yes, you must have at least *5 direct paid referrals*.",
+    "hi": "हाँ, आपके पास कम से कम *5 डायरेक्ट पेड रेफरल* होने चाहिए।",
+    "mr": "होय, तुमच्याकडे किमान *5 डायरेक्ट पेड रेफरल* असणे आवश्यक आहे.",
+    "bn": "হ্যাঁ, আপনার কমপক্ষে *5টি সরাসরি পেইড রেফারেল* থাকতে হবে।",
+    "vi": "Có, bạn cần ít nhất *5 người giới thiệu trực tiếp đã thanh toán*.",
+    "tl": "Oo, kailangan mong magkaroon ng *5 direktang paid referrals*.",
+    "ru": "Да, у вас должно быть как минимум *5 прямых платных рефералов*.",
+    "th": "ใช่ คุณต้องมี *ผู้แนะนำโดยตรงที่ชำระเงินอย่างน้อย 5 คน*"
+},
 
-"airdrop_reward": "You receive *50 FNX tokens*.",
+"airdrop_reward": {
+    "en": "You receive *50 FNX tokens*.",
+    "hi": "आपको *50 FNX टोकन* मिलते हैं।",
+    "mr": "तुम्हाला *50 FNX टोकन* मिळतात.",
+    "bn": "আপনি *50 FNX টোকেন* পাবেন।",
+    "vi": "Bạn nhận được *50 FNX token*.",
+    "tl": "Makakatanggap ka ng *50 FNX tokens*.",
+    "ru": "Вы получите *50 FNX токенов*.",
+    "th": "คุณจะได้รับ *50 FNX โทเค็น*"
+},
 
-"airdrop_conditions": "• Wallet must be registered\n• User must be verified\n• Duplicate referrals are not counted",   
+"airdrop_conditions": {
+    "en": "• Wallet must be registered\n• User must be verified\n• Duplicate referrals are not counted",
+    "hi": "• वॉलेट रजिस्टर होना चाहिए\n• यूजर वेरिफाइड होना चाहिए\n• डुप्लिकेट रेफरल मान्य नहीं होंगे",
+    "mr": "• वॉलेट नोंदणीकृत असणे आवश्यक आहे\n• वापरकर्ता सत्यापित असावा\n• डुप्लिकेट रेफरल मोजले जाणार नाहीत",
+    "bn": "• ওয়ালেট রেজিস্টার থাকতে হবে\n• ইউজার ভেরিফাইড হতে হবে\n• ডুপ্লিকেট রেফারেল গণনা করা হবে না",
+    "vi": "• Ví phải được đăng ký\n• Người dùng phải được xác minh\n• Không tính referral trùng lặp",
+    "tl": "• Dapat nakarehistro ang wallet\n• Dapat verified ang user\n• Hindi binibilang ang duplicate referrals",
+    "ru": "• Кошелек должен быть зарегистрирован\n• Пользователь должен быть подтвержден\n• Дубликаты рефералов не учитываются",
+    "th": "• ต้องลงทะเบียนกระเป๋าเงิน\n• ผู้ใช้ต้องได้รับการยืนยัน\n• จะไม่นับการแนะนำซ้ำ"
+},   
     
 "affiliate_info": {
-    "en": "Affiliate program lets you earn by building a team.",
-    "hi": "एफिलिएट प्रोग्राम से आप टीम बनाकर कमाई कर सकते हैं।",
-    "mr": "अ‍ॅफिलिएट प्रोग्रामद्वारे टीम बनवून कमाई करता येते.",
-    "bn": "অ্যাফিলিয়েট প্রোগ্রাম আপনাকে দল গড়ে আয় করতে দেয়।"
+    "en": "It is a referral program where you earn rewards by building a team.",
+    "hi": "यह एक रेफरल प्रोग्राम है जहाँ आप टीम बनाकर रिवॉर्ड कमाते हैं।",
+    "mr": "हा एक रेफरल प्रोग्राम आहे ज्यामध्ये तुम्ही टीम तयार करून रिवॉर्ड मिळवता.",
+    "bn": "এটি একটি রেফারেল প্রোগ্রাম যেখানে আপনি টিম তৈরি করে আয় করেন।",
+    "vi": "Đây là chương trình giới thiệu nơi bạn kiếm thưởng bằng cách xây dựng đội nhóm.",
+    "tl": "Ito ay referral program kung saan kumikita ka sa pagbuo ng team.",
+    "ru": "Это реферальная программа, где вы зарабатываете, создавая команду.",
+    "th": "นี่คือโปรแกรมแนะนำที่คุณสามารถสร้างรายได้จากการสร้างทีม"
 },
 
-"affiliate_team": "The total deposits made by your team.",
+"affiliate_team": {
+    "en": "The total deposits made by your team.",
+    "hi": "आपकी टीम द्वारा किए गए कुल जमा।",
+    "mr": "तुमच्या टीमने केलेली एकूण जमा.",
+    "bn": "আপনার টিমের মোট জমা।",
+    "vi": "Tổng số tiền gửi của đội nhóm bạn.",
+    "tl": "Kabuuang deposito ng iyong team.",
+    "ru": "Общий депозит вашей команды.",
+    "th": "ยอดฝากรวมของทีมคุณ"
+},
 
-"affiliate_importance": "It helps grow the community and increases earnings.",    
+"affiliate_importance": {
+    "en": "It helps grow the community and increases earnings.",
+    "hi": "यह कम्युनिटी बढ़ाने और आय बढ़ाने में मदद करता है।",
+    "mr": "हे कम्युनिटी वाढवते आणि उत्पन्न वाढवते.",
+    "bn": "এটি কমিউনিটি বৃদ্ধি এবং আয় বাড়াতে সাহায্য করে।",
+    "vi": "Giúp phát triển cộng đồng và tăng thu nhập.",
+    "tl": "Nakakatulong ito sa paglago ng komunidad at kita.",
+    "ru": "Помогает развивать сообщество и увеличивать доход.",
+    "th": "ช่วยเพิ่มการเติบโตของชุมชนและรายได้"
+},    
     
 "rank_structure": {
-    "en": "Ranks: Origin, Life Changer, Advisor, Visionary, Creator.",
-    "hi": "रैंक: ओरिजिन, लाइफ चेंजर, एडवाइजर, विजनरी, क्रिएटर।",
-    "mr": "रँक: ओरिजिन, लाइफ चेंजर, अ‍ॅडव्हायझर, व्हिजनरी, क्रिएटर.",
-    "bn": "র‍্যাঙ্ক: অরিজিন, লাইফ চেঞ্জার, অ্যাডভাইজার, ভিশনারি, ক্রিয়েটর।"
+    "en": "• Rank 1 — Origin 10%\n• Rank 2 — Life Changer 16%\n• Rank 3 — Advisor 20%\n• Rank 4 — Visionary 23%\n• Rank 5 — Creator 25%",
+    "hi": "• रैंक 1 — ओरिजिन 10%\n• रैंक 2 — लाइफ चेंजर 16%\n• रैंक 3 — एडवाइजर 20%\n• रैंक 4 — विजनरी 23%\n• रैंक 5 — क्रिएटर 25%",
+    "mr": "• रँक 1 — ओरिजिन 10%\n• रँक 2 — लाइफ चेंजर 16%\n• रँक 3 — अ‍ॅडव्हायझर 20%\n• रँक 4 — व्हिजनरी 23%\n• रँक 5 — क्रिएटर 25%",
+    "bn": "• র‍্যাঙ্ক 1 — অরিজিন 10%\n• র‍্যাঙ্ক 2 — লাইফ চেঞ্জার 16%\n• র‍্যাঙ্ক 3 — অ্যাডভাইজার 20%\n• র‍্যাঙ্ক 4 — ভিশনারি 23%\n• র‍্যাঙ্ক 5 — ক্রিয়েটর 25%",
+    "vi": "• Hạng 1 — Origin 10%\n• Hạng 2 — Life Changer 16%\n• Hạng 3 — Advisor 20%\n• Hạng 4 — Visionary 23%\n• Hạng 5 — Creator 25%",
+    "tl": "• Rank 1 — Origin 10%\n• Rank 2 — Life Changer 16%\n• Rank 3 — Advisor 20%\n• Rank 4 — Visionary 23%\n• Rank 5 — Creator 25%",
+    "ru": "• Ранг 1 — Origin 10%\n• Ранг 2 — Life Changer 16%\n• Ранг 3 — Advisor 20%\n• Ранг 4 — Visionary 23%\n• Ранг 5 — Creator 25%",
+    "th": "• ระดับ 1 — Origin 10%\n• ระดับ 2 — Life Changer 16%\n• ระดับ 3 — Advisor 20%\n• ระดับ 4 — Visionary 23%\n• ระดับ 5 — Creator 25%"
 },
 
-"club_rewards": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
+"club_rewards": {
+    "en": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
+    "hi": "• रैंक 1 (ओरिजिन) — 10%\n• रैंक 2 (लाइफ चेंजर) — 16% (3% CTO क्लब शेयर)\n• रैंक 3 (एडवाइजर) — 20% (2.5% CTO क्लब शेयर)\n• रैंक 4 (विजनरी) — 23% (2% CTO क्लब शेयर)\n• रैंक 5 (क्रिएटर) — 25% (1.5% CTO क्लब शेयर)",
+    "mr": "• रँक 1 (ओरिजिन) — 10%\n• रँक 2 (लाइफ चेंजर) — 16% (3% CTO क्लब शेअर)\n• रँक 3 (अ‍ॅडव्हायझर) — 20% (2.5% CTO क्लब शेअर)\n• रँक 4 (व्हिजनरी) — 23% (2% CTO क्लब शेअर)\n• रँक 5 (क्रिएटर) — 25% (1.5% CTO क्लब शेअर)",
+    "bn": "• র‍্যাঙ্ক 1 (অরিজিন) — 10%\n• র‍্যাঙ্ক 2 (লাইফ চেঞ্জার) — 16% (3% CTO ক্লাব শেয়ার)\n• র‍্যাঙ্ক 3 (অ্যাডভাইজার) — 20% (2.5% CTO ক্লাব শেয়ার)\n• র‍্যাঙ্ক 4 (ভিশনারি) — 23% (2% CTO ক্লাব শেয়ার)\n• র‍্যাঙ্ক 5 (ক্রিয়েটর) — 25% (1.5% CTO ক্লাব শেয়ার)",
+    "vi": "• Hạng 1 (Origin) — 10%\n• Hạng 2 (Life Changer) — 16% (3% chia sẻ CTO club)\n• Hạng 3 (Advisor) — 20% (2.5% chia sẻ CTO club)\n• Hạng 4 (Visionary) — 23% (2% chia sẻ CTO club)\n• Hạng 5 (Creator) — 25% (1.5% chia sẻ CTO club)",
+    "tl": "• Rank 1 (Origin) — 10%\n• Rank 2 (Life Changer) — 16% (3% CTO club share)\n• Rank 3 (Advisor) — 20% (2.5% CTO club share)\n• Rank 4 (Visionary) — 23% (2% CTO club share)\n• Rank 5 (Creator) — 25% (1.5% CTO club share)",
+    "ru": "• Ранг 1 (Origin) — 10%\n• Ранг 2 (Life Changer) — 16% (3% доля CTO клуба)\n• Ранг 3 (Advisor) — 20% (2.5% доля CTO клуба)\n• Ранг 4 (Visionary) — 23% (2% доля CTO клуба)\n• Ранг 5 (Creator) — 25% (1.5% доля CTO клуба)",
+    "th": "• ระดับ 1 (Origin) — 10%\n• ระดับ 2 (Life Changer) — 16% (ส่วนแบ่ง CTO club 3%)\n• ระดับ 3 (Advisor) — 20% (ส่วนแบ่ง CTO club 2.5%)\n• ระดับ 4 (Visionary) — 23% (ส่วนแบ่ง CTO club 2%)\n• ระดับ 5 (Creator) — 25% (ส่วนแบ่ง CTO club 1.5%)"
+},
 
-"rank_requirements": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",    
+"rank_requirements": {
+    "en": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",
+    
+    "hi": "• रैंक 1 (ओरिजिन)\n  • सेल्फ एक्टिवेशन\n• रैंक 2 (लाइफ चेंजर)\n  • $1000 टीम बिजनेस\n  • 10 एक्टिव ओरिजिन\n  • न्यूनतम $30 LP\n• रैंक 3 (एडवाइजर)\n  • $5000 टीम बिजनेस\n  • 2 एक्टिव लाइफ चेंजर\n  • न्यूनतम $100 LP\n• रैंक 4 (विजनरी)\n  • $25,000 टीम बिजनेस\n  • 2 एक्टिव एडवाइजर\n  • न्यूनतम $300 LP\n• रैंक 5 (क्रिएटर)\n  • $100,000 टीम बिजनेस\n  • 2 एक्टिव विजनरी\n  • न्यूनतम $1000 LP",
+    
+    "mr": "• रँक 1 (ओरिजिन)\n  • सेल्फ अ‍ॅक्टिवेशन\n• रँक 2 (लाइफ चेंजर)\n  • $1000 टीम बिझनेस\n  • 10 सक्रिय ओरिजिन\n  • किमान $30 LP\n• रँक 3 (अ‍ॅडव्हायझर)\n  • $5000 टीम बिझनेस\n  • 2 सक्रिय लाइफ चेंजर\n  • किमान $100 LP\n• रँक 4 (व्हिजनरी)\n  • $25,000 टीम बिझनेस\n  • 2 सक्रिय अ‍ॅडव्हायझर\n  • किमान $300 LP\n• रँक 5 (क्रिएटर)\n  • $100,000 टीम बिझनेस\n  • 2 सक्रिय व्हिजनरी\n  • किमान $1000 LP",
+    
+    "bn": "• র‍্যাঙ্ক 1 (অরিজিন)\n  • সেলফ অ্যাক্টিভেশন\n• র‍্যাঙ্ক 2 (লাইফ চেঞ্জার)\n  • $1000 টিম বিজনেস\n  • 10 সক্রিয় অরিজিন\n  • ন্যূনতম $30 LP\n• র‍্যাঙ্ক 3 (অ্যাডভাইজার)\n  • $5000 টিম বিজনেস\n  • 2 সক্রিয় লাইফ চেঞ্জার\n  • ন্যূনতম $100 LP\n• র‍্যাঙ্ক 4 (ভিশনারি)\n  • $25,000 টিম বিজনেস\n  • 2 সক্রিয় অ্যাডভাইজার\n  • ন্যূনতম $300 LP\n• র‍্যাঙ্ক 5 (ক্রিয়েটর)\n  • $100,000 টিম বিজনেস\n  • 2 সক্রিয় ভিশনারি\n  • ন্যূনতম $1000 LP",
+    
+    "vi": "• Hạng 1 (Origin)\n  • Kích hoạt cá nhân\n• Hạng 2 (Life Changer)\n  • $1000 doanh số đội nhóm\n  • 10 Origin hoạt động\n  • Tối thiểu $30 LP\n• Hạng 3 (Advisor)\n  • $5000 doanh số đội nhóm\n  • 2 Life Changer hoạt động\n  • Tối thiểu $100 LP\n• Hạng 4 (Visionary)\n  • $25,000 doanh số đội nhóm\n  • 2 Advisor hoạt động\n  • Tối thiểu $300 LP\n• Hạng 5 (Creator)\n  • $100,000 doanh số đội nhóm\n  • 2 Visionary hoạt động\n  • Tối thiểu $1000 LP",
+    
+    "tl": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",
+    
+    "ru": "• Ранг 1 (Origin)\n  • Самоактивация\n• Ранг 2 (Life Changer)\n  • $1000 командный оборот\n  • 10 активных Origin\n  • Минимум $30 LP\n• Ранг 3 (Advisor)\n  • $5000 командный оборот\n  • 2 активных Life Changer\n  • Минимум $100 LP\n• Ранг 4 (Visionary)\n  • $25,000 командный оборот\n  • 2 активных Advisor\n  • Минимум $300 LP\n• Ранг 5 (Creator)\n  • $100,000 командный оборот\n  • 2 активных Visionary\n  • Минимум $1000 LP",
+    
+    "th": "• ระดับ 1 (Origin)\n  • เปิดใช้งานตัวเอง\n• ระดับ 2 (Life Changer)\n  • ธุรกิจทีม $1000\n  • Origin ที่ใช้งาน 10 คน\n  • ขั้นต่ำ $30 LP\n• ระดับ 3 (Advisor)\n  • ธุรกิจทีม $5000\n  • Life Changer ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $100 LP\n• ระดับ 4 (Visionary)\n  • ธุรกิจทีม $25,000\n  • Advisor ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $300 LP\n• ระดับ 5 (Creator)\n  • ธุรกิจทีม $100,000\n  • Visionary ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $1000 LP"
+},    
     
 "triple_info": {
-    "en": "Earn from performance, LP and staking.",
-    "hi": "परफॉर्मेंस, LP और स्टेकिंग से कमाई करें।",
-    "mr": "परफॉर्मन्स, LP आणि स्टेकिंगमधून कमाई करा.",
-    "bn": "পারফরম্যান্স, LP এবং স্টেকিং থেকে আয় করুন।"
+    "en": "Users can earn from three sources:\n• Performance income — up to 3x\n• Liquidity pool reward — up to 3x\n• FNX staking — up to 2x",
+    "hi": "यूजर तीन स्रोतों से कमा सकते हैं:\n• परफॉर्मेंस इनकम — 3x तक\n• LP रिवॉर्ड — 3x तक\n• स्टेकिंग — 2x तक",
+    "mr": "वापरकर्ते तीन स्रोतांमधून कमाई करू शकतात:\n• परफॉर्मन्स इनकम — 3x पर्यंत\n• LP रिवॉर्ड — 3x पर्यंत\n• स्टेकिंग — 2x पर्यंत",
+    "bn": "ব্যবহারকারীরা তিনটি উৎস থেকে আয় করতে পারে:\n• পারফরম্যান্স ইনকাম — 3x পর্যন্ত\n• LP রিওয়ার্ড — 3x পর্যন্ত\n• স্টেকিং — 2x পর্যন্ত",
+    "vi": "Người dùng có thể kiếm từ 3 nguồn:\n• Thu nhập hiệu suất — tối đa 3x\n• Phần thưởng LP — tối đa 3x\n• Staking — tối đa 2x",
+    "tl": "Maaaring kumita mula sa 3 sources:\n• Performance income — hanggang 3x\n• LP reward — hanggang 3x\n• Staking — hanggang 2x",
+    "ru": "Пользователи могут зарабатывать из 3 источников:\n• Доход от активности — до 3x\n• Награды LP — до 3x\n• Стейкинг — до 2x",
+    "th": "ผู้ใช้สามารถสร้างรายได้จาก 3 แหล่ง:\n• รายได้จากผลงาน — สูงสุด 3 เท่า\n• รางวัล LP — สูงสุด 3 เท่า\n• Staking — สูงสุด 2 เท่า"
 },
 
 
-"triple_limit": "After *3x performance income*, you must *retop-up* to continue earning.",    
+"triple_limit": {
+    "en": "After *3x performance income*, you must *retop-up* to continue earning.",
+    "hi": "*3x परफॉर्मेंस इनकम* के बाद, आपको कमाई जारी रखने के लिए *रीटॉप-अप* करना होगा।",
+    "mr": "*3x परफॉर्मन्स इनकम* नंतर, कमाई सुरू ठेवण्यासाठी तुम्हाला *रीटॉप-अप* करावे लागेल.",
+    "bn": "*3x পারফরম্যান্স ইনকাম* এর পর, আয় চালিয়ে যেতে আপনাকে *রিটপ-আপ* করতে হবে।",
+    "vi": "Sau khi đạt *3x thu nhập hiệu suất*, bạn phải *nạp lại (retop-up)* để tiếp tục kiếm tiền.",
+    "tl": "Pagkatapos ng *3x performance income*, kailangan mong *mag-retop-up* upang magpatuloy sa pag-earn.",
+    "ru": "После достижения *3x дохода от производительности*, необходимо *сделать повторное пополнение (retop-up)*, чтобы продолжить заработок.",
+    "th": "หลังจากได้ *รายได้ 3 เท่า (3x)* คุณต้อง *เติมเงินใหม่ (retop-up)* เพื่อรับรายได้ต่อ"
+},    
     
-"terms_conditions": "*General T&C*\n• Anyone can join the program\n• Rewards based on company policy\n• Company may update program anytime\n\n*Airdrop T&C*\n• Wallet registration + verification\n• Limited period\n• Duplicate referrals not counted\n\n*Additional T&C*\n• LP 50% counts in team business\n• Performance income limit: 3X\n• Retop-up required after limit\n• Retop-up gives 50% FNX",   
-    
+"terms_conditions": {
+    "en": "General Terms:\n• Anyone can join\n• Rewards depend on policy\n• Company may update anytime",
+    "hi": "सामान्य नियम:\n• कोई भी जुड़ सकता है\n• रिवॉर्ड नीति पर निर्भर\n• कंपनी बदलाव कर सकती है",
+    "mr": "सामान्य अटी:\n• कोणीही सहभागी होऊ शकतो\n• रिवॉर्ड धोरणावर अवलंबून\n• कंपनी बदल करू शकते",
+    "bn": "সাধারণ শর্ত:\n• যে কেউ যোগ দিতে পারে\n• পুরস্কার নীতির উপর নির্ভরশীল\n• কোম্পানি পরিবর্তন করতে পারে",
+    "vi": "Điều khoản chung:\n• Ai cũng có thể tham gia\n• Phần thưởng theo chính sách\n• Công ty có thể thay đổi",
+    "tl": "General terms:\n• Maaaring sumali ang lahat\n• Depende sa policy ang rewards\n• Maaaring magbago ang kumpanya",
+    "ru": "Общие условия:\n• Любой может присоединиться\n• Награды зависят от политики\n• Компания может вносить изменения",
+    "th": "ข้อกำหนดทั่วไป:\n• ทุกคนสามารถเข้าร่วมได้\n• รางวัลขึ้นอยู่กับนโยบาย\n• บริษัทสามารถเปลี่ยนแปลงได้"
+},
+
 "risk_disclaimer": {
-    "en": "Crypto investments carry risk.",
-    "hi": "क्रिप्टो निवेश में जोखिम होता है।",
-    "mr": "क्रिप्टो गुंतवणुकीत जोखीम असते.",
-    "bn": "ক্রিপ্টো বিনিয়োগে ঝুঁকি রয়েছে।"
+    "en": "Crypto investments carry risk. Earnings are not guaranteed.",
+    "hi": "क्रिप्टो निवेश में जोखिम होता है। कमाई की गारंटी नहीं है।",
+    "mr": "क्रिप्टो गुंतवणुकीत जोखीम असते. कमाईची हमी नाही.",
+    "bn": "ক্রিপ্টো বিনিয়োগে ঝুঁকি রয়েছে। আয়ের নিশ্চয়তা নেই।",
+    "vi": "Đầu tư crypto có rủi ro. Thu nhập không được đảm bảo.",
+    "tl": "May risk ang crypto investment. Walang garantiya sa kita.",
+    "ru": "Криптоинвестиции связаны с риском. Доход не гарантирован.",
+    "th": "การลงทุนคริปโตมีความเสี่ยง และไม่รับประกันรายได้"
 }
 
    
@@ -914,7 +1372,7 @@ def header_buttons():
         [
             {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
             {
-                "text": "❓ Why Finux ?",
+                "text": "❓ Why Finux?",
                 "web_app": {
                     "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"
                 }
@@ -954,7 +1412,12 @@ def get_full_menu(menu_name):
         return TRIPLE_MENU
     return []
 
+USER_LANG_CACHE = {}
+
 def get_user_language(user_id):
+    if user_id in USER_LANG_CACHE:
+        return USER_LANG_CACHE[user_id]
+
     conn = get_conn()
     cur = conn.cursor()
 
@@ -968,25 +1431,19 @@ def get_user_language(user_id):
     cur.close()
     conn.close()
 
-    return row[0] if row else "en"
+    lang = row[0] if row else "en"
+    USER_LANG_CACHE[user_id] = lang
+
+    return lang
 
 def get_full_answer(key, user_id=None):
-    lang = "en"
+    lang = get_user_language(user_id) if user_id else "en"
 
-    if user_id:
-        lang = get_user_language(user_id)
-
-    # DB answer
+    # DB check
     conn = get_conn()
     cur = conn.cursor()
-
-    cur.execute(
-        "SELECT answer FROM custom_answers WHERE key=%s",
-        (key,)
-    )
-
+    cur.execute("SELECT answer FROM custom_answers WHERE key=%s", (key,))
     row = cur.fetchone()
-
     cur.close()
     conn.close()
 
@@ -998,27 +1455,38 @@ def get_full_answer(key, user_id=None):
     if isinstance(answer, dict):
         return answer.get(lang, answer.get("en"))
 
-    return answer
+    return answer or "No information available."
 
+
+MENU_CACHE = {}
 
 def build_menu(menu_key, user_id=None):
 
-    keyboard = header_buttons()
-    menu_items = get_full_menu(menu_key)
-
+    # 🌐 Get language
     lang = "en"
     if user_id:
         lang = get_user_language(user_id)
+
+    # ⚡ CACHE KEY
+    cache_key = f"{menu_key}:{lang}"
+
+    # ⚡ RETURN FROM CACHE
+    if cache_key in MENU_CACHE:
+        return MENU_CACHE[cache_key]
+
+    # 🧱 Build menu
+    keyboard = header_buttons()
+    menu_items = get_full_menu(menu_key)
 
     row = []
 
     for item in menu_items:
 
-        label_dict = item["label"]
-        action = item["action"]
+        label_dict = item.get("label", {})
+        action = item.get("action", "")
 
-        # 🔥 pick correct language
-        text = label_dict.get(lang, label_dict.get("en"))
+        # 🌍 Safe language fallback
+        text = label_dict.get(lang) or label_dict.get("en") or "Option"
 
         row.append({
             "text": text,
@@ -1032,7 +1500,12 @@ def build_menu(menu_key, user_id=None):
     if row:
         keyboard.append(row)
 
-    return {"inline_keyboard": keyboard}
+    result = {"inline_keyboard": keyboard}
+
+    # ⚡ SAVE TO CACHE
+    MENU_CACHE[cache_key] = result
+
+    return result
 
 def is_admin(username):
     conn = get_conn()
@@ -1099,7 +1572,8 @@ async def chat_api(payload: ChatRequest, request: Request):
     question = payload.message.strip()
     answer = generate_answer(question)
     lang = get_user_language(user)
-    answer = translate(answer, lang)
+    if lang != "en":
+     answer = translate(answer, lang)
 
     # ✅ UPDATED save_chat
     try:
@@ -1393,218 +1867,192 @@ async def check_admin():
 
 @app.post("/telegram")
 async def telegram_webhook(request: Request):
-    data = await request.json()
-    logging.info(f"TELEGRAM UPDATE: {data}")
+    try:
+        data = await request.json()
+        logging.info("Telegram update received")
 
-    async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30) as client:
 
-        # ================= CALLBACK HANDLER =================
-        if "callback_query" in data:
-            cq = data["callback_query"]
-            chat_id = cq["message"]["chat"]["id"]
-            payload = cq.get("data", "")
+            # ================= CALLBACK HANDLER =================
+            if "callback_query" in data:
+                cq = data["callback_query"]
+                chat_id = cq["message"]["chat"]["id"]
+                payload = cq.get("data", "")
 
-            # acknowledge callback
-            await client.post(
-                f"{TELEGRAM_API}/answerCallbackQuery",
-                json={"callback_query_id": cq["id"]},
-            )
-
-            # 🌐 LANGUAGE SELECT
-            if payload.startswith("lang:"):
-                lang = payload.split(":")[1]
-
-                conn = get_conn()
-                cur = conn.cursor()
-
-                # ensure user exists
-                cur.execute(
-                    "INSERT INTO users (username, password, role) VALUES (%s, %s, %s) ON CONFLICT (username) DO NOTHING",
-                    (str(chat_id), "telegram_user", "user")
-                )
-
-                # update language
-                cur.execute(
-                    "UPDATE users SET language=%s WHERE username=%s",
-                    (lang, str(chat_id))
-                )
-
-                conn.commit()
-                cur.close()
-                conn.close()
-
+                # acknowledge callback
                 await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": cq["message"]["message_id"],
-                        "text": "✅ Language selected!\n\nPlease choose an option:",
-                        "reply_markup": build_menu("main", str(chat_id)),
-                    },
+                    f"{TELEGRAM_API}/answerCallbackQuery",
+                    json={"callback_query_id": cq["id"]},
                 )
 
-                return {"ok": True}
+                # 🌐 LANGUAGE SELECT
+                if payload.startswith("lang:"):
+                    lang = payload.split(":")[1]
 
-            # 🌐 CHANGE LANGUAGE BUTTON
-            if payload == "change_lang":
-                await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": cq["message"]["message_id"],
-                        "text": "🌐 *Please choose your language:*",
-                        "parse_mode": "Markdown",
-                        "reply_markup": build_language_menu()
-                    },
-                )
-                return {"ok": True}
+                    conn = get_conn()
+                    cur = conn.cursor()
 
-            # 📂 MENU NAVIGATION
-            if payload.startswith("menu:"):
-                menu_key = payload.replace("menu:", "")
-                message_id = cq["message"]["message_id"]
-
-                await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
-                        "parse_mode": "Markdown",
-                        "reply_markup": build_menu(menu_key, str(chat_id)),
-                    },
-                )
-
-                return {"ok": True}
-
-            # ❓ QUESTION HANDLER
-            if payload.startswith("q:"):
-                key = payload.replace("q:", "")
-
-                # 1️⃣ Hardcoded
-                answer = get_full_answer(key, str(chat_id))
-
-                # 2️⃣ Document search
-                if not answer:
-                    topic = key.replace("_", " ")
-                    answer = semantic_search(topic)
-
-                # 3️⃣ Gemini fallback
-                if not answer:
-                    topic = key.replace("_", " ")
-                    answer = generate_answer(topic)
-
-                # 4️⃣ Final fallback
-                if not answer:
-                    answer = "No information available."
-
-                # 🌐 Translate
-                lang = get_user_language(str(chat_id))
-                answer = translate(answer, lang)
-
-                message_id = cq["message"]["message_id"]
-
-                # determine menu
-                menu_to_show = "main"
-
-                if key.startswith("wallet"):
-                    menu_to_show = "wallet"
-                elif key.startswith("deposit"):
-                    menu_to_show = "deposit"
-                elif key.startswith("minting"):
-                    menu_to_show = "minting"
-                elif key.startswith("lp"):
-                    menu_to_show = "lp"
-                elif key.startswith("staking"):
-                    menu_to_show = "staking"
-                elif key.startswith("withdraw"):
-                    menu_to_show = "withdraw"
-                elif key.startswith("airdrop"):
-                    menu_to_show = "airdrop"
-                elif key.startswith("affiliate"):
-                    menu_to_show = "affiliate"
-                elif key in ["rank_structure", "club_rewards", "rank_requirements"]:
-                    menu_to_show = "ranks"
-                elif key.startswith("terms") or key.startswith("risk"):
-                    menu_to_show = "others"
-                elif key.startswith("triple"):
-                    menu_to_show = "triple_income"
-
-                await client.post(
-                    f"{TELEGRAM_API}/editMessageText",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "text": answer,
-                        "parse_mode": "Markdown",
-                        "reply_markup": build_menu(menu_to_show, str(chat_id)),
-                    },
-                )
-
-                # save chat
-                try:
-                    save_chat("telegram", str(chat_id), "", key, answer)
-                except Exception as e:
-                    logging.error(f"DB save error (callback): {e}")
-
-                return {"ok": True}
-
-        # ================= NORMAL MESSAGE =================
-        message = data.get("message")
-        if not message:
-            return {"ok": True}
-
-        chat_id = message["chat"]["id"]
-        text = message.get("text", "").strip()
-
-        # /start
-        if text.startswith("/start"):
-
-            image_path = os.path.join(DATA_DIR, "finux.png")
-            if os.path.exists(image_path):
-                with open(image_path, "rb") as img:
-                    await client.post(
-                        f"{TELEGRAM_API}/sendPhoto",
-                        data={"chat_id": chat_id},
-                        files={"photo": img},
+                    cur.execute(
+                        "INSERT INTO users (username, password, role) VALUES (%s, %s, %s) ON CONFLICT (username) DO NOTHING",
+                        (str(chat_id), "telegram_user", "user")
                     )
 
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": "🌐 *Please choose your language:*",
-                    "parse_mode": "Markdown",
-                    "reply_markup": build_language_menu()
-                },
-            )
+                    cur.execute(
+                        "UPDATE users SET language=%s WHERE username=%s",
+                        (lang, str(chat_id))
+                    )
 
-            return {"ok": True}
+                    conn.commit()
+                    cur.close()
+                    conn.close()
 
-        # user message
-        if text:
-            answer = generate_answer(text)
+                    # 🔥 CLEAR CACHE
+                    MENU_CACHE.clear()
+                    USER_LANG_CACHE.pop(str(chat_id), None)
 
-            lang = get_user_language(str(chat_id))
-            answer = translate(answer, lang)
+                    await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": cq["message"]["message_id"],
+                            "text": "✅ Language selected!\n\nPlease choose an option:",
+                            "reply_markup": build_menu("main", str(chat_id)),
+                        },
+                    )
+                    return {"ok": True}
 
-            await client.post(
-                f"{TELEGRAM_API}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": answer,
-                },
-            )
+                # 🌐 CHANGE LANGUAGE BUTTON
+                if payload == "change_lang":
+                    await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": cq["message"]["message_id"],
+                            "text": "🌐 *Please choose your language:*",
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_language_menu()
+                        },
+                    )
+                    return {"ok": True}
 
-            try:
-                save_chat(
-                    "telegram",
-                    str(chat_id),
-                    message.get("from", {}).get("username", ""),
-                    text,
-                    answer
+                # 📂 MENU NAVIGATION
+                if payload.startswith("menu:"):
+                    menu_key = payload.replace("menu:", "")
+                    message_id = cq["message"]["message_id"]
+
+                    await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": message_id,
+                            "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_menu(menu_key, str(chat_id)),
+                        },
+                    )
+                    return {"ok": True}
+
+                # ❓ QUESTION HANDLER
+                if payload.startswith("q:"):
+                    key = payload.replace("q:", "")
+
+                    # 1️⃣ Hardcoded
+                    answer = get_full_answer(key, str(chat_id))
+
+                    # 2️⃣ Document search
+                    if not answer:
+                        topic = key.replace("_", " ")
+                        answer = semantic_search(topic)
+
+                    # 3️⃣ Gemini fallback
+                    if not answer:
+                        topic = key.replace("_", " ")
+                        answer = generate_answer(topic)
+
+                    # 4️⃣ Final fallback
+                    if not answer:
+                        answer = "No information available."
+
+                    # 🔥 Translate ONLY if needed
+                    lang = get_user_language(str(chat_id))
+                    if key not in HARDCODED_ANSWERS and lang != "en":
+                        answer = translate(answer, lang)
+
+                    message_id = cq["message"]["message_id"]
+
+                    # determine menu
+                    menu_to_show = "main"
+                    if key.startswith("wallet"):
+                        menu_to_show = "wallet"
+                    elif key.startswith("deposit"):
+                        menu_to_show = "deposit"
+                    elif key.startswith("minting"):
+                        menu_to_show = "minting"
+                    elif key.startswith("lp"):
+                        menu_to_show = "lp"
+                    elif key.startswith("staking"):
+                        menu_to_show = "staking"
+                    elif key.startswith("withdraw"):
+                        menu_to_show = "withdraw"
+                    elif key.startswith("airdrop"):
+                        menu_to_show = "airdrop"
+                    elif key.startswith("affiliate"):
+                        menu_to_show = "affiliate"
+                    elif key.startswith("rank"):
+                        menu_to_show = "ranks"
+                    elif key.startswith("triple"):
+                        menu_to_show = "triple"
+
+                    await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": message_id,
+                            "text": answer,
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_menu(menu_to_show, str(chat_id)),
+                        },
+                    )
+                    return {"ok": True}
+
+            # ================= NORMAL MESSAGE =================
+            if "message" in data:
+                msg = data["message"]
+                chat_id = msg["chat"]["id"]
+                text = msg.get("text", "")
+
+                if text == "/start":
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "🌐 *Please choose your language:*",
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_language_menu()
+                        },
+                    )
+                    return {"ok": True}
+
+                # 🤖 AI RESPONSE
+                answer = generate_answer(text)
+
+                lang = get_user_language(str(chat_id))
+                if lang != "en":
+                    answer = translate(answer, lang)
+
+                await client.post(
+                    f"{TELEGRAM_API}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": answer,
+                        "parse_mode": "Markdown",
+                    },
                 )
-            except Exception as e:
-                logging.error(f"DB save error (telegram): {e}")
 
+                return {"ok": True}
+
+        return {"ok": True}
+
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
         return {"ok": True}
