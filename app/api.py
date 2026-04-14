@@ -354,61 +354,7 @@ OTHERS_MENU = [
         },
         "action": "menu:withdraw"
     },
-    Got it 👍 — this is a clear logic issue, not UI issue.
-
-🚨 PROBLEM
-
-Earlier your Others menu had:
-
-Liquidity Pool  
-Staking  
-Withdraw  
-Airdrop  
-Affiliate  
-Ranks  
-Triple  
-Terms  
-Risk  
-Back  
-
-👉 Now only showing:
-
-Liquidity Pool  
-Staking  
-Withdraw  
-Back  
-🎯 ROOT CAUSE
-
-Your current OTHERS_MENU is incomplete ❌
-
-From your code :
-
-OTHERS_MENU = [
-    { "action": "menu:lp" },
-    { "action": "menu:staking" },
-    { "action": "menu:withdraw" },
-    { "action": "menu:main" }
-]
-
-👉 You removed other menu links accidentally
-
-✅ FIX (FULL UPDATED OTHERS_MENU)
-
-Replace your current OTHERS_MENU with this 👇
-
-OTHERS_MENU = [
-    {
-        "label": {...},  # Liquidity Pool
-        "action": "menu:lp"
-    },
-    {
-        "label": {...},  # Staking
-        "action": "menu:staking"
-    },
-    {
-        "label": {...},  # Withdraw
-        "action": "menu:withdraw"
-    },
+    
     {
         "label": {
             "en": "🎁 Airdrop",
