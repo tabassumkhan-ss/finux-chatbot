@@ -354,6 +354,139 @@ OTHERS_MENU = [
         },
         "action": "menu:withdraw"
     },
+    Got it 👍 — this is a clear logic issue, not UI issue.
+
+🚨 PROBLEM
+
+Earlier your Others menu had:
+
+Liquidity Pool  
+Staking  
+Withdraw  
+Airdrop  
+Affiliate  
+Ranks  
+Triple  
+Terms  
+Risk  
+Back  
+
+👉 Now only showing:
+
+Liquidity Pool  
+Staking  
+Withdraw  
+Back  
+🎯 ROOT CAUSE
+
+Your current OTHERS_MENU is incomplete ❌
+
+From your code :
+
+OTHERS_MENU = [
+    { "action": "menu:lp" },
+    { "action": "menu:staking" },
+    { "action": "menu:withdraw" },
+    { "action": "menu:main" }
+]
+
+👉 You removed other menu links accidentally
+
+✅ FIX (FULL UPDATED OTHERS_MENU)
+
+Replace your current OTHERS_MENU with this 👇
+
+OTHERS_MENU = [
+    {
+        "label": {...},  # Liquidity Pool
+        "action": "menu:lp"
+    },
+    {
+        "label": {...},  # Staking
+        "action": "menu:staking"
+    },
+    {
+        "label": {...},  # Withdraw
+        "action": "menu:withdraw"
+    },
+    {
+        "label": {
+            "en": "🎁 Airdrop",
+            "hi": "🎁 एयरड्रॉप",
+            "mr": "🎁 एअरड्रॉप",
+            "bn": "🎁 এয়ারড্রপ",
+            "vi": "🎁 Airdrop",
+            "tl": "🎁 Airdrop",
+            "ru": "🎁 Аирдроп",
+            "th": "🎁 แอร์ดรอป"
+        },
+        "action": "menu:airdrop"
+    },
+    {
+        "label": {
+            "en": "🤝 Affiliate Program",
+            "hi": "🤝 एफिलिएट प्रोग्राम",
+            "mr": "🤝 एफिलिएट प्रोग्राम",
+            "bn": "🤝 অ্যাফিলিয়েট প্রোগ্রাম",
+            "vi": "🤝 Affiliate",
+            "tl": "🤝 Affiliate",
+            "ru": "🤝 Партнерская программа",
+            "th": "🤝 โปรแกรมแอฟฟิลิเอต"
+        },
+        "action": "menu:affiliate"
+    },
+    {
+        "label": {
+            "en": "🏅 Ranks & Clubs",
+            "hi": "🏅 रैंक और क्लब",
+            "mr": "🏅 रँक आणि क्लब",
+            "bn": "🏅 র‍্যাঙ্ক ও ক্লাব",
+            "vi": "🏅 Cấp bậc & Club",
+            "tl": "🏅 Ranks & Clubs",
+            "ru": "🏅 Ранги и клубы",
+            "th": "🏅 ระดับและคลับ"
+        },
+        "action": "menu:ranks"
+    },
+    {
+        "label": {
+            "en": "💎 Triple Income System",
+            "hi": "💎 ट्रिपल इनकम सिस्टम",
+            "mr": "💎 ट्रिपल इनकम सिस्टम",
+            "bn": "💎 ট্রিপল ইনকাম সিস্টেম",
+            "vi": "💎 Thu nhập 3 nguồn",
+            "tl": "💎 Triple Income",
+            "ru": "💎 Тройной доход",
+            "th": "💎 ระบบรายได้ 3 ทาง"
+        },
+        "action": "menu:triple"
+    },
+    {
+        "label": {
+            "en": "📜 Terms & Conditions",
+            "hi": "📜 नियम और शर्तें",
+            "mr": "📜 नियम व अटी",
+            "bn": "📜 শর্তাবলী",
+            "vi": "📜 Điều khoản",
+            "tl": "📜 Terms",
+            "ru": "📜 Условия",
+            "th": "📜 ข้อกำหนด"
+        },
+        "action": "q:terms_conditions"
+    },
+    {
+        "label": {
+            "en": "⚠️ Risk Disclaimer",
+            "hi": "⚠️ जोखिम सूचना",
+            "mr": "⚠️ जोखीम सूचना",
+            "bn": "⚠️ ঝুঁকি সতর্কতা",
+            "vi": "⚠️ Rủi ro",
+            "tl": "⚠️ Risk",
+            "ru": "⚠️ Риски",
+            "th": "⚠️ คำเตือนความเสี่ยง"
+        },
+        "action": "q:risk_disclaimer"
+    },
     {
         "label": {
             "en": "⬅ Back",
