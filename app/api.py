@@ -1438,6 +1438,64 @@ HARDCODED_ANSWERS = {
    
  }
 
+KEY_TO_MENU = {
+    # Wallet
+    "wallet_info": "wallet",
+    "wallet_create": "wallet",
+    "wallet_security": "wallet",
+    "wallet_private": "wallet",
+
+    # Deposit
+    "deposit_min": "deposit",
+    "deposit_plans": "deposit",
+    "deposit_structure": "deposit",
+    "deposit_blockchain": "deposit",
+
+    # Minting
+    "minting_info": "minting",
+    "minting_time": "minting",
+    "minting_location": "minting",
+
+    # Liquidity Pool
+    "lp_info": "lp",
+    "lp_pair": "lp",
+    "lp_benefits": "lp",
+    "lp_rewards": "lp",
+
+    # Staking
+    "staking_info": "staking",
+    "staking_work": "staking",
+    "staking_rewards": "staking",
+
+    # Withdraw
+    "withdraw_anytime": "withdraw",
+    "withdraw_currency": "withdraw",
+    "withdraw_burn": "withdraw",
+
+    # Airdrop
+    "airdrop_eligibility": "airdrop",
+    "airdrop_reward": "airdrop",
+    "airdrop_conditions": "airdrop",
+
+    # Affiliate
+    "affiliate_info": "affiliate",
+    "affiliate_team": "affiliate",
+    "affiliate_importance": "affiliate",
+
+    # Ranks
+    "rank_structure": "ranks",
+    "rank_requirements": "ranks",
+    "club_rewards": "ranks",
+
+    # Triple
+    "triple_info": "triple",
+    "triple_limit": "triple",
+
+    # Others (direct answers)
+    "terms_conditions": "others",
+    "risk_disclaimer": "others",
+}
+
 
 TRANSLATION_CACHE = {}
 
@@ -2060,39 +2118,7 @@ async def telegram_webhook(request: Request):
                     message_id = cq["message"]["message_id"]
 
                     # determine menu
-                    menu_to_show = "main"
-                    if key.startswith("wallet"):
-                        menu_to_show = "wallet"
-                    elif key.startswith("deposit"):
-                        menu_to_show = "deposit"
-                    elif key.startswith("minting"):
-                        menu_to_show = "minting"
-                    elif key.startswith("lp"):
-                        menu_to_show = "lp"
-                    elif key.startswith("staking"):
-                        menu_to_show = "staking"
-                    elif key.startswith("withdraw"):
-                        menu_to_show = "withdraw"
-                    elif key.startswith("airdrop"):
-                        menu_to_show = "airdrop"
-                    elif key.startswith("affiliate"):
-                        menu_to_show = "affiliate"
-                    elif key.startswith("rank"):
-                        menu_to_show = "ranks"
-                    elif key.startswith("triple"):
-                        menu_to_show = "triple"
-
-                    await client.post(
-                        f"{TELEGRAM_API}/editMessageText",
-                        json={
-                            "chat_id": chat_id,
-                            "message_id": message_id,
-                            "text": answer,
-                            "parse_mode": "Markdown",
-                            "reply_markup": build_menu(menu_to_show, str(chat_id)),
-                        },
-                    )
-                    return {"ok": True}
+                    menu_to_show = KEY_TO_MENU.get(key, "main")
 
             # ================= NORMAL MESSAGE =================
             if "message" in data:
