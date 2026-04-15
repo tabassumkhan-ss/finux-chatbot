@@ -2009,7 +2009,6 @@ async def telegram_webhook(request: Request):
                 chat_id = cq["message"]["chat"]["id"]
                 payload = cq.get("data", "")
 
-                # acknowledge callback
                 await client.post(
                     f"{TELEGRAM_API}/answerCallbackQuery",
                     json={"callback_query_id": cq["id"]},
@@ -2036,7 +2035,6 @@ async def telegram_webhook(request: Request):
                     cur.close()
                     conn.close()
 
-                    # 🔥 CLEAR CACHE
                     MENU_CACHE.clear()
                     USER_LANG_CACHE.pop(str(chat_id), None)
 
@@ -2086,31 +2084,22 @@ async def telegram_webhook(request: Request):
                 if payload.startswith("q:"):
                     key = payload.replace("q:", "")
 
-                    # 1️⃣ Hardcoded
                     answer = get_full_answer(key, str(chat_id))
 
-                    # 2️⃣ Search
                     if not answer:
-                        topic = key.replace("_", " ")
-                        answer = semantic_search(topic)
+                        answer = semantic_search(key)
 
-                    # 3️⃣ AI
                     if not answer:
-                        topic = key.replace("_", " ")
-                        answer = generate_answer(topic)
+                        answer = generate_answer(key)
 
-                    # 4️⃣ Fallback
                     if not answer:
                         answer = "No information available."
 
-                    # 🔥 Translate only if NOT hardcoded
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
                         answer = translate(answer, lang)
 
                     message_id = cq["message"]["message_id"]
-
-                    # 🔥 ROUTING (FINAL FIX)
                     menu_to_show = KEY_TO_MENU.get(key, "main")
 
                     await client.post(
@@ -2123,17 +2112,26 @@ async def telegram_webhook(request: Request):
                             "reply_markup": build_menu(menu_to_show, str(chat_id)),
                         },
                     )
-
                     return {"ok": True}
 
             # ================= NORMAL MESSAGE =================
             if "message" in data:
                 msg = data["message"]
                 chat_id = msg["chat"]["id"]
-                text = msg.get("text", "")
+                text = msg.get("text", "").strip()
 
-                # START COMMAND
+                # ✅ FIXED /start BLOCK
                 if text == "/start":
+                    image_path = os.path.join(DATA_DIR, "finux.png")
+
+                    if os.path.exists(image_path):
+                        with open(image_path, "rb") as img:
+                            await client.post(
+                                f"{TELEGRAM_API}/sendPhoto",
+                                data={"chat_id": chat_id},
+                                files={"photo": img},
+                            )
+
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
                         json={
@@ -2143,25 +2141,27 @@ async def telegram_webhook(request: Request):
                             "reply_markup": build_language_menu(),
                         },
                     )
+
                     return {"ok": True}
 
                 # 🤖 AI RESPONSE
-                answer = generate_answer(text)
+                if text:
+                    answer = generate_answer(text)
 
-                lang = get_user_language(str(chat_id))
-                if lang != "en":
-                    answer = translate(answer, lang)
+                    lang = get_user_language(str(chat_id))
+                    if lang != "en":
+                        answer = translate(answer, lang)
 
-                await client.post(
-                    f"{TELEGRAM_API}/sendMessage",
-                    json={
-                        "chat_id": chat_id,
-                        "text": answer,
-                        "parse_mode": "Markdown",
-                    },
-                )
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": answer,
+                            "parse_mode": "Markdown",
+                        },
+                    )
 
-                return {"ok": True}
+                    return {"ok": True}
 
         return {"ok": True}
 
