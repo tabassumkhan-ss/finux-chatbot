@@ -875,7 +875,7 @@ AIRDROP_MENU = [
 AFFILIATE_MENU = [
     {
         "label": {
-            "en": "👥 Affiliate info",
+            "en": "👥 What is the affiliate program?",
             "hi": "👥 एफिलिएट जानकारी",
             "mr": "👥 एफिलिएट माहिती",
             "bn": "👥 অ্যাফিলিয়েট তথ্য",
@@ -2087,7 +2087,7 @@ async def telegram_webhook(request: Request):
                     answer = get_full_answer(key, str(chat_id))
 
                     if not answer:
-                        answer = semantic_search(key)
+                        answer = semantic_search(key.replace("_", " "))
 
                     if not answer:
                         answer = generate_answer(key)
@@ -2108,7 +2108,6 @@ async def telegram_webhook(request: Request):
                             "chat_id": chat_id,
                             "message_id": message_id,
                             "text": answer,
-                            "parse_mode": "Markdown",
                             "reply_markup": build_menu(menu_to_show, str(chat_id)),
                         },
                     )
