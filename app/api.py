@@ -1573,26 +1573,19 @@ def get_user_language(user_id):
 
     return lang
 
-def get_full_answer(key, user_id=None):
-    lang = get_user_language(user_id) if user_id else "en"
+def get_full_answer(key, user_id):
+    data = HARDCODED_ANSWERS.get(key)
 
-    # DB check
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT answer FROM custom_answers WHERE key=%s", (key,))
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
+    if not data:
+        return None
 
-    if row:
-        return row[0]
+    lang = get_user_language(user_id)
 
-    answer = HARDCODED_ANSWERS.get(key)
+    # ✅ IMPORTANT FIX
+    if isinstance(data, dict):
+        return data.get(lang, data.get("en"))
 
-    if isinstance(answer, dict):
-        return answer.get(lang, answer.get("en"))
-
-    return answer or "No information available."
+    return data
 
 
 MENU_CACHE = {}
@@ -2058,7 +2051,7 @@ async def telegram_webhook(request: Request):
                     )
                     return {"ok": True}
 
-                # 🌐 CHANGE LANGUAGE BUTTON
+                # 🌐 CHANGE LANGUAGE
                 if payload == "change_lang":
                     await client.post(
                         f"{TELEGRAM_API}/editMessageText",
@@ -2067,7 +2060,7 @@ async def telegram_webhook(request: Request):
                             "message_id": cq["message"]["message_id"],
                             "text": "🌐 *Please choose your language:*",
                             "parse_mode": "Markdown",
-                            "reply_markup": build_language_menu()
+                            "reply_markup": build_language_menu(),
                         },
                     )
                     return {"ok": True}
@@ -2096,29 +2089,42 @@ async def telegram_webhook(request: Request):
                     # 1️⃣ Hardcoded
                     answer = get_full_answer(key, str(chat_id))
 
-                    # 2️⃣ Document search
+                    # 2️⃣ Search
                     if not answer:
                         topic = key.replace("_", " ")
                         answer = semantic_search(topic)
 
-                    # 3️⃣ Gemini fallback
+                    # 3️⃣ AI
                     if not answer:
                         topic = key.replace("_", " ")
                         answer = generate_answer(topic)
 
-                    # 4️⃣ Final fallback
+                    # 4️⃣ Fallback
                     if not answer:
                         answer = "No information available."
 
-                    # 🔥 Translate ONLY if needed
+                    # 🔥 Translate only if NOT hardcoded
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
                         answer = translate(answer, lang)
 
                     message_id = cq["message"]["message_id"]
 
-                    # determine menu
+                    # 🔥 ROUTING (FINAL FIX)
                     menu_to_show = KEY_TO_MENU.get(key, "main")
+
+                    await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": message_id,
+                            "text": answer,
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_menu(menu_to_show, str(chat_id)),
+                        },
+                    )
+
+                    return {"ok": True}
 
             # ================= NORMAL MESSAGE =================
             if "message" in data:
@@ -2126,6 +2132,7 @@ async def telegram_webhook(request: Request):
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "")
 
+                # START COMMAND
                 if text == "/start":
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
@@ -2133,7 +2140,7 @@ async def telegram_webhook(request: Request):
                             "chat_id": chat_id,
                             "text": "🌐 *Please choose your language:*",
                             "parse_mode": "Markdown",
-                            "reply_markup": build_language_menu()
+                            "reply_markup": build_language_menu(),
                         },
                     )
                     return {"ok": True}
