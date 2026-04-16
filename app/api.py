@@ -2008,7 +2008,9 @@ async def telegram_webhook(request: Request):
                 cq = data["callback_query"]
                 chat_id = cq["message"]["chat"]["id"]
                 payload = cq.get("data", "")
+                message_id = cq["message"]["message_id"]
 
+                # acknowledge click
                 await client.post(
                     f"{TELEGRAM_API}/answerCallbackQuery",
                     json={"callback_query_id": cq["id"]},
@@ -2042,7 +2044,7 @@ async def telegram_webhook(request: Request):
                         f"{TELEGRAM_API}/editMessageText",
                         json={
                             "chat_id": chat_id,
-                            "message_id": cq["message"]["message_id"],
+                            "message_id": message_id,
                             "text": "✅ Language selected!\n\nPlease choose an option:",
                             "reply_markup": build_menu("main", str(chat_id)),
                         },
@@ -2050,70 +2052,83 @@ async def telegram_webhook(request: Request):
                     return {"ok": True}
 
                 # 🌐 CHANGE LANGUAGE
-                if payload == "change_lang":
+                elif payload == "change_lang":
                     await client.post(
                         f"{TELEGRAM_API}/editMessageText",
                         json={
                             "chat_id": chat_id,
-                            "message_id": cq["message"]["message_id"],
-                            "text": "🌐 *Please choose your language:*",
-                            "parse_mode": "Markdown",
+                            "message_id": message_id,
+                            "text": "🌐 Please choose your language:",
                             "reply_markup": build_language_menu(),
                         },
                     )
                     return {"ok": True}
 
                 # 📂 MENU NAVIGATION
-                if payload.startswith("menu:"):
+                elif payload.startswith("menu:"):
                     menu_key = payload.replace("menu:", "")
-                    message_id = cq["message"]["message_id"]
 
                     await client.post(
                         f"{TELEGRAM_API}/editMessageText",
                         json={
                             "chat_id": chat_id,
                             "message_id": message_id,
-                            "text": "🚀 *FINUX Assistant*\nPlease choose an option:",
-                            "parse_mode": "Markdown",
+                            "text": "🚀 FINUX Assistant\nPlease choose an option:",
                             "reply_markup": build_menu(menu_key, str(chat_id)),
                         },
                     )
                     return {"ok": True}
 
-                # ❓ QUESTION HANDLER
-                if payload.startswith("q:"):
+                # ❓ QUESTION HANDLER (FIXED)
+                elif payload.startswith("q:"):
                     key = payload.replace("q:", "")
                     print("KEY:", key)
 
                     answer = get_full_answer(key, str(chat_id))
 
                     if not answer or not str(answer).strip():
-                       topic = key.replace("_", " ")
-                       answer = semantic_search(topic)
+                        topic = key.replace("_", " ")
+                        answer = semantic_search(topic)
 
                     if not answer or not str(answer).strip():
-                       topic = key.replace("_", " ")
-                       answer = generate_answer(topic)
+                        topic = key.replace("_", " ")
+                        answer = generate_answer(topic)
 
                     if not answer or not str(answer).strip():
-                     answer = "No information available."
+                        answer = "No information available."
+
                     print("FINAL ANSWER:", repr(answer))
 
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
                         answer = translate(answer, lang)
 
-                    message_id = cq["message"]["message_id"]
+                    # 🔥 ensure Telegram updates text
+                    answer = "📌 " + answer
+
                     menu_to_show = KEY_TO_MENU.get(key, "main")
 
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
-                        json={
-                            "chat_id": chat_id,
-                            "text": answer,
-                            
-                        },
-                    )
+                    try:
+                        await client.post(
+                            f"{TELEGRAM_API}/editMessageText",
+                            json={
+                                "chat_id": chat_id,
+                                "message_id": message_id,
+                                "text": answer,
+                                "reply_markup": build_menu(menu_to_show, str(chat_id)),
+                            },
+                        )
+                    except Exception as e:
+                        print("EDIT FAILED:", e)
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": answer,
+                            },
+                        )
+
                     return {"ok": True}
 
             # ================= NORMAL MESSAGE =================
@@ -2122,7 +2137,7 @@ async def telegram_webhook(request: Request):
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "").strip()
 
-                # ✅ FIXED /start BLOCK
+                # START
                 if text == "/start":
                     image_path = os.path.join(DATA_DIR, "finux.png")
 
@@ -2138,15 +2153,14 @@ async def telegram_webhook(request: Request):
                         f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
-                            "text": "🌐 *Please choose your language:*",
-                            "parse_mode": "Markdown",
+                            "text": "🌐 Please choose your language:",
                             "reply_markup": build_language_menu(),
                         },
                     )
 
                     return {"ok": True}
 
-                #  AI RESPONSE
+                # 🤖 AI RESPONSE
                 if text:
                     answer = generate_answer(text)
 
@@ -2159,7 +2173,6 @@ async def telegram_webhook(request: Request):
                         json={
                             "chat_id": chat_id,
                             "text": answer,
-                            "parse_mode": "Markdown",
                         },
                     )
 
