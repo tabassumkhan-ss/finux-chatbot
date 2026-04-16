@@ -2101,6 +2101,16 @@ async def telegram_webhook(request: Request):
                 text = msg.get("text", "")
 
                 if text == "/start":
+                    image_path = os.path.join(DATA_DIR, "finux.png")
+
+                    if os.path.exists(image_path):
+                        with open(image_path, "rb") as img:
+                            await client.post(
+                                f"{TELEGRAM_API}/sendPhoto",
+                                data={"chat_id": chat_id},
+                                files={"photo": img},
+                            )
+
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
                         json={
