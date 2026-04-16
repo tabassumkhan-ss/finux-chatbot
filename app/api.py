@@ -2088,16 +2088,16 @@ async def telegram_webhook(request: Request):
                     answer = get_full_answer(key, str(chat_id))
 
                     if not answer or not str(answer).strip():
-                     topic = key.replace("_", " ")
-                     answer = semantic_search(topic)
+                       topic = key.replace("_", " ")
+                       answer = semantic_search(topic)
 
                     if not answer or not str(answer).strip():
-                     topic = key.replace("_", " ")
-                     answer = generate_answer(topic)
+                       topic = key.replace("_", " ")
+                       answer = generate_answer(topic)
 
                     if not answer or not str(answer).strip():
                      answer = "No information available."
-                     print("FINAL ANSWER:", repr(answer))
+                    print("FINAL ANSWER:", repr(answer))
 
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
@@ -2110,9 +2110,8 @@ async def telegram_webhook(request: Request):
                         f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
-                            "message_id": message_id,
                             "text": answer,
-                            "reply_markup": build_menu(menu_to_show, str(chat_id)),
+                            
                         },
                     )
                     return {"ok": True}
