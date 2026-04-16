@@ -875,7 +875,7 @@ AIRDROP_MENU = [
 AFFILIATE_MENU = [
     {
         "label": {
-            "en": "👥 What is the affiliate program?",
+            "en": "👥 Affiliate info",
             "hi": "👥 एफिलिएट जानकारी",
             "mr": "👥 एफिलिएट माहिती",
             "bn": "👥 অ্যাফিলিয়েট তথ্য",
@@ -1438,64 +1438,6 @@ HARDCODED_ANSWERS = {
    
  }
 
-KEY_TO_MENU = {
-    # Wallet
-    "wallet_info": "wallet",
-    "wallet_create": "wallet",
-    "wallet_security": "wallet",
-    "wallet_private": "wallet",
-
-    # Deposit
-    "deposit_min": "deposit",
-    "deposit_plans": "deposit",
-    "deposit_structure": "deposit",
-    "deposit_blockchain": "deposit",
-
-    # Minting
-    "minting_info": "minting",
-    "minting_time": "minting",
-    "minting_location": "minting",
-
-    # Liquidity Pool
-    "lp_info": "lp",
-    "lp_pair": "lp",
-    "lp_benefits": "lp",
-    "lp_rewards": "lp",
-
-    # Staking
-    "staking_info": "staking",
-    "staking_work": "staking",
-    "staking_rewards": "staking",
-
-    # Withdraw
-    "withdraw_anytime": "withdraw",
-    "withdraw_currency": "withdraw",
-    "withdraw_burn": "withdraw",
-
-    # Airdrop
-    "airdrop_eligibility": "airdrop",
-    "airdrop_reward": "airdrop",
-    "airdrop_conditions": "airdrop",
-
-    # Affiliate
-    "affiliate_info": "affiliate",
-    "affiliate_team": "affiliate",
-    "affiliate_importance": "affiliate",
-
-    # Ranks
-    "rank_structure": "ranks",
-    "rank_requirements": "ranks",
-    "club_rewards": "ranks",
-
-    # Triple
-    "triple_info": "triple",
-    "triple_limit": "triple",
-
-    # Others (direct answers)
-    "terms_conditions": "others",
-    "risk_disclaimer": "others",
-}
-
 
 TRANSLATION_CACHE = {}
 
@@ -1573,19 +1515,26 @@ def get_user_language(user_id):
 
     return lang
 
-def get_full_answer(key, user_id):
-    data = HARDCODED_ANSWERS.get(key)
+def get_full_answer(key, user_id=None):
+    lang = get_user_language(user_id) if user_id else "en"
 
-    if not data:
-        return None
+    # DB check
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT answer FROM custom_answers WHERE key=%s", (key,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
 
-    lang = get_user_language(user_id)
+    if row:
+        return row[0]
 
-    # ✅ IMPORTANT FIX
-    if isinstance(data, dict):
-        return data.get(lang, data.get("en"))
+    answer = HARDCODED_ANSWERS.get(key)
 
-    return data
+    if isinstance(answer, dict):
+        return answer.get(lang, answer.get("en"))
+
+    return answer or "No information available."
 
 
 MENU_CACHE = {}
@@ -2009,6 +1958,7 @@ async def telegram_webhook(request: Request):
                 chat_id = cq["message"]["chat"]["id"]
                 payload = cq.get("data", "")
 
+                # acknowledge callback
                 await client.post(
                     f"{TELEGRAM_API}/answerCallbackQuery",
                     json={"callback_query_id": cq["id"]},
@@ -2035,6 +1985,7 @@ async def telegram_webhook(request: Request):
                     cur.close()
                     conn.close()
 
+                    # 🔥 CLEAR CACHE
                     MENU_CACHE.clear()
                     USER_LANG_CACHE.pop(str(chat_id), None)
 
@@ -2049,7 +2000,7 @@ async def telegram_webhook(request: Request):
                     )
                     return {"ok": True}
 
-                # 🌐 CHANGE LANGUAGE
+                # 🌐 CHANGE LANGUAGE BUTTON
                 if payload == "change_lang":
                     await client.post(
                         f"{TELEGRAM_API}/editMessageText",
@@ -2058,7 +2009,7 @@ async def telegram_webhook(request: Request):
                             "message_id": cq["message"]["message_id"],
                             "text": "🌐 *Please choose your language:*",
                             "parse_mode": "Markdown",
-                            "reply_markup": build_language_menu(),
+                            "reply_markup": build_language_menu()
                         },
                     )
                     return {"ok": True}
@@ -2083,35 +2034,62 @@ async def telegram_webhook(request: Request):
                 # ❓ QUESTION HANDLER
                 if payload.startswith("q:"):
                     key = payload.replace("q:", "")
-                    print("KEY:", key)
 
+                    # 1️⃣ Hardcoded
                     answer = get_full_answer(key, str(chat_id))
 
-                    if not answer or not str(answer).strip():
-                       topic = key.replace("_", " ")
-                       answer = semantic_search(topic)
+                    # 2️⃣ Document search
+                    if not answer:
+                        topic = key.replace("_", " ")
+                        answer = semantic_search(topic)
 
-                    if not answer or not str(answer).strip():
-                       topic = key.replace("_", " ")
-                       answer = generate_answer(topic)
+                    # 3️⃣ Gemini fallback
+                    if not answer:
+                        topic = key.replace("_", " ")
+                        answer = generate_answer(topic)
 
-                    if not answer or not str(answer).strip():
-                     answer = "No information available."
-                    print("FINAL ANSWER:", repr(answer))
+                    # 4️⃣ Final fallback
+                    if not answer:
+                        answer = "No information available."
 
+                    # 🔥 Translate ONLY if needed
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
                         answer = translate(answer, lang)
 
                     message_id = cq["message"]["message_id"]
-                    menu_to_show = KEY_TO_MENU.get(key, "main")
+
+                    # determine menu
+                    menu_to_show = "main"
+                    if key.startswith("wallet"):
+                        menu_to_show = "wallet"
+                    elif key.startswith("deposit"):
+                        menu_to_show = "deposit"
+                    elif key.startswith("minting"):
+                        menu_to_show = "minting"
+                    elif key.startswith("lp"):
+                        menu_to_show = "lp"
+                    elif key.startswith("staking"):
+                        menu_to_show = "staking"
+                    elif key.startswith("withdraw"):
+                        menu_to_show = "withdraw"
+                    elif key.startswith("airdrop"):
+                        menu_to_show = "airdrop"
+                    elif key.startswith("affiliate"):
+                        menu_to_show = "affiliate"
+                    elif key.startswith("rank") or key.startswith("club"):
+                        menu_to_show = "ranks"
+                    elif key.startswith("triple"):
+                        menu_to_show = "triple"
 
                     await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
+                        f"{TELEGRAM_API}/editMessageText",
                         json={
                             "chat_id": chat_id,
+                            "message_id": message_id,
                             "text": answer,
-                            
+                            "parse_mode": "Markdown",
+                            "reply_markup": build_menu(menu_to_show, str(chat_id)),
                         },
                     )
                     return {"ok": True}
@@ -2120,50 +2098,37 @@ async def telegram_webhook(request: Request):
             if "message" in data:
                 msg = data["message"]
                 chat_id = msg["chat"]["id"]
-                text = msg.get("text", "").strip()
+                text = msg.get("text", "")
 
-                # ✅ FIXED /start BLOCK
                 if text == "/start":
-                    image_path = os.path.join(DATA_DIR, "finux.png")
-
-                    if os.path.exists(image_path):
-                        with open(image_path, "rb") as img:
-                            await client.post(
-                                f"{TELEGRAM_API}/sendPhoto",
-                                data={"chat_id": chat_id},
-                                files={"photo": img},
-                            )
-
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
                             "text": "🌐 *Please choose your language:*",
                             "parse_mode": "Markdown",
-                            "reply_markup": build_language_menu(),
+                            "reply_markup": build_language_menu()
                         },
                     )
-
                     return {"ok": True}
 
                 # 🤖 AI RESPONSE
-                if text:
-                    answer = generate_answer(text)
+                answer = generate_answer(text)
 
-                    lang = get_user_language(str(chat_id))
-                    if lang != "en":
-                        answer = translate(answer, lang)
+                lang = get_user_language(str(chat_id))
+                if lang != "en":
+                    answer = translate(answer, lang)
 
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
-                        json={
-                            "chat_id": chat_id,
-                            "text": answer,
-                            "parse_mode": "Markdown",
-                        },
-                    )
+                await client.post(
+                    f"{TELEGRAM_API}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": answer,
+                        "parse_mode": "Markdown",
+                    },
+                )
 
-                    return {"ok": True}
+                return {"ok": True}
 
         return {"ok": True}
 
