@@ -2107,7 +2107,7 @@ async def telegram_webhook(request: Request):
                     menu_to_show = KEY_TO_MENU.get(key, "main")
 
                     await client.post(
-                        f"{TELEGRAM_API}/editMessageText",
+                        f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
                             "message_id": message_id,
