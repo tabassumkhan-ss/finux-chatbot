@@ -2083,17 +2083,21 @@ async def telegram_webhook(request: Request):
                 # ❓ QUESTION HANDLER
                 if payload.startswith("q:"):
                     key = payload.replace("q:", "")
+                    print("KEY:", key)
 
                     answer = get_full_answer(key, str(chat_id))
 
-                    if not answer:
-                        answer = semantic_search(key.replace("_", " "))
+                    if not answer or not str(answer).strip():
+                     topic = key.replace("_", " ")
+                     answer = semantic_search(topic)
 
-                    if not answer:
-                        answer = generate_answer(key)
+                    if not answer or not str(answer).strip():
+                     topic = key.replace("_", " ")
+                     answer = generate_answer(topic)
 
-                    if not answer:
-                        answer = "No information available."
+                    if not answer or not str(answer).strip():
+                     answer = "No information available."
+                     print("FINAL ANSWER:", repr(answer))
 
                     lang = get_user_language(str(chat_id))
                     if key not in HARDCODED_ANSWERS and lang != "en":
