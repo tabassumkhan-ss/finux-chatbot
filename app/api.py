@@ -1496,29 +1496,73 @@ KEY_TO_MENU = {
     "risk_disclaimer": "others",
 }
 
+HEADER_TRANSLATIONS = {
+    "open_app": {
+        "en": "🚀 Open App",
+        "hi": "🚀 ऐप खोलें",
+        "mr": "🚀 अ‍ॅप उघडा",
+        "bn": "🚀 অ্যাপ খুলুন",
+        "vi": "🚀 Mở ứng dụng",
+        "tl": "🚀 Buksan App",
+        "ru": "🚀 Открыть приложение",
+        "th": "🚀 เปิดแอป"
+    },
+    "why_finux": {
+        "en": "❓ Why Finux?",
+        "hi": "❓ Finux क्यों?",
+        "mr": "❓ Finux का?",
+        "bn": "❓ কেন Finux?",
+        "vi": "❓ Tại sao Finux?",
+        "tl": "❓ Bakit Finux?",
+        "ru": "❓ Почему Finux?",
+        "th": "❓ ทำไมต้อง Finux?"
+    },
+    "channel": {
+        "en": "📢 Channel",
+        "hi": "📢 चैनल",
+        "mr": "📢 चॅनेल",
+        "bn": "📢 চ্যানেল",
+        "vi": "📢 Kênh",
+        "tl": "📢 Channel",
+        "ru": "📢 Канал",
+        "th": "📢 ช่อง"
+    },
+    "website": {
+        "en": "🌐 Website",
+        "hi": "🌐 वेबसाइट",
+        "mr": "🌐 वेबसाइट",
+        "bn": "🌐 ওয়েবসাইট",
+        "vi": "🌐 Trang web",
+        "tl": "🌐 Website",
+        "ru": "🌐 Сайт",
+        "th": "🌐 เว็บไซต์"
+    }
+}
 
 TRANSLATION_CACHE = {}
 
 # ===================== UI HELPERS =====================
 
 
-def header_buttons():
+def header_buttons(user_id=None):
+    lang = "en"
+    if user_id:
+        lang = get_user_language(user_id)
+
+    def t(key):
+        return HEADER_TRANSLATIONS[key].get(lang, HEADER_TRANSLATIONS[key]["en"])
+
     return [
         [{"text": "🌐 Change Language", "callback_data": "change_lang"}],
 
         [
-            {"text": "🚀 Open App", "url": "https://finux-chatbot-production.up.railway.app"},
-            {
-                "text": "❓ Why Finux?",
-                "web_app": {
-                    "url": "https://finux-chatbot-production.up.railway.app/static/why-finux.html"
-                }
-            }
+            {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
+            {"text": t("why_finux"), "url": "https://finux.online/why"}
         ],
 
         [
-            {"text": "📢 Channel", "url": "https://t.me/Finuxofficiallive"},
-            {"text": "🌐 Website", "url": "https://finux.online/"}
+            {"text": t("channel"), "url": "https://t.me/Finuxofficiallive"},
+            {"text": t("website"), "url": "https://finux.online/"}
         ],
     ]
 
@@ -1605,7 +1649,7 @@ def build_menu(menu_key, user_id=None):
         return MENU_CACHE[cache_key]
 
     # 🧱 Build menu
-    keyboard = header_buttons()
+    keyboard = header_buttons(user_id)
     menu_items = get_full_menu(menu_key)
 
     row = []
