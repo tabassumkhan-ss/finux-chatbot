@@ -1559,7 +1559,27 @@ UI_TEXT = {
         "tl": "🚀 FINUX Assistant\nPumili ng opsyon:",
         "ru": "🚀 Помощник FINUX\nПожалуйста, выберите вариант:",
         "th": "🚀 ผู้ช่วย FINUX\nกรุณาเลือกตัวเลือก:"
-    }
+    },
+    "language_selected": {
+    "en": "✅ Language selected!",
+    "hi": "✅ भाषा चुनी गई!",
+    "mr": "✅ भाषा निवडली!",
+    "bn": "✅ ভাষা নির্বাচন করা হয়েছে!",
+    "vi": "✅ Đã chọn ngôn ngữ!",
+    "tl": "✅ Napili ang wika!",
+    "ru": "✅ Язык выбран!",
+    "th": "✅ เลือกภาษาแล้ว!"
+    },
+    "choose_language": {
+    "en": "🌐 Please choose your language:",
+    "hi": "🌐 कृपया अपनी भाषा चुनें:",
+    "mr": "🌐 कृपया तुमची भाषा निवडा:",
+    "bn": "🌐 আপনার ভাষা নির্বাচন করুন:",
+    "vi": "🌐 Vui lòng chọn ngôn ngữ:",
+    "tl": "🌐 Piliin ang iyong wika:",
+    "ru": "🌐 Пожалуйста, выберите язык:",
+    "th": "🌐 กรุณาเลือกภาษา:"
+    }   
 }
 
 def t_ui(key, user_id=None):
@@ -2119,7 +2139,7 @@ async def telegram_webhook(request: Request):
                         json={
                             "chat_id": chat_id,
                             "message_id": message_id,
-                            "text": "✅ Language selected!\n\nPlease choose an option:",
+                            "text": f"{t_ui('language_selected', str(chat_id))}\n\n{t_ui('choose_option', str(chat_id))}",
                             "reply_markup": build_menu("main", str(chat_id)),
                         },
                     )
@@ -2132,7 +2152,7 @@ async def telegram_webhook(request: Request):
                         json={
                             "chat_id": chat_id,
                             "message_id": message_id,
-                            "text": "🌐 Please choose your language:",
+                            "text": t_ui("choose_language", str(chat_id)),
                             "reply_markup": build_language_menu(),
                         },
                     )
