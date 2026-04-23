@@ -1607,11 +1607,20 @@ def header_buttons(user_id=None):
 
         [
             {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
-            {"text": t("why_finux"), "url": "https://finux.online/why"}
+
+            # ✅ FIXED
+            {
+                "text": t("why_finux"),
+                "web_app": {
+                    "url": f"https://finux-chatbot-production.up.railway.app/static/why-finux.html?lang={lang}"
+                }
+            }
         ],
 
         [
             {"text": t("channel"), "url": "https://t.me/Finuxofficiallive"},
+
+            # ✅ KEEP WEBSITE CLEAN
             {"text": t("website"), "url": "https://finux.online/"}
         ],
     ]
