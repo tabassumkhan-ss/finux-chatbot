@@ -1539,6 +1539,36 @@ HEADER_TRANSLATIONS = {
     }
 }
 
+UI_TEXT = {
+    "change_language": {
+        "en": "🌐 Change Language",
+        "hi": "🌐 भाषा बदलें",
+        "mr": "🌐 भाषा बदला",
+        "bn": "🌐 ভাষা পরিবর্তন করুন",
+        "vi": "🌐 Đổi ngôn ngữ",
+        "tl": "🌐 Palitan ang Wika",
+        "ru": "🌐 Изменить язык",
+        "th": "🌐 เปลี่ยนภาษา"
+    },
+    "choose_option": {
+        "en": "🚀 FINUX Assistant\nPlease choose an option:",
+        "hi": "🚀 FINUX सहायक\nकृपया एक विकल्प चुनें:",
+        "mr": "🚀 FINUX सहाय्यक\nकृपया पर्याय निवडा:",
+        "bn": "🚀 FINUX সহায়ক\nঅনুগ্রহ করে একটি বিকল্প নির্বাচন করুন:",
+        "vi": "🚀 Trợ lý FINUX\nVui lòng chọn một tùy chọn:",
+        "tl": "🚀 FINUX Assistant\nPumili ng opsyon:",
+        "ru": "🚀 Помощник FINUX\nПожалуйста, выберите вариант:",
+        "th": "🚀 ผู้ช่วย FINUX\nกรุณาเลือกตัวเลือก:"
+    }
+}
+
+def t_ui(key, user_id=None):
+    lang = "en"
+    if user_id:
+        lang = get_user_language(user_id)
+
+    return UI_TEXT[key].get(lang, UI_TEXT[key]["en"])
+
 TRANSLATION_CACHE = {}
 
 # ===================== UI HELPERS =====================
@@ -1553,7 +1583,7 @@ def header_buttons(user_id=None):
         return HEADER_TRANSLATIONS[key].get(lang, HEADER_TRANSLATIONS[key]["en"])
 
     return [
-        [{"text": "🌐 Change Language", "callback_data": "change_lang"}],
+        [{"text": t_ui("change_language", user_id), "callback_data": "change_lang"}],
 
         [
             {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
@@ -2117,7 +2147,7 @@ async def telegram_webhook(request: Request):
                         json={
                             "chat_id": chat_id,
                             "message_id": message_id,
-                            "text": "🚀 FINUX Assistant\nPlease choose an option:",
+                            "text": t_ui("choose_option", str(chat_id)),
                             "reply_markup": build_menu(menu_key, str(chat_id)),
                         },
                     )
