@@ -1671,7 +1671,7 @@ def get_user_language(user_id):
     cur.close()
     conn.close()
 
-    lang = row[0] if row else "en"
+    lang = row[0] if row and row[0] else "en"
     USER_LANG_CACHE[user_id] = lang
 
     return lang
@@ -1701,7 +1701,7 @@ def build_menu(menu_key, user_id=None):
         lang = get_user_language(user_id)
 
     # ⚡ CACHE KEY
-    cache_key = f"{menu_key}:{lang}"
+    cache_key = f"{user_id}:{menu_key}:{lang}"
 
     # ⚡ RETURN FROM CACHE
     if cache_key in MENU_CACHE:
@@ -2140,7 +2140,7 @@ async def telegram_webhook(request: Request):
                     cur.close()
                     conn.close()
 
-                    MENU_CACHE.clear()
+                    
                     USER_LANG_CACHE.pop(str(chat_id), None)
 
                     await client.post(
