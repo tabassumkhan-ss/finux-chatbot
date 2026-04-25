@@ -322,7 +322,7 @@ OTHERS_MENU = [
             "mr": "💧 लिक्विडिटी पूल",
             "bn": "💧 লিকুইডিটি পুল",
             "vi": "💧 Thanh khoản",
-            "tl": "💧 Liquidity Pool",
+            "tl": "💧 Pool ng Liquidity",
             "ru": "💧 Пул ликвидности",
             "th": "💧 สภาพคล่อง"
         },
@@ -335,7 +335,7 @@ OTHERS_MENU = [
             "mr": "🔐 स्टेकिंग",
             "bn": "🔐 স্টেকিং",
             "vi": "🔐 Staking",
-            "tl": "🔐 Staking",
+            "tl": "🔐 Pag-stake",
             "ru": "🔐 Стейкинг",
             "th": "🔐 การ Stake"
         },
@@ -348,7 +348,7 @@ OTHERS_MENU = [
             "mr": "💸 पैसे काढा",
             "bn": "💸 উত্তোলন",
             "vi": "💸 Rút tiền",
-            "tl": "💸 Withdraw",
+            "tl": "💸 Mag-withdraw",
             "ru": "💸 Вывод",
             "th": "💸 ถอนเงิน"
         },
@@ -375,7 +375,7 @@ OTHERS_MENU = [
             "mr": "🤝 एफिलिएट प्रोग्राम",
             "bn": "🤝 অ্যাফিলিয়েট প্রোগ্রাম",
             "vi": "🤝 Affiliate",
-            "tl": "🤝 Affiliate",
+            "tl": "🤝 Affiliate Program",
             "ru": "🤝 Партнерская программа",
             "th": "🤝 โปรแกรมแอฟฟิลิเอต"
         },
@@ -388,7 +388,7 @@ OTHERS_MENU = [
             "mr": "🏅 रँक आणि क्लब",
             "bn": "🏅 র‍্যাঙ্ক ও ক্লাব",
             "vi": "🏅 Cấp bậc & Club",
-            "tl": "🏅 Ranks & Clubs",
+            "tl": "🏅 Mga Ranggo at Club",
             "ru": "🏅 Ранги и клубы",
             "th": "🏅 ระดับและคลับ"
         },
@@ -401,7 +401,7 @@ OTHERS_MENU = [
             "mr": "💎 ट्रिपल इनकम सिस्टम",
             "bn": "💎 ট্রিপল ইনকাম সিস্টেম",
             "vi": "💎 Thu nhập 3 nguồn",
-            "tl": "💎 Triple Income",
+            "tl": "💎 Tatlong Kita",
             "ru": "💎 Тройной доход",
             "th": "💎 ระบบรายได้ 3 ทาง"
         },
@@ -414,7 +414,7 @@ OTHERS_MENU = [
             "mr": "📜 नियम व अटी",
             "bn": "📜 শর্তাবলী",
             "vi": "📜 Điều khoản",
-            "tl": "📜 Terms",
+            "tl": "📜 Mga Tuntunin",
             "ru": "📜 Условия",
             "th": "📜 ข้อกำหนด"
         },
@@ -427,7 +427,7 @@ OTHERS_MENU = [
             "mr": "⚠️ जोखीम सूचना",
             "bn": "⚠️ ঝুঁকি সতর্কতা",
             "vi": "⚠️ Rủi ro",
-            "tl": "⚠️ Risk",
+            "tl": "⚠️ Babala sa Panganib",
             "ru": "⚠️ Риски",
             "th": "⚠️ คำเตือนความเสี่ยง"
         },
