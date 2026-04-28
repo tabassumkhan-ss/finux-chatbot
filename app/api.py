@@ -1608,7 +1608,7 @@ def header_buttons(user_id=None):
         [
             {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
 
-            #  FIXED why finux
+            #  FIXED
             {
                 "text": t("why_finux"),
                 "web_app": {
