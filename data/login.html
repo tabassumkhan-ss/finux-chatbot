@@ -1,23 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>FINUX Login</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: #111827;
+    padding: 40px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+h2 {
+    color: #00e6ff;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    background: #1f2937;
+    color: white;
+}
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-btn {
+    background: #00e6ff;
+    color: black;
+}
+
+.login-btn:hover {
+    background: #00c4d6;
+}
+
+.signup-btn {
+    background: transparent;
+    color: #00e6ff;
+    border: 1px solid #00e6ff;
+}
+
+.signup-btn:hover {
+    background: #00e6ff;
+    color: black;
+}
+
+.footer {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #9ca3af;
+}
+</style>
+
 </head>
+
 <body>
+
+<div class="container">
 
 <h2>🔐 FINUX Login</h2>
 
-<input id="username" placeholder="Username"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
-  
+<button class="login-btn" onclick="login()">Login</button>
+<button class="signup-btn" onclick="signup()">Create Account</button>
+
+<div class="footer">
+    Welcome to FINUX
+</div>
+
+</div>
+
 <script>
 async function login() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
-
-  console.log("Sending login:", username, password); // ✅ DEBUG
 
   if (!username || !password) {
     alert("Enter username and password");
@@ -27,15 +113,10 @@ async function login() {
   const res = await fetch("/login", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      username: username,
-      password: password
-    })
+    body: JSON.stringify({ username, password })
   });
 
   const data = await res.json();
-
-  console.log("LOGIN RESPONSE:", data);
 
   if (data.access_token) {
     localStorage.setItem("token", data.access_token);
@@ -68,7 +149,6 @@ async function signup() {
     alert(data.detail || data.error);
   }
 }
-
 </script>
 
 </body>
