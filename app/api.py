@@ -1648,7 +1648,7 @@ def get_full_menu(menu_name):
         return AFFILIATE_MENU
     elif menu_name == "ranks":
         return RANKS_MENU
-    elif menu_name == "triple_income":
+    elif menu_name == "triple":
         return TRIPLE_MENU
     return []
 
