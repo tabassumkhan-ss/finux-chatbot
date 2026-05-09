@@ -366,21 +366,9 @@ OTHERS_MENU = [
             "ru": "🎁 Аирдроп",
             "th": "🎁 แอร์ดรอป"
         },
-        "action": "menu:airdrop"
+        "action": ":airdrop"
     },
-    {
-        "label": {
-            "en": "🤝 Affiliate Program",
-            "hi": "🤝 एफिलिएट प्रोग्राम",
-            "mr": "🤝 एफिलिएट प्रोग्राम",
-            "bn": "🤝 অ্যাফিলিয়েট প্রোগ্রাম",
-            "vi": "🤝 Affiliate",
-            "tl": "🤝 Affiliate Program",
-            "ru": "🤝 Партнерская программа",
-            "th": "🤝 โปรแกรมแอฟฟิลิเอต"
-        },
-        "action": "menu:affiliate"
-    },
+    
     {
         "label": {
             "en": "🏅 Ranks & Clubs",
@@ -449,32 +437,7 @@ OTHERS_MENU = [
 ]
 
 WALLET_MENU = [
-    {
-        "label": {
-            "en": "What is Wallet?",
-            "hi": "वॉलेट क्या है?",
-            "mr": "वॉलेट म्हणजे काय?",
-            "bn": "ওয়ালেট কি?",
-            "vi": "Ví là gì?",
-            "tl": "Ano ang Wallet?",
-            "ru": "Что такое кошелек?",
-            "th": "กระเป๋าเงินคืออะไร?"
-        },
-        "action": "q:wallet_info"
-    },
-    {
-        "label": {
-            "en": "Create Wallet",
-            "hi": "वॉलेट बनाएं",
-            "mr": "वॉलेट तयार करा",
-            "bn": "ওয়ালেট তৈরি করুন",
-            "vi": "Tạo ví",
-            "tl": "Gumawa ng Wallet",
-            "ru": "Создать кошелек",
-            "th": "สร้างกระเป๋าเงิน"
-        },
-        "action": "q:wallet_create"
-    },
+    
     {
         "label": {
             "en": "Wallet Security",
@@ -941,19 +904,7 @@ RANKS_MENU = [
         },
         "action": "q:rank_structure"
     },
-    {
-        "label": {
-            "en": "🎯 Rank requirements",
-            "hi": "🎯 रैंक आवश्यकताएं",
-            "mr": "🎯 रँक आवश्यकता",
-            "bn": "🎯 র‍্যাঙ্ক প্রয়োজনীয়তা",
-            "vi": "🎯 Yêu cầu cấp bậc",
-            "tl": "🎯 Rank requirements",
-            "ru": "🎯 Требования рангов",
-            "th": "🎯 ข้อกำหนดระดับ"
-        },
-        "action": "q:rank_requirements"
-    },
+    
     {
         "label": {
             "en": "🎉 Club rewards",
@@ -1606,8 +1557,7 @@ def header_buttons(user_id=None):
         [{"text": t_ui("change_language", user_id), "callback_data": "change_lang"}],
 
         [
-            {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
-
+           
             #  FIXED new
             {
                 "text": t("why_finux"),
@@ -1618,8 +1568,7 @@ def header_buttons(user_id=None):
         ],
 
         [
-            {"text": t("channel"), "url": "https://t.me/Finuxofficiallive"},
-
+           
             # ✅ KEEP WEBSITE CLEAN
             {"text": t("website"), "url": "https://finux.online/"}
         ],
