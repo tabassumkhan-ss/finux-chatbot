@@ -492,127 +492,127 @@ WALLET_MENU = [
         },
         "action": "q:wallet_info"
     },
-    {
-        "label": {
-            "en": "Create Wallet",
-            "hi": "वॉलेट बनाएं",
-            "mr": "वॉलेट तयार करा",
-            "bn": "ওয়ালেট তৈরি করুন",
-            "vi": "Tạo ví",
-            "tl": "Gumawa ng Wallet",
-            "ru": "Создать кошелек",
-            "th": "สร้างกระเป๋าเงิน"
-        },
-        "action": "q:wallet_create"
-    },
-    {
-        "label": {
-            "en": "Wallet Security",
-            "hi": "वॉलेट सुरक्षा",
-            "mr": "वॉलेट सुरक्षा",
-            "bn": "ওয়ালেট নিরাপত্তা",
-            "vi": "Bảo mật ví",
-            "tl": "Seguridad ng Wallet",
-            "ru": "Безопасность кошелька",
-            "th": "ความปลอดภัยของกระเป๋าเงิน"
-        },
-        "action": "q:wallet_security"
-    },
-    {
-        "label": {
-            "en": "Private Key",
-            "hi": "प्राइवेट की",
-            "mr": "प्रायव्हेट की",
-            "bn": "প্রাইভেট কি",
-            "vi": "Khóa riêng",
-            "tl": "Private Key",
-            "ru": "Приватный ключ",
-            "th": "คีย์ส่วนตัว"
-        },
-        "action": "q:wallet_private"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:main"
-    }
+    # {
+    #     "label": {
+    #         "en": "Create Wallet",
+    #         "hi": "वॉलेट बनाएं",
+    #         "mr": "वॉलेट तयार करा",
+    #         "bn": "ওয়ালেট তৈরি করুন",
+    #         "vi": "Tạo ví",
+    #         "tl": "Gumawa ng Wallet",
+    #         "ru": "Создать кошелек",
+    #         "th": "สร้างกระเป๋าเงิน"
+    #     },
+    #     "action": "q:wallet_create"
+    # },
+    # {
+    #     "label": {
+    #         "en": "Wallet Security",
+    #         "hi": "वॉलेट सुरक्षा",
+    #         "mr": "वॉलेट सुरक्षा",
+    #         "bn": "ওয়ালেট নিরাপত্তা",
+    #         "vi": "Bảo mật ví",
+    #         "tl": "Seguridad ng Wallet",
+    #         "ru": "Безопасность кошелька",
+    #         "th": "ความปลอดภัยของกระเป๋าเงิน"
+    #     },
+    #     "action": "q:wallet_security"
+    # },
+    # {
+    #     "label": {
+    #         "en": "Private Key",
+    #         "hi": "प्राइवेट की",
+    #         "mr": "प्रायव्हेट की",
+    #         "bn": "প্রাইভেট কি",
+    #         "vi": "Khóa riêng",
+    #         "tl": "Private Key",
+    #         "ru": "Приватный ключ",
+    #         "th": "คีย์ส่วนตัว"
+    #     },
+    #     "action": "q:wallet_private"
+    # },
+    # {
+    #     "label": {
+    #         "en": "⬅ Back",
+    #         "hi": "⬅ वापस",
+    #         "mr": "⬅ मागे",
+    #         "bn": "⬅ পিছনে",
+    #         "vi": "⬅ Quay lại",
+    #         "tl": "⬅ Bumalik",
+    #         "ru": "⬅ Назад",
+    #         "th": "⬅ กลับ"
+    #     },
+    #     "action": "menu:main"
+    # }
 ]
 
-DEPOSIT_MENU = [
-    {
-        "label": {
-            "en": "💰 Minimum Deposit",
-            "hi": "💰 न्यूनतम जमा",
-            "mr": "💰 किमान जमा",
-            "bn": "💰 ন্যূনতম জমা",
-            "vi": "💰 Nạp tối thiểu",
-            "tl": "💰 Minimum na Deposito",
-            "ru": "💰 Минимальный депозит",
-            "th": "💰 ฝากขั้นต่ำ"
-        },
-        "action": "q:deposit_min"
-    },
-    {
-        "label": {
-            "en": "📊 Deposit Plans",
-            "hi": "📊 जमा योजनाएं",
-            "mr": "📊 जमा योजना",
-            "bn": "📊 জমার পরিকল্পনা",
-            "vi": "📊 Gói nạp tiền",
-            "tl": "📊 Mga Plano ng Deposito",
-            "ru": "📊 Планы депозита",
-            "th": "📊 แผนการฝาก"
-        },
-        "action": "q:deposit_plans"
-    },
-    {
-        "label": {
-            "en": "📦 Deposit Structure",
-            "hi": "📦 जमा संरचना",
-            "mr": "📦 जमा संरचना",
-            "bn": "📦 জমার গঠন",
-            "vi": "📦 Cấu trúc nạp",
-            "tl": "📦 Istruktura ng Deposito",
-            "ru": "📦 Структура депозита",
-            "th": "📦 โครงสร้างการฝาก"
-        },
-        "action": "q:deposit_structure"
-    },
-    {
-        "label": {
-            "en": "⛓ Blockchain",
-            "hi": "⛓ ब्लॉकचेन",
-            "mr": "⛓ ब्लॉकचेन",
-            "bn": "⛓ ব্লকচেইন",
-            "vi": "⛓ Blockchain",
-            "tl": "⛓ Blockchain",
-            "ru": "⛓ Блокчейн",
-            "th": "⛓ บล็อกเชน"
-        },
-        "action": "q:deposit_blockchain"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:main"
-    }
-]
+# DEPOSIT_MENU = [
+#     {
+#         "label": {
+#             "en": "💰 Minimum Deposit",
+#             "hi": "💰 न्यूनतम जमा",
+#             "mr": "💰 किमान जमा",
+#             "bn": "💰 ন্যূনতম জমা",
+#             "vi": "💰 Nạp tối thiểu",
+#             "tl": "💰 Minimum na Deposito",
+#             "ru": "💰 Минимальный депозит",
+#             "th": "💰 ฝากขั้นต่ำ"
+#         },
+#         "action": "q:deposit_min"
+#     },
+#     {
+#         "label": {
+#             "en": "📊 Deposit Plans",
+#             "hi": "📊 जमा योजनाएं",
+#             "mr": "📊 जमा योजना",
+#             "bn": "📊 জমার পরিকল্পনা",
+#             "vi": "📊 Gói nạp tiền",
+#             "tl": "📊 Mga Plano ng Deposito",
+#             "ru": "📊 Планы депозита",
+#             "th": "📊 แผนการฝาก"
+#         },
+#         "action": "q:deposit_plans"
+#     },
+#     {
+#         "label": {
+#             "en": "📦 Deposit Structure",
+#             "hi": "📦 जमा संरचना",
+#             "mr": "📦 जमा संरचना",
+#             "bn": "📦 জমার গঠন",
+#             "vi": "📦 Cấu trúc nạp",
+#             "tl": "📦 Istruktura ng Deposito",
+#             "ru": "📦 Структура депозита",
+#             "th": "📦 โครงสร้างการฝาก"
+#         },
+#         "action": "q:deposit_structure"
+#     },
+#     {
+#         "label": {
+#             "en": "⛓ Blockchain",
+#             "hi": "⛓ ब्लॉकचेन",
+#             "mr": "⛓ ब्लॉकचेन",
+#             "bn": "⛓ ব্লকচেইন",
+#             "vi": "⛓ Blockchain",
+#             "tl": "⛓ Blockchain",
+#             "ru": "⛓ Блокчейн",
+#             "th": "⛓ บล็อกเชน"
+#         },
+#         "action": "q:deposit_blockchain"
+#     },
+#     {
+#         "label": {
+#             "en": "⬅ Back",
+#             "hi": "⬅ वापस",
+#             "mr": "⬅ मागे",
+#             "bn": "⬅ পিছনে",
+#             "vi": "⬅ Quay lại",
+#             "tl": "⬅ Bumalik",
+#             "ru": "⬅ Назад",
+#             "th": "⬅ กลับ"
+#         },
+#         "action": "menu:main"
+#     }
+# ]
 
 MINTING_MENU = [
     {
