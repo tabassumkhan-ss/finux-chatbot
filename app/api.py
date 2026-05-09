@@ -2242,7 +2242,7 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                    image_path = os.path.join(DATA_DIR, "finux.png")
+                    image_path = os.path.join(DATA_DIR, "Finux icon.png")
 
                     if os.path.exists(image_path):
                         with open(image_path, "rb") as img:
