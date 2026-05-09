@@ -301,6 +301,32 @@ MAIN_MENU = [
     },
     {
         "label": {
+            "en": "🔐 What is Staking?",
+            "hi": "🔐 स्टेकिंग क्या है?",
+            "mr": "🔐 स्टेकिंग म्हणजे काय?",
+            "bn": "🔐 স্টেকিং কী?",
+            "vi": "🔐 Staking là gì?",
+            "tl": "🔐 Ano ang Staking?",
+            "ru": "🔐 Что такое стейкинг?",
+            "th": "🔐 การ Stake คืออะไร?"
+        },
+        "action": "q:staking_info"
+    },
+    {
+        "label": {
+            "en": "💧 Liquidity Pool",
+            "hi": "💧 लिक्विडिटी पूल",
+            "mr": "💧 लिक्विडिटी पूल",
+            "bn": "💧 লিকুইডিটি পুল",
+            "vi": "💧 Thanh khoản",
+            "tl": "💧 Pool ng Liquidity",
+            "ru": "💧 Пул ликвидности",
+            "th": "💧 สภาพคล่อง"
+        },
+        "action": "q:lp_info"
+    },
+    {
+        "label": {
             "en": "📦 Others",
             "hi": "📦 अन्य",
             "mr": "📦 इतर",
@@ -315,32 +341,8 @@ MAIN_MENU = [
 ]
 
 OTHERS_MENU = [
-    {
-        "label": {
-            "en": "💧 Liquidity Pool",
-            "hi": "💧 लिक्विडिटी पूल",
-            "mr": "💧 लिक्विडिटी पूल",
-            "bn": "💧 লিকুইডিটি পুল",
-            "vi": "💧 Thanh khoản",
-            "tl": "💧 Pool ng Liquidity",
-            "ru": "💧 Пул ликвидности",
-            "th": "💧 สภาพคล่อง"
-        },
-        "action": "menu:lp"
-    },
-    {
-        "label": {
-            "en": "🔐 Staking",
-            "hi": "🔐 स्टेकिंग",
-            "mr": "🔐 स्टेकिंग",
-            "bn": "🔐 স্টেকিং",
-            "vi": "🔐 Staking",
-            "tl": "🔐 Pag-stake",
-            "ru": "🔐 Стейкинг",
-            "th": "🔐 การ Stake"
-        },
-        "action": "menu:staking"
-    },
+    
+    
     {
         "label": {
             "en": "💸 Withdraw",
@@ -352,7 +354,7 @@ OTHERS_MENU = [
             "ru": "💸 Вывод",
             "th": "💸 ถอนเงิน"
         },
-        "action": "menu:withdraw"
+        "action": "q:withdraw"
     },
     
     {
@@ -366,21 +368,9 @@ OTHERS_MENU = [
             "ru": "🎁 Аирдроп",
             "th": "🎁 แอร์ดรอป"
         },
-        "action": "menu:airdrop"
+        "action": "q:airdrop"
     },
-    {
-        "label": {
-            "en": "🤝 Affiliate Program",
-            "hi": "🤝 एफिलिएट प्रोग्राम",
-            "mr": "🤝 एफिलिएट प्रोग्राम",
-            "bn": "🤝 অ্যাফিলিয়েট প্রোগ্রাম",
-            "vi": "🤝 Affiliate",
-            "tl": "🤝 Affiliate Program",
-            "ru": "🤝 Партнерская программа",
-            "th": "🤝 โปรแกรมแอฟฟิลิเอต"
-        },
-        "action": "menu:affiliate"
-    },
+    
     {
         "label": {
             "en": "🏅 Ranks & Clubs",
@@ -392,7 +382,7 @@ OTHERS_MENU = [
             "ru": "🏅 Ранги и клубы",
             "th": "🏅 ระดับและคลับ"
         },
-        "action": "menu:ranks"
+        "action": "q:ranks"
     },
     {
         "label": {
@@ -405,7 +395,7 @@ OTHERS_MENU = [
             "ru": "💎 Тройной доход",
             "th": "💎 ระบบรายได้ 3 ทาง"
         },
-        "action": "menu:triple"
+        "action": "q:triple"
     },
     {
         "label": {
@@ -708,19 +698,7 @@ LP_MENU = [
 ]
 
 STAKING_MENU = [
-    {
-        "label": {
-            "en": "🔐 What is Staking?",
-            "hi": "🔐 स्टेकिंग क्या है?",
-            "mr": "🔐 स्टेकिंग म्हणजे काय?",
-            "bn": "🔐 স্টেকিং কী?",
-            "vi": "🔐 Staking là gì?",
-            "tl": "🔐 Ano ang Staking?",
-            "ru": "🔐 Что такое стейкинг?",
-            "th": "🔐 การ Stake คืออะไร?"
-        },
-        "action": "q:staking_info"
-    },
+    
     {
         "label": {
             "en": "⚙ How it Works",
@@ -817,116 +795,6 @@ WITHDRAW_MENU = [
     }
 ]
 
-AIRDROP_MENU = [
-    {
-        "label": {
-            "en": "🎁 Airdrop eligibility",
-            "hi": "🎁 एयरड्रॉप पात्रता",
-            "mr": "🎁 एअरड्रॉप पात्रता",
-            "bn": "🎁 এয়ারড্রপ যোগ্যতা",
-            "vi": "🎁 Điều kiện airdrop",
-            "tl": "🎁 Airdrop eligibility",
-            "ru": "🎁 Условия аирдропа",
-            "th": "🎁 คุณสมบัติรับแอร์ดรอป"
-        },
-        "action": "q:airdrop_eligibility"
-    },
-    {
-        "label": {
-            "en": "🎁 Airdrop reward",
-            "hi": "🎁 एयरड्रॉप रिवॉर्ड",
-            "mr": "🎁 एअरड्रॉप रिवॉर्ड",
-            "bn": "🎁 এয়ারড্রপ পুরস্কার",
-            "vi": "🎁 Phần thưởng airdrop",
-            "tl": "🎁 Airdrop reward",
-            "ru": "🎁 Награда аирдропа",
-            "th": "🎁 รางวัลแอร์ดรอป"
-        },
-        "action": "q:airdrop_reward"
-    },
-    {
-        "label": {
-            "en": "📜 Airdrop conditions",
-            "hi": "📜 एयरड्रॉप शर्तें",
-            "mr": "📜 एअरड्रॉप अटी",
-            "bn": "📜 এয়ারড্রপ শর্তাবলী",
-            "vi": "📜 Điều kiện airdrop",
-            "tl": "📜 Airdrop conditions",
-            "ru": "📜 Условия аирдропа",
-            "th": "📜 เงื่อนไขแอร์ดรอป"
-        },
-        "action": "q:airdrop_conditions"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
-
-AFFILIATE_MENU = [
-    {
-        "label": {
-            "en": "👥 What is the affiliate program?",
-            "hi": "👥 एफिलिएट जानकारी",
-            "mr": "👥 एफिलिएट माहिती",
-            "bn": "👥 অ্যাফিলিয়েট তথ্য",
-            "vi": "👥 Thông tin affiliate",
-            "tl": "👥 Affiliate info",
-            "ru": "👥 Информация об аффилиатах",
-            "th": "👥 ข้อมูลแอฟฟิลิเอต"
-        },
-        "action": "q:affiliate_info"
-    },
-    {
-        "label": {
-            "en": "👥 Team business",
-            "hi": "👥 टीम बिजनेस",
-            "mr": "👥 टीम बिझनेस",
-            "bn": "👥 টিম বিজনেস",
-            "vi": "👥 Doanh số đội nhóm",
-            "tl": "👥 Team business",
-            "ru": "👥 Командный оборот",
-            "th": "👥 ธุรกิจทีม"
-        },
-        "action": "q:affiliate_team"
-    },
-    {
-        "label": {
-            "en": "📈 Importance",
-            "hi": "📈 महत्व",
-            "mr": "📈 महत्त्व",
-            "bn": "📈 গুরুত্ব",
-            "vi": "📈 Tầm quan trọng",
-            "tl": "📈 Importance",
-            "ru": "📈 Важность",
-            "th": "📈 ความสำคัญ"
-        },
-        "action": "q:affiliate_importance"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
-
 RANKS_MENU = [
     {
         "label": {
@@ -941,19 +809,7 @@ RANKS_MENU = [
         },
         "action": "q:rank_structure"
     },
-    {
-        "label": {
-            "en": "🎯 Rank requirements",
-            "hi": "🎯 रैंक आवश्यकताएं",
-            "mr": "🎯 रँक आवश्यकता",
-            "bn": "🎯 র‍্যাঙ্ক প্রয়োজনীয়তা",
-            "vi": "🎯 Yêu cầu cấp bậc",
-            "tl": "🎯 Rank requirements",
-            "ru": "🎯 Требования рангов",
-            "th": "🎯 ข้อกำหนดระดับ"
-        },
-        "action": "q:rank_requirements"
-    },
+    
     {
         "label": {
             "en": "🎉 Club rewards",
@@ -1317,38 +1173,6 @@ HARDCODED_ANSWERS = {
     "th": "• ต้องลงทะเบียนกระเป๋าเงิน\n• ผู้ใช้ต้องได้รับการยืนยัน\n• จะไม่นับการแนะนำซ้ำ"
 },   
     
-"affiliate_info": {
-    "en": "It is a referral program where you earn rewards by building a team.",
-    "hi": "यह एक रेफरल प्रोग्राम है जहाँ आप टीम बनाकर रिवॉर्ड कमाते हैं।",
-    "mr": "हा एक रेफरल प्रोग्राम आहे ज्यामध्ये तुम्ही टीम तयार करून रिवॉर्ड मिळवता.",
-    "bn": "এটি একটি রেফারেল প্রোগ্রাম যেখানে আপনি টিম তৈরি করে আয় করেন।",
-    "vi": "Đây là chương trình giới thiệu nơi bạn kiếm thưởng bằng cách xây dựng đội nhóm.",
-    "tl": "Ito ay referral program kung saan kumikita ka sa pagbuo ng team.",
-    "ru": "Это реферальная программа, где вы зарабатываете, создавая команду.",
-    "th": "นี่คือโปรแกรมแนะนำที่คุณสามารถสร้างรายได้จากการสร้างทีม"
-},
-
-"affiliate_team": {
-    "en": "The total deposits made by your team.",
-    "hi": "आपकी टीम द्वारा किए गए कुल जमा।",
-    "mr": "तुमच्या टीमने केलेली एकूण जमा.",
-    "bn": "আপনার টিমের মোট জমা।",
-    "vi": "Tổng số tiền gửi của đội nhóm bạn.",
-    "tl": "Kabuuang deposito ng iyong team.",
-    "ru": "Общий депозит вашей команды.",
-    "th": "ยอดฝากรวมของทีมคุณ"
-},
-
-"affiliate_importance": {
-    "en": "It helps grow the community and increases earnings.",
-    "hi": "यह कम्युनिटी बढ़ाने और आय बढ़ाने में मदद करता है।",
-    "mr": "हे कम्युनिटी वाढवते आणि उत्पन्न वाढवते.",
-    "bn": "এটি কমিউনিটি বৃদ্ধি এবং আয় বাড়াতে সাহায্য করে।",
-    "vi": "Giúp phát triển cộng đồng và tăng thu nhập.",
-    "tl": "Nakakatulong ito sa paglago ng komunidad at kita.",
-    "ru": "Помогает развивать сообщество и увеличивать доход.",
-    "th": "ช่วยเพิ่มการเติบโตของชุมชนและรายได้"
-},    
     
 "rank_structure": {
     "en": "• Rank 1 — Origin 10%\n• Rank 2 — Life Changer 16%\n• Rank 3 — Advisor 20%\n• Rank 4 — Visionary 23%\n• Rank 5 — Creator 25%",
@@ -1372,24 +1196,7 @@ HARDCODED_ANSWERS = {
     "th": "• ระดับ 1 (Origin) — 10%\n• ระดับ 2 (Life Changer) — 16% (ส่วนแบ่ง CTO club 3%)\n• ระดับ 3 (Advisor) — 20% (ส่วนแบ่ง CTO club 2.5%)\n• ระดับ 4 (Visionary) — 23% (ส่วนแบ่ง CTO club 2%)\n• ระดับ 5 (Creator) — 25% (ส่วนแบ่ง CTO club 1.5%)"
 },
 
-"rank_requirements": {
-    "en": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",
-    
-    "hi": "• रैंक 1 (ओरिजिन)\n  • सेल्फ एक्टिवेशन\n• रैंक 2 (लाइफ चेंजर)\n  • $1000 टीम बिजनेस\n  • 10 एक्टिव ओरिजिन\n  • न्यूनतम $30 LP\n• रैंक 3 (एडवाइजर)\n  • $5000 टीम बिजनेस\n  • 2 एक्टिव लाइफ चेंजर\n  • न्यूनतम $100 LP\n• रैंक 4 (विजनरी)\n  • $25,000 टीम बिजनेस\n  • 2 एक्टिव एडवाइजर\n  • न्यूनतम $300 LP\n• रैंक 5 (क्रिएटर)\n  • $100,000 टीम बिजनेस\n  • 2 एक्टिव विजनरी\n  • न्यूनतम $1000 LP",
-    
-    "mr": "• रँक 1 (ओरिजिन)\n  • सेल्फ अ‍ॅक्टिवेशन\n• रँक 2 (लाइफ चेंजर)\n  • $1000 टीम बिझनेस\n  • 10 सक्रिय ओरिजिन\n  • किमान $30 LP\n• रँक 3 (अ‍ॅडव्हायझर)\n  • $5000 टीम बिझनेस\n  • 2 सक्रिय लाइफ चेंजर\n  • किमान $100 LP\n• रँक 4 (व्हिजनरी)\n  • $25,000 टीम बिझनेस\n  • 2 सक्रिय अ‍ॅडव्हायझर\n  • किमान $300 LP\n• रँक 5 (क्रिएटर)\n  • $100,000 टीम बिझनेस\n  • 2 सक्रिय व्हिजनरी\n  • किमान $1000 LP",
-    
-    "bn": "• র‍্যাঙ্ক 1 (অরিজিন)\n  • সেলফ অ্যাক্টিভেশন\n• র‍্যাঙ্ক 2 (লাইফ চেঞ্জার)\n  • $1000 টিম বিজনেস\n  • 10 সক্রিয় অরিজিন\n  • ন্যূনতম $30 LP\n• র‍্যাঙ্ক 3 (অ্যাডভাইজার)\n  • $5000 টিম বিজনেস\n  • 2 সক্রিয় লাইফ চেঞ্জার\n  • ন্যূনতম $100 LP\n• র‍্যাঙ্ক 4 (ভিশনারি)\n  • $25,000 টিম বিজনেস\n  • 2 সক্রিয় অ্যাডভাইজার\n  • ন্যূনতম $300 LP\n• র‍্যাঙ্ক 5 (ক্রিয়েটর)\n  • $100,000 টিম বিজনেস\n  • 2 সক্রিয় ভিশনারি\n  • ন্যূনতম $1000 LP",
-    
-    "vi": "• Hạng 1 (Origin)\n  • Kích hoạt cá nhân\n• Hạng 2 (Life Changer)\n  • $1000 doanh số đội nhóm\n  • 10 Origin hoạt động\n  • Tối thiểu $30 LP\n• Hạng 3 (Advisor)\n  • $5000 doanh số đội nhóm\n  • 2 Life Changer hoạt động\n  • Tối thiểu $100 LP\n• Hạng 4 (Visionary)\n  • $25,000 doanh số đội nhóm\n  • 2 Advisor hoạt động\n  • Tối thiểu $300 LP\n• Hạng 5 (Creator)\n  • $100,000 doanh số đội nhóm\n  • 2 Visionary hoạt động\n  • Tối thiểu $1000 LP",
-    
-    "tl": "• Rank 1 (Origin)\n  • Self activation\n• Rank 2 (Life Changer)\n  • $1000 team business\n  • 10 active origins\n  • Minimum $30 LP\n• Rank 3 (Advisor)\n  • $5000 team business\n  • 2 active life changers\n  • Minimum $100 LP\n• Rank 4 (Visionary)\n  • $25,000 team business\n  • 2 active advisors\n  • Minimum $300 LP\n• Rank 5 (Creator)\n  • $100,000 team business\n  • 2 active visionaries\n  • Minimum $1000 LP",
-    
-    "ru": "• Ранг 1 (Origin)\n  • Самоактивация\n• Ранг 2 (Life Changer)\n  • $1000 командный оборот\n  • 10 активных Origin\n  • Минимум $30 LP\n• Ранг 3 (Advisor)\n  • $5000 командный оборот\n  • 2 активных Life Changer\n  • Минимум $100 LP\n• Ранг 4 (Visionary)\n  • $25,000 командный оборот\n  • 2 активных Advisor\n  • Минимум $300 LP\n• Ранг 5 (Creator)\n  • $100,000 командный оборот\n  • 2 активных Visionary\n  • Минимум $1000 LP",
-    
-    "th": "• ระดับ 1 (Origin)\n  • เปิดใช้งานตัวเอง\n• ระดับ 2 (Life Changer)\n  • ธุรกิจทีม $1000\n  • Origin ที่ใช้งาน 10 คน\n  • ขั้นต่ำ $30 LP\n• ระดับ 3 (Advisor)\n  • ธุรกิจทีม $5000\n  • Life Changer ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $100 LP\n• ระดับ 4 (Visionary)\n  • ธุรกิจทีม $25,000\n  • Advisor ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $300 LP\n• ระดับ 5 (Creator)\n  • ธุรกิจทีม $100,000\n  • Visionary ที่ใช้งาน 2 คน\n  • ขั้นต่ำ $1000 LP"
-},    
-    
+   
 "triple_info": {
     "en": "Users can earn from three sources:\n• Performance income — up to 3x\n• Liquidity pool reward — up to 3x\n• FNX staking — up to 2x",
     "hi": "यूजर तीन स्रोतों से कमा सकते हैं:\n• परफॉर्मेंस इनकम — 3x तक\n• LP रिवॉर्ड — 3x तक\n• स्टेकिंग — 2x तक",
@@ -1477,14 +1284,8 @@ KEY_TO_MENU = {
     "airdrop_reward": "airdrop",
     "airdrop_conditions": "airdrop",
 
-    # Affiliate
-    "affiliate_info": "affiliate",
-    "affiliate_team": "affiliate",
-    "affiliate_importance": "affiliate",
-
-    # Ranks
+        # Ranks
     "rank_structure": "ranks",
-    "rank_requirements": "ranks",
     "club_rewards": "ranks",
 
     # Triple
@@ -1595,33 +1396,40 @@ TRANSLATION_CACHE = {}
 
 
 def header_buttons(user_id=None):
+
     lang = "en"
     if user_id:
         lang = get_user_language(user_id)
 
     def t(key):
-        return HEADER_TRANSLATIONS[key].get(lang, HEADER_TRANSLATIONS[key]["en"])
+        return HEADER_TRANSLATIONS[key].get(
+            lang,
+            HEADER_TRANSLATIONS[key]["en"]
+        )
 
     return [
-        [{"text": t_ui("change_language", user_id), "callback_data": "change_lang"}],
 
+        # 🌐 Change language button
         [
-            {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
+            {
+                "text": t_ui("change_language", user_id),
+                "callback_data": "change_lang"
+            }
+        ],
 
-            #  FIXED new
+        # ✅ Why Finux + Website in SAME ROW
+        [
             {
                 "text": t("why_finux"),
                 "web_app": {
                     "url": f"https://finux-chatbot-production.up.railway.app/static/why-finux.html?lang={lang}"
                 }
+            },
+
+            {
+                "text": t("website"),
+                "url": "https://finux.online/"
             }
-        ],
-
-        [
-            {"text": t("channel"), "url": "https://t.me/Finuxofficiallive"},
-
-            # ✅ KEEP WEBSITE CLEAN
-            {"text": t("website"), "url": "https://finux.online/"}
         ],
     ]
 
@@ -1642,10 +1450,6 @@ def get_full_menu(menu_name):
         return STAKING_MENU
     elif menu_name == "withdraw":
         return WITHDRAW_MENU
-    elif menu_name == "airdrop":
-        return AIRDROP_MENU
-    elif menu_name == "affiliate":
-        return AFFILIATE_MENU
     elif menu_name == "ranks":
         return RANKS_MENU
     elif menu_name == "triple":
@@ -1708,7 +1512,12 @@ def build_menu(menu_key, user_id=None):
         return MENU_CACHE[cache_key]
 
     # 🧱 Build menu
-    keyboard = header_buttons(user_id)
+    keyboard = []
+
+    # ✅ Show header only on main menu
+    if menu_key == "main":
+        keyboard = header_buttons(user_id)
+
     menu_items = get_full_menu(menu_key)
 
     row = []
@@ -2051,7 +1860,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "Welcome to FINUX Chat Bot",
+                "text": "Chat Bot",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -2242,15 +2051,15 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                    image_path = os.path.join(DATA_DIR, "finux.png")
+                   # image_path = os.path.join(DATA_DIR, "finux.png")
 
-                    if os.path.exists(image_path):
-                        with open(image_path, "rb") as img:
-                            await client.post(
-                                f"{TELEGRAM_API}/sendPhoto",
-                                data={"chat_id": chat_id},
-                                files={"photo": img},
-                            )
+                    # if os.path.exists(image_path):
+                      #  with open(image_path, "rb") as img:
+                       #     await client.post(
+                        #        f"{TELEGRAM_API}/sendPhoto",
+                         #       data={"chat_id": chat_id},
+                          #      files={"photo": img},
+                           # )
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
