@@ -301,6 +301,45 @@ MAIN_MENU = [
     },
     {
         "label": {
+            "en": "💧 Liquidity Pool",
+            "hi": "💧 लिक्विडिटी पूल",
+            "mr": "💧 लिक्विडिटी पूल",
+            "bn": "💧 লিকুইডিটি পুল",
+            "vi": "💧 Thanh khoản",
+            "tl": "💧 Pool ng Liquidity",
+            "ru": "💧 Пул ликвидности",
+            "th": "💧 สภาพคล่อง"
+        },
+        "action": "q:lp_info"
+    },
+    {
+        "label": {
+            "en": "🔐 Staking",
+            "hi": "🔐 स्टेकिंग",
+            "mr": "🔐 स्टेकिंग",
+            "bn": "🔐 স্টেকিং",
+            "vi": "🔐 Staking",
+            "tl": "🔐 Pag-stake",
+            "ru": "🔐 Стейкинг",
+            "th": "🔐 การ Stake"
+        },
+        "action": "q:staking_info"
+    },
+    {
+        "label": {
+            "en": "🎁 Airdrop",
+            "hi": "🎁 एयरड्रॉप",
+            "mr": "🎁 एअरड्रॉप",
+            "bn": "🎁 এয়ারড্রপ",
+            "vi": "🎁 Airdrop",
+            "tl": "🎁 Airdrop",
+            "ru": "🎁 Аирдроп",
+            "th": "🎁 แอร์ดรอป"
+        },
+        "action": ":airdrop"
+    },
+    {
+        "label": {
             "en": "📦 Others",
             "hi": "📦 अन्य",
             "mr": "📦 इतर",
@@ -315,32 +354,8 @@ MAIN_MENU = [
 ]
 
 OTHERS_MENU = [
-    {
-        "label": {
-            "en": "💧 Liquidity Pool",
-            "hi": "💧 लिक्विडिटी पूल",
-            "mr": "💧 लिक्विडिटी पूल",
-            "bn": "💧 লিকুইডিটি পুল",
-            "vi": "💧 Thanh khoản",
-            "tl": "💧 Pool ng Liquidity",
-            "ru": "💧 Пул ликвидности",
-            "th": "💧 สภาพคล่อง"
-        },
-        "action": "menu:lp"
-    },
-    {
-        "label": {
-            "en": "🔐 Staking",
-            "hi": "🔐 स्टेकिंग",
-            "mr": "🔐 स्टेकिंग",
-            "bn": "🔐 স্টেকিং",
-            "vi": "🔐 Staking",
-            "tl": "🔐 Pag-stake",
-            "ru": "🔐 Стейкинг",
-            "th": "🔐 การ Stake"
-        },
-        "action": "menu:staking"
-    },
+    
+    
     {
         "label": {
             "en": "💸 Withdraw",
@@ -355,19 +370,7 @@ OTHERS_MENU = [
         "action": "menu:withdraw"
     },
     
-    {
-        "label": {
-            "en": "🎁 Airdrop",
-            "hi": "🎁 एयरड्रॉप",
-            "mr": "🎁 एअरड्रॉप",
-            "bn": "🎁 এয়ারড্রপ",
-            "vi": "🎁 Airdrop",
-            "tl": "🎁 Airdrop",
-            "ru": "🎁 Аирдроп",
-            "th": "🎁 แอร์ดรอป"
-        },
-        "action": ":airdrop"
-    },
+    
     
     {
         "label": {
@@ -1631,7 +1634,7 @@ def build_menu(menu_key, user_id=None):
         return MENU_CACHE[cache_key]
 
     # 🧱 Build menu
-    keyboard = header_buttons(user_id)
+    
     menu_items = get_full_menu(menu_key)
 
     row = []
@@ -2165,15 +2168,15 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                    # image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
+                   # image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
 
-                    if os.path.exists(image_path):
-                        with open(image_path, "rb") as img:
-                            await client.post(
-                                f"{TELEGRAM_API}/sendPhoto",
-                                data={"chat_id": chat_id},
-                                files={"photo": img},
-                            )
+                # if os.path.exists(image_path):
+                 #       with open(image_path, "rb") as img:
+                  #          await client.post(
+                   #             f"{TELEGRAM_API}/sendPhoto",
+                    #            data={"chat_id": chat_id},
+                     #           files={"photo": img},
+                      #      )
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
