@@ -1191,29 +1191,29 @@ HARDCODED_ANSWERS = {
     "tl": "Pagkatapos ng *3x performance income*, kailangan mong *mag-retop-up* upang magpatuloy sa pag-earn.",
     "ru": "После достижения *3x дохода от производительности*, необходимо *сделать повторное пополнение (retop-up)*, чтобы продолжить заработок.",
     "th": "หลังจากได้ *รายได้ 3 เท่า (3x)* คุณต้อง *เติมเงินใหม่ (retop-up)* เพื่อรับรายได้ต่อ"
-},    
+}    
     
-"terms_conditions": {
-    "en": "General Terms:\n• Anyone can join\n• Rewards depend on policy\n• Company may update anytime",
-    "hi": "सामान्य नियम:\n• कोई भी जुड़ सकता है\n• रिवॉर्ड नीति पर निर्भर\n• कंपनी बदलाव कर सकती है",
-    "mr": "सामान्य अटी:\n• कोणीही सहभागी होऊ शकतो\n• रिवॉर्ड धोरणावर अवलंबून\n• कंपनी बदल करू शकते",
-    "bn": "সাধারণ শর্ত:\n• যে কেউ যোগ দিতে পারে\n• পুরস্কার নীতির উপর নির্ভরশীল\n• কোম্পানি পরিবর্তন করতে পারে",
-    "vi": "Điều khoản chung:\n• Ai cũng có thể tham gia\n• Phần thưởng theo chính sách\n• Công ty có thể thay đổi",
-    "tl": "General terms:\n• Maaaring sumali ang lahat\n• Depende sa policy ang rewards\n• Maaaring magbago ang kumpanya",
-    "ru": "Общие условия:\n• Любой может присоединиться\n• Награды зависят от политики\n• Компания может вносить изменения",
-    "th": "ข้อกำหนดทั่วไป:\n• ทุกคนสามารถเข้าร่วมได้\n• รางวัลขึ้นอยู่กับนโยบาย\n• บริษัทสามารถเปลี่ยนแปลงได้"
-},
+# "terms_conditions": {
+#     "en": "General Terms:\n• Anyone can join\n• Rewards depend on policy\n• Company may update anytime",
+#     "hi": "सामान्य नियम:\n• कोई भी जुड़ सकता है\n• रिवॉर्ड नीति पर निर्भर\n• कंपनी बदलाव कर सकती है",
+#     "mr": "सामान्य अटी:\n• कोणीही सहभागी होऊ शकतो\n• रिवॉर्ड धोरणावर अवलंबून\n• कंपनी बदल करू शकते",
+#     "bn": "সাধারণ শর্ত:\n• যে কেউ যোগ দিতে পারে\n• পুরস্কার নীতির উপর নির্ভরশীল\n• কোম্পানি পরিবর্তন করতে পারে",
+#     "vi": "Điều khoản chung:\n• Ai cũng có thể tham gia\n• Phần thưởng theo chính sách\n• Công ty có thể thay đổi",
+#     "tl": "General terms:\n• Maaaring sumali ang lahat\n• Depende sa policy ang rewards\n• Maaaring magbago ang kumpanya",
+#     "ru": "Общие условия:\n• Любой может присоединиться\n• Награды зависят от политики\n• Компания может вносить изменения",
+#     "th": "ข้อกำหนดทั่วไป:\n• ทุกคนสามารถเข้าร่วมได้\n• รางวัลขึ้นอยู่กับนโยบาย\n• บริษัทสามารถเปลี่ยนแปลงได้"
+# },
 
-"risk_disclaimer": {
-    "en": "Crypto investments carry risk. Earnings are not guaranteed.",
-    "hi": "क्रिप्टो निवेश में जोखिम होता है। कमाई की गारंटी नहीं है।",
-    "mr": "क्रिप्टो गुंतवणुकीत जोखीम असते. कमाईची हमी नाही.",
-    "bn": "ক্রিপ্টো বিনিয়োগে ঝুঁকি রয়েছে। আয়ের নিশ্চয়তা নেই।",
-    "vi": "Đầu tư crypto có rủi ro. Thu nhập không được đảm bảo.",
-    "tl": "May risk ang crypto investment. Walang garantiya sa kita.",
-    "ru": "Криптоинвестиции связаны с риском. Доход не гарантирован.",
-    "th": "การลงทุนคริปโตมีความเสี่ยง และไม่รับประกันรายได้"
-}
+# "risk_disclaimer": {
+#     "en": "Crypto investments carry risk. Earnings are not guaranteed.",
+#     "hi": "क्रिप्टो निवेश में जोखिम होता है। कमाई की गारंटी नहीं है।",
+#     "mr": "क्रिप्टो गुंतवणुकीत जोखीम असते. कमाईची हमी नाही.",
+#     "bn": "ক্রিপ্টো বিনিয়োগে ঝুঁকি রয়েছে। আয়ের নিশ্চয়তা নেই।",
+#     "vi": "Đầu tư crypto có rủi ro. Thu nhập không được đảm bảo.",
+#     "tl": "May risk ang crypto investment. Walang garantiya sa kita.",
+#     "ru": "Криптоинвестиции связаны с риском. Доход не гарантирован.",
+#     "th": "การลงทุนคริปโตมีความเสี่ยง และไม่รับประกันรายได้"
+# }
 
    
  }
