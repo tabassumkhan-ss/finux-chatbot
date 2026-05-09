@@ -478,20 +478,20 @@ OTHERS_MENU = [
     }
 ]
 
-WALLET_MENU = [
-    {
-        "label": {
-            "en": "What is Wallet?",
-            "hi": "वॉलेट क्या है?",
-            "mr": "वॉलेट म्हणजे काय?",
-            "bn": "ওয়ালেট কি?",
-            "vi": "Ví là gì?",
-            "tl": "Ano ang Wallet?",
-            "ru": "Что такое кошелек?",
-            "th": "กระเป๋าเงินคืออะไร?"
-        },
-        "action": "q:wallet_info"
-    },
+# WALLET_MENU = [
+#     {
+#         "label": {
+#             "en": "What is Wallet?",
+#             "hi": "वॉलेट क्या है?",
+#             "mr": "वॉलेट म्हणजे काय?",
+#             "bn": "ওয়ালেট কি?",
+#             "vi": "Ví là gì?",
+#             "tl": "Ano ang Wallet?",
+#             "ru": "Что такое кошелек?",
+#             "th": "กระเป๋าเงินคืออะไร?"
+#         },
+#         "action": "q:wallet_info"
+#     },
     # {
     #     "label": {
     #         "en": "Create Wallet",
@@ -1971,16 +1971,16 @@ async def telegram_webhook(request: Request):
 
                     answer = get_full_answer(key, str(chat_id))
 
-                    if not answer or not str(answer).strip():
-                        topic = key.replace("_", " ")
-                        answer = semantic_search(topic)
+                    # if not answer or not str(answer).strip():
+                    #     topic = key.replace("_", " ")
+                    #     answer = semantic_search(topic)
+
+                    # if not answer or not str(answer).strip():
+                    #     topic = key.replace("_", " ")
+                    #     answer = generate_answer(topic)
 
                     if not answer or not str(answer).strip():
-                        topic = key.replace("_", " ")
-                        answer = generate_answer(topic)
-
-                    if not answer or not str(answer).strip():
-                        answer = "No information available."
+                        return {"ok": True}
 
                     print("FINAL ANSWER:", repr(answer))
 
