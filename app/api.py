@@ -287,17 +287,30 @@ MAIN_MENU = [
         "action": "menu:deposit"
     },
     {
-        "label": {
-            "en": "🪙 Minting",
-            "hi": "🪙 मिंटिंग",
-            "mr": "🪙 मिंटिंग",
-            "bn": "🪙 মিন্টিং",
-            "vi": "🪙 Đúc token",
-            "tl": "🪙 Minting",
-            "ru": "🪙 Минтинг",
-            "th": "🪙 การสร้างเหรียญ"
-        },
-        "action": "menu:minting"
+    "label": {
+        "en": "⛏ What is the Finux Mining Project?",
+        "hi": "⛏ Finux माइनिंग प्रोजेक्ट क्या है?",
+        "mr": "⛏ Finux माइनिंग प्रोजेक्ट काय आहे?",
+        "bn": "⛏ Finux মাইনিং প্রজেক্ট কী?",
+        "vi": "⛏ Dự án khai thác Finux là gì?",
+        "tl": "⛏ Ano ang Finux Mining Project?",
+        "ru": "⛏ Что такое проект майнинга Finux?",
+        "th": "⛏ โครงการขุด Finux คืออะไร?"
+    },
+    "action": "q:finux_mining_project"
+    },
+    {
+    "label": {
+        "en": "🏆 How to achieve all clubs?",
+        "hi": "🏆 सभी क्लब कैसे प्राप्त करें?",
+        "mr": "🏆 सर्व क्लब कसे मिळवायचे?",
+        "bn": "🏆 সব ক্লাব কীভাবে অর্জন করবেন?",
+        "vi": "🏆 Làm thế nào để đạt tất cả các câu lạc bộ?",
+        "tl": "🏆 Paano makamit ang lahat ng clubs?",
+        "ru": "🏆 Как достичь всех клубов?",
+        "th": "🏆 วิธีบรรลุทุกคลับ?"
+    },
+    "action": "q:all_clubs"
     },
     {
         "label": {
@@ -325,6 +338,32 @@ MAIN_MENU = [
         },
         "action": "q:lp_info"
     },
+    {
+    "label": {
+        "en": "📄 Download PDF",
+        "hi": "📄 PDF डाउनलोड करें",
+        "mr": "📄 PDF डाउनलोड करा",
+        "bn": "📄 PDF ডাউনলোড করুন",
+        "vi": "📄 Tải xuống PDF",
+        "tl": "📄 I-download ang PDF",
+        "ru": "📄 Скачать PDF",
+        "th": "📄 ดาวน์โหลด PDF"
+    },
+    "action": "q:download_pdf"
+},
+{
+    "label": {
+        "en": "📝 Description",
+        "hi": "📝 विवरण",
+        "mr": "📝 वर्णन",
+        "bn": "📝 বর্ণনা",
+        "vi": "📝 Mô tả",
+        "tl": "📝 Paglalarawan",
+        "ru": "📝 Описание",
+        "th": "📝 คำอธิบาย"
+    },
+    "action": "q:description"
+},
     {
         "label": {
             "en": "📦 Others",
@@ -1860,12 +1899,12 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "Chat Bot",
+                "text": "Welcome to Finux Chat Bot",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
                             {
-                                "text": "🚀 Open FINUX Chat Bot",
+                                "text": "🚀Chat Bot",
                                 "url": "https://t.me/finuxchatbot?start=channel"
                             }
                         ]
