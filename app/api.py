@@ -438,32 +438,7 @@ OTHERS_MENU = [
 
 WALLET_MENU = [
     
-    {
-        "label": {
-            "en": "Wallet Security",
-            "hi": "वॉलेट सुरक्षा",
-            "mr": "वॉलेट सुरक्षा",
-            "bn": "ওয়ালেট নিরাপত্তা",
-            "vi": "Bảo mật ví",
-            "tl": "Seguridad ng Wallet",
-            "ru": "Безопасность кошелька",
-            "th": "ความปลอดภัยของกระเป๋าเงิน"
-        },
-        "action": "q:wallet_security"
-    },
-    {
-        "label": {
-            "en": "Private Key",
-            "hi": "प्राइवेट की",
-            "mr": "प्रायव्हेट की",
-            "bn": "প্রাইভেট কি",
-            "vi": "Khóa riêng",
-            "tl": "Private Key",
-            "ru": "Приватный ключ",
-            "th": "คีย์ส่วนตัว"
-        },
-        "action": "q:wallet_private"
-    },
+    
     {
         "label": {
             "en": "⬅ Back",
@@ -2190,7 +2165,7 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                    image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
+                    # image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
 
                     if os.path.exists(image_path):
                         with open(image_path, "rb") as img:
