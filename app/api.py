@@ -301,45 +301,6 @@ MAIN_MENU = [
     },
     {
         "label": {
-            "en": "💧 Liquidity Pool",
-            "hi": "💧 लिक्विडिटी पूल",
-            "mr": "💧 लिक्विडिटी पूल",
-            "bn": "💧 লিকুইডিটি পুল",
-            "vi": "💧 Thanh khoản",
-            "tl": "💧 Pool ng Liquidity",
-            "ru": "💧 Пул ликвидности",
-            "th": "💧 สภาพคล่อง"
-        },
-        "action": "q:lp_info"
-    },
-    {
-        "label": {
-            "en": "🔐 Staking",
-            "hi": "🔐 स्टेकिंग",
-            "mr": "🔐 स्टेकिंग",
-            "bn": "🔐 স্টেকিং",
-            "vi": "🔐 Staking",
-            "tl": "🔐 Pag-stake",
-            "ru": "🔐 Стейкинг",
-            "th": "🔐 การ Stake"
-        },
-        "action": "q:staking_info"
-    },
-    {
-        "label": {
-            "en": "🎁 Airdrop",
-            "hi": "🎁 एयरड्रॉप",
-            "mr": "🎁 एअरड्रॉप",
-            "bn": "🎁 এয়ারড্রপ",
-            "vi": "🎁 Airdrop",
-            "tl": "🎁 Airdrop",
-            "ru": "🎁 Аирдроп",
-            "th": "🎁 แอร์ดรอป"
-        },
-        "action": ":airdrop"
-    },
-    {
-        "label": {
             "en": "📦 Others",
             "hi": "📦 अन्य",
             "mr": "📦 इतर",
@@ -354,8 +315,32 @@ MAIN_MENU = [
 ]
 
 OTHERS_MENU = [
-    
-    
+    {
+        "label": {
+            "en": "💧 Liquidity Pool",
+            "hi": "💧 लिक्विडिटी पूल",
+            "mr": "💧 लिक्विडिटी पूल",
+            "bn": "💧 লিকুইডিটি পুল",
+            "vi": "💧 Thanh khoản",
+            "tl": "💧 Pool ng Liquidity",
+            "ru": "💧 Пул ликвидности",
+            "th": "💧 สภาพคล่อง"
+        },
+        "action": "menu:lp"
+    },
+    {
+        "label": {
+            "en": "🔐 Staking",
+            "hi": "🔐 स्टेकिंग",
+            "mr": "🔐 स्टेकिंग",
+            "bn": "🔐 স্টেকিং",
+            "vi": "🔐 Staking",
+            "tl": "🔐 Pag-stake",
+            "ru": "🔐 Стейкинг",
+            "th": "🔐 การ Stake"
+        },
+        "action": "menu:staking"
+    },
     {
         "label": {
             "en": "💸 Withdraw",
@@ -370,8 +355,32 @@ OTHERS_MENU = [
         "action": "menu:withdraw"
     },
     
-    
-    
+    {
+        "label": {
+            "en": "🎁 Airdrop",
+            "hi": "🎁 एयरड्रॉप",
+            "mr": "🎁 एअरड्रॉप",
+            "bn": "🎁 এয়ারড্রপ",
+            "vi": "🎁 Airdrop",
+            "tl": "🎁 Airdrop",
+            "ru": "🎁 Аирдроп",
+            "th": "🎁 แอร์ดรอป"
+        },
+        "action": "menu:airdrop"
+    },
+    {
+        "label": {
+            "en": "🤝 Affiliate Program",
+            "hi": "🤝 एफिलिएट प्रोग्राम",
+            "mr": "🤝 एफिलिएट प्रोग्राम",
+            "bn": "🤝 অ্যাফিলিয়েট প্রোগ্রাম",
+            "vi": "🤝 Affiliate",
+            "tl": "🤝 Affiliate Program",
+            "ru": "🤝 Партнерская программа",
+            "th": "🤝 โปรแกรมแอฟฟิลิเอต"
+        },
+        "action": "menu:affiliate"
+    },
     {
         "label": {
             "en": "🏅 Ranks & Clubs",
@@ -440,8 +449,58 @@ OTHERS_MENU = [
 ]
 
 WALLET_MENU = [
-    
-    
+    {
+        "label": {
+            "en": "What is Wallet?",
+            "hi": "वॉलेट क्या है?",
+            "mr": "वॉलेट म्हणजे काय?",
+            "bn": "ওয়ালেট কি?",
+            "vi": "Ví là gì?",
+            "tl": "Ano ang Wallet?",
+            "ru": "Что такое кошелек?",
+            "th": "กระเป๋าเงินคืออะไร?"
+        },
+        "action": "q:wallet_info"
+    },
+    {
+        "label": {
+            "en": "Create Wallet",
+            "hi": "वॉलेट बनाएं",
+            "mr": "वॉलेट तयार करा",
+            "bn": "ওয়ালেট তৈরি করুন",
+            "vi": "Tạo ví",
+            "tl": "Gumawa ng Wallet",
+            "ru": "Создать кошелек",
+            "th": "สร้างกระเป๋าเงิน"
+        },
+        "action": "q:wallet_create"
+    },
+    {
+        "label": {
+            "en": "Wallet Security",
+            "hi": "वॉलेट सुरक्षा",
+            "mr": "वॉलेट सुरक्षा",
+            "bn": "ওয়ালেট নিরাপত্তা",
+            "vi": "Bảo mật ví",
+            "tl": "Seguridad ng Wallet",
+            "ru": "Безопасность кошелька",
+            "th": "ความปลอดภัยของกระเป๋าเงิน"
+        },
+        "action": "q:wallet_security"
+    },
+    {
+        "label": {
+            "en": "Private Key",
+            "hi": "प्राइवेट की",
+            "mr": "प्रायव्हेट की",
+            "bn": "প্রাইভেট কি",
+            "vi": "Khóa riêng",
+            "tl": "Private Key",
+            "ru": "Приватный ключ",
+            "th": "คีย์ส่วนตัว"
+        },
+        "action": "q:wallet_private"
+    },
     {
         "label": {
             "en": "⬅ Back",
@@ -882,7 +941,19 @@ RANKS_MENU = [
         },
         "action": "q:rank_structure"
     },
-    
+    {
+        "label": {
+            "en": "🎯 Rank requirements",
+            "hi": "🎯 रैंक आवश्यकताएं",
+            "mr": "🎯 रँक आवश्यकता",
+            "bn": "🎯 র‍্যাঙ্ক প্রয়োজনীয়তা",
+            "vi": "🎯 Yêu cầu cấp bậc",
+            "tl": "🎯 Rank requirements",
+            "ru": "🎯 Требования рангов",
+            "th": "🎯 ข้อกำหนดระดับ"
+        },
+        "action": "q:rank_requirements"
+    },
     {
         "label": {
             "en": "🎉 Club rewards",
@@ -1535,19 +1606,22 @@ def header_buttons(user_id=None):
         [{"text": t_ui("change_language", user_id), "callback_data": "change_lang"}],
 
         [
-           
+            {"text": t("open_app"), "url": "https://finux-chatbot-production.up.railway.app"},
+
             #  FIXED new
             {
                 "text": t("why_finux"),
                 "web_app": {
                     "url": f"https://finux-chatbot-production.up.railway.app/static/why-finux.html?lang={lang}"
                 }
-            },
-
-            {
-                "text": t("website"),
-                "url": "https://finux.online/"
             }
+        ],
+
+        [
+            {"text": t("channel"), "url": "https://t.me/Finuxofficiallive"},
+
+            # ✅ KEEP WEBSITE CLEAN
+            {"text": t("website"), "url": "https://finux.online/"}
         ],
     ]
 
@@ -1634,7 +1708,7 @@ def build_menu(menu_key, user_id=None):
         return MENU_CACHE[cache_key]
 
     # 🧱 Build menu
-    
+    keyboard = header_buttons(user_id)
     menu_items = get_full_menu(menu_key)
 
     row = []
@@ -1977,7 +2051,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "Chat Bot",
+                "text": "Welcome to FINUX Chat Bot",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -2168,15 +2242,15 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                   # image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
+                    image_path = os.path.join(DATA_DIR, "finux.png")
 
-                # if os.path.exists(image_path):
-                 #       with open(image_path, "rb") as img:
-                  #          await client.post(
-                   #             f"{TELEGRAM_API}/sendPhoto",
-                    #            data={"chat_id": chat_id},
-                     #           files={"photo": img},
-                      #      )
+                    if os.path.exists(image_path):
+                        with open(image_path, "rb") as img:
+                            await client.post(
+                                f"{TELEGRAM_API}/sendPhoto",
+                                data={"chat_id": chat_id},
+                                files={"photo": img},
+                            )
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
