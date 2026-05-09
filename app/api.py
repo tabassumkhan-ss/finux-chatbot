@@ -670,188 +670,188 @@ MINTING_MENU = [
 ]
 
 
-STAKING_MENU = [
+# STAKING_MENU = [
     
-    {
-        "label": {
-            "en": "⚙ How it Works",
-            "hi": "⚙ कैसे काम करता है",
-            "mr": "⚙ कसे कार्य करते",
-            "bn": "⚙ কিভাবে কাজ করে",
-            "vi": "⚙ Cách hoạt động",
-            "tl": "⚙ Paano gumagana",
-            "ru": "⚙ Как это работает",
-            "th": "⚙ วิธีการทำงาน"
-        },
-        "action": "q:staking_work"
-    },
-    {
-        "label": {
-            "en": "💰 Rewards",
-            "hi": "💰 रिवार्ड",
-            "mr": "💰 रिवॉर्ड",
-            "bn": "💰 পুরস্কার",
-            "vi": "💰 Phần thưởng",
-            "tl": "💰 Gantimpala",
-            "ru": "💰 Награды",
-            "th": "💰 รางวัล"
-        },
-        "action": "q:staking_rewards"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
+#     {
+#         "label": {
+#             "en": "⚙ How it Works",
+#             "hi": "⚙ कैसे काम करता है",
+#             "mr": "⚙ कसे कार्य करते",
+#             "bn": "⚙ কিভাবে কাজ করে",
+#             "vi": "⚙ Cách hoạt động",
+#             "tl": "⚙ Paano gumagana",
+#             "ru": "⚙ Как это работает",
+#             "th": "⚙ วิธีการทำงาน"
+#         },
+#         "action": "q:staking_work"
+#     },
+#     {
+#         "label": {
+#             "en": "💰 Rewards",
+#             "hi": "💰 रिवार्ड",
+#             "mr": "💰 रिवॉर्ड",
+#             "bn": "💰 পুরস্কার",
+#             "vi": "💰 Phần thưởng",
+#             "tl": "💰 Gantimpala",
+#             "ru": "💰 Награды",
+#             "th": "💰 รางวัล"
+#         },
+#         "action": "q:staking_rewards"
+#     },
+#     {
+#         "label": {
+#             "en": "⬅ Back",
+#             "hi": "⬅ वापस",
+#             "mr": "⬅ मागे",
+#             "bn": "⬅ পিছনে",
+#             "vi": "⬅ Quay lại",
+#             "tl": "⬅ Bumalik",
+#             "ru": "⬅ Назад",
+#             "th": "⬅ กลับ"
+#         },
+#         "action": "menu:others"
+#     }
+# ]
 
-WITHDRAW_MENU = [
-    {
-        "label": {
-            "en": "💸 Can I withdraw anytime?",
-            "hi": "💸 क्या मैं कभी भी निकाल सकता हूँ?",
-            "mr": "💸 मी कधीही पैसे काढू शकतो का?",
-            "bn": "💸 আমি কি যেকোনো সময় উত্তোলন করতে পারি?",
-            "vi": "💸 Tôi có thể rút tiền bất cứ lúc nào không?",
-            "tl": "💸 Maaari ba akong mag-withdraw anumang oras?",
-            "ru": "💸 Могу ли я выводить средства в любое время?",
-            "th": "💸 ฉันสามารถถอนเงินได้ทุกเมื่อหรือไม่?"
-        },
-        "action": "q:withdraw_anytime"
-    },
-    {
-        "label": {
-            "en": "💰 Withdrawal currency",
-            "hi": "💰 निकासी मुद्रा",
-            "mr": "💰 पैसे काढण्याची चलन",
-            "bn": "💰 উত্তোলনের মুদ্রা",
-            "vi": "💰 Loại tiền rút",
-            "tl": "💰 Currency ng withdrawal",
-            "ru": "💰 Валюта вывода",
-            "th": "💰 สกุลเงินที่ใช้ถอน"
-        },
-        "action": "q:withdraw_currency"
-    },
-    {
-        "label": {
-            "en": "🔥 Token burning mechanism",
-            "hi": "🔥 टोकन बर्निंग मैकेनिज्म",
-            "mr": "🔥 टोकन बर्निंग मेकॅनिझम",
-            "bn": "🔥 টোকেন বার্নিং প্রক্রিয়া",
-            "vi": "🔥 Cơ chế đốt token",
-            "tl": "🔥 Mekanismo ng token burning",
-            "ru": "🔥 Механизм сжигания токенов",
-            "th": "🔥 กลไกการเผาโทเค็น"
-        },
-        "action": "q:withdraw_burn"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
+# WITHDRAW_MENU = [
+#     {
+#         "label": {
+#             "en": "💸 Can I withdraw anytime?",
+#             "hi": "💸 क्या मैं कभी भी निकाल सकता हूँ?",
+#             "mr": "💸 मी कधीही पैसे काढू शकतो का?",
+#             "bn": "💸 আমি কি যেকোনো সময় উত্তোলন করতে পারি?",
+#             "vi": "💸 Tôi có thể rút tiền bất cứ lúc nào không?",
+#             "tl": "💸 Maaari ba akong mag-withdraw anumang oras?",
+#             "ru": "💸 Могу ли я выводить средства в любое время?",
+#             "th": "💸 ฉันสามารถถอนเงินได้ทุกเมื่อหรือไม่?"
+#         },
+#         "action": "q:withdraw_anytime"
+#     },
+#     {
+#         "label": {
+#             "en": "💰 Withdrawal currency",
+#             "hi": "💰 निकासी मुद्रा",
+#             "mr": "💰 पैसे काढण्याची चलन",
+#             "bn": "💰 উত্তোলনের মুদ্রা",
+#             "vi": "💰 Loại tiền rút",
+#             "tl": "💰 Currency ng withdrawal",
+#             "ru": "💰 Валюта вывода",
+#             "th": "💰 สกุลเงินที่ใช้ถอน"
+#         },
+#         "action": "q:withdraw_currency"
+#     },
+#     {
+#         "label": {
+#             "en": "🔥 Token burning mechanism",
+#             "hi": "🔥 टोकन बर्निंग मैकेनिज्म",
+#             "mr": "🔥 टोकन बर्निंग मेकॅनिझम",
+#             "bn": "🔥 টোকেন বার্নিং প্রক্রিয়া",
+#             "vi": "🔥 Cơ chế đốt token",
+#             "tl": "🔥 Mekanismo ng token burning",
+#             "ru": "🔥 Механизм сжигания токенов",
+#             "th": "🔥 กลไกการเผาโทเค็น"
+#         },
+#         "action": "q:withdraw_burn"
+#     },
+#     {
+#         "label": {
+#             "en": "⬅ Back",
+#             "hi": "⬅ वापस",
+#             "mr": "⬅ मागे",
+#             "bn": "⬅ পিছনে",
+#             "vi": "⬅ Quay lại",
+#             "tl": "⬅ Bumalik",
+#             "ru": "⬅ Назад",
+#             "th": "⬅ กลับ"
+#         },
+#         "action": "menu:others"
+#     }
+# ]
 
-RANKS_MENU = [
-    {
-        "label": {
-            "en": "🏆 Rank structure",
-            "hi": "🏆 रैंक संरचना",
-            "mr": "🏆 रँक स्ट्रक्चर",
-            "bn": "🏆 র‍্যাঙ্ক স্ট্রাকচার",
-            "vi": "🏆 Cấu trúc cấp bậc",
-            "tl": "🏆 Rank structure",
-            "ru": "🏆 Структура рангов",
-            "th": "🏆 โครงสร้างระดับ"
-        },
-        "action": "q:rank_structure"
-    },
+# RANKS_MENU = [
+#     {
+#         "label": {
+#             "en": "🏆 Rank structure",
+#             "hi": "🏆 रैंक संरचना",
+#             "mr": "🏆 रँक स्ट्रक्चर",
+#             "bn": "🏆 র‍্যাঙ্ক স্ট্রাকচার",
+#             "vi": "🏆 Cấu trúc cấp bậc",
+#             "tl": "🏆 Rank structure",
+#             "ru": "🏆 Структура рангов",
+#             "th": "🏆 โครงสร้างระดับ"
+#         },
+#         "action": "q:rank_structure"
+#     },
     
-    {
-        "label": {
-            "en": "🎉 Club rewards",
-            "hi": "🎉 क्लब रिवॉर्ड",
-            "mr": "🎉 क्लब रिवॉर्ड",
-            "bn": "🎉 ক্লাব পুরস্কার",
-            "vi": "🎉 Phần thưởng club",
-            "tl": "🎉 Club rewards",
-            "ru": "🎉 Клубные награды",
-            "th": "🎉 รางวัลคลับ"
-        },
-        "action": "q:club_rewards"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
+#     {
+#         "label": {
+#             "en": "🎉 Club rewards",
+#             "hi": "🎉 क्लब रिवॉर्ड",
+#             "mr": "🎉 क्लब रिवॉर्ड",
+#             "bn": "🎉 ক্লাব পুরস্কার",
+#             "vi": "🎉 Phần thưởng club",
+#             "tl": "🎉 Club rewards",
+#             "ru": "🎉 Клубные награды",
+#             "th": "🎉 รางวัลคลับ"
+#         },
+#         "action": "q:club_rewards"
+#     },
+#     {
+#         "label": {
+#             "en": "⬅ Back",
+#             "hi": "⬅ वापस",
+#             "mr": "⬅ मागे",
+#             "bn": "⬅ পিছনে",
+#             "vi": "⬅ Quay lại",
+#             "tl": "⬅ Bumalik",
+#             "ru": "⬅ Назад",
+#             "th": "⬅ กลับ"
+#         },
+#         "action": "menu:others"
+#     }
+# ]
 
-TRIPLE_MENU = [
-    {
-        "label": {
-            "en": "💰 Triple income",
-            "hi": "💰 ट्रिपल इनकम",
-            "mr": "💰 ट्रिपल इनकम",
-            "bn": "💰 ট্রিপল ইনকাম",
-            "vi": "💰 Thu nhập 3 nguồn",
-            "tl": "💰 Triple income",
-            "ru": "💰 Тройной доход",
-            "th": "💰 รายได้ 3 ทาง"
-        },
-        "action": "q:triple_info"
-    },
-    {
-        "label": {
-            "en": "⚠ Income limit",
-            "hi": "⚠ आय सीमा",
-            "mr": "⚠ उत्पन्न मर्यादा",
-            "bn": "⚠ আয়ের সীমা",
-            "vi": "⚠ Giới hạn thu nhập",
-            "tl": "⚠ Income limit",
-            "ru": "⚠ Лимит дохода",
-            "th": "⚠ ขีดจำกัดรายได้"
-        },
-        "action": "q:triple_limit"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
+# TRIPLE_MENU = [
+#     {
+#         "label": {
+#             "en": "💰 Triple income",
+#             "hi": "💰 ट्रिपल इनकम",
+#             "mr": "💰 ट्रिपल इनकम",
+#             "bn": "💰 ট্রিপল ইনকাম",
+#             "vi": "💰 Thu nhập 3 nguồn",
+#             "tl": "💰 Triple income",
+#             "ru": "💰 Тройной доход",
+#             "th": "💰 รายได้ 3 ทาง"
+#         },
+#         "action": "q:triple_info"
+#     },
+#     {
+#         "label": {
+#             "en": "⚠ Income limit",
+#             "hi": "⚠ आय सीमा",
+#             "mr": "⚠ उत्पन्न मर्यादा",
+#             "bn": "⚠ আয়ের সীমা",
+#             "vi": "⚠ Giới hạn thu nhập",
+#             "tl": "⚠ Income limit",
+#             "ru": "⚠ Лимит дохода",
+#             "th": "⚠ ขีดจำกัดรายได้"
+#         },
+#         "action": "q:triple_limit"
+#     },
+#     {
+#         "label": {
+#             "en": "⬅ Back",
+#             "hi": "⬅ वापस",
+#             "mr": "⬅ मागे",
+#             "bn": "⬅ পিছনে",
+#             "vi": "⬅ Quay lại",
+#             "tl": "⬅ Bumalik",
+#             "ru": "⬅ Назад",
+#             "th": "⬅ กลับ"
+#         },
+#         "action": "menu:others"
+#     }
+# ]
 
 LANGUAGE_MENU = {
     "🇬🇧 English": "lang:en",
