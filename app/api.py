@@ -339,50 +339,6 @@ MAIN_MENU = [
         "action": "q:lp_info"
     },
     {
-    "label": {
-        "en": "📄 Download PDF",
-        "hi": "📄 PDF डाउनलोड करें",
-        "mr": "📄 PDF डाउनलोड करा",
-        "bn": "📄 PDF ডাউনলোড করুন",
-        "vi": "📄 Tải xuống PDF",
-        "tl": "📄 I-download ang PDF",
-        "ru": "📄 Скачать PDF",
-        "th": "📄 ดาวน์โหลด PDF"
-    },
-    "action": "q:download_pdf"
-},
-{
-    "label": {
-        "en": "📝 Description",
-        "hi": "📝 विवरण",
-        "mr": "📝 वर्णन",
-        "bn": "📝 বর্ণনা",
-        "vi": "📝 Mô tả",
-        "tl": "📝 Paglalarawan",
-        "ru": "📝 Описание",
-        "th": "📝 คำอธิบาย"
-    },
-    "action": "q:description"
-},
-    {
-        "label": {
-            "en": "📦 Others",
-            "hi": "📦 अन्य",
-            "mr": "📦 इतर",
-            "bn": "📦 অন্যান্য",
-            "vi": "📦 Khác",
-            "tl": "📦 Iba pa",
-            "ru": "📦 Другое",
-            "th": "📦 อื่นๆ"
-        },
-        "action": "menu:others"
-    }
-]
-
-OTHERS_MENU = [
-    
-    
-    {
         "label": {
             "en": "💸 Withdraw",
             "hi": "💸 निकासी",
@@ -462,6 +418,51 @@ OTHERS_MENU = [
         },
         "action": "q:risk_disclaimer"
     },
+    {
+    "label": {
+        "en": "📄 Download PDF",
+        "hi": "📄 PDF डाउनलोड करें",
+        "mr": "📄 PDF डाउनलोड करा",
+        "bn": "📄 PDF ডাউনলোড করুন",
+        "vi": "📄 Tải xuống PDF",
+        "tl": "📄 I-download ang PDF",
+        "ru": "📄 Скачать PDF",
+        "th": "📄 ดาวน์โหลด PDF"
+    },
+    "action": "q:download_pdf"
+},
+{
+    "label": {
+        "en": "📝 Description",
+        "hi": "📝 विवरण",
+        "mr": "📝 वर्णन",
+        "bn": "📝 বর্ণনা",
+        "vi": "📝 Mô tả",
+        "tl": "📝 Paglalarawan",
+        "ru": "📝 Описание",
+        "th": "📝 คำอธิบาย"
+    },
+    "action": "q:description"
+}
+#    {
+#        "label": {
+#           "en": "📦 Others",
+#             "hi": "📦 अन्य",
+#             "mr": "📦 इतर",
+#             "bn": "📦 অন্যান্য",
+#             "vi": "📦 Khác",
+#             "tl": "📦 Iba pa",
+#             "ru": "📦 Другое",
+#             "th": "📦 อื่นๆ"
+#         },
+#         "action": "menu:others"
+#     }
+]
+
+OTHERS_MENU = [
+    
+    
+    
     {
         "label": {
             "en": "⬅ Back",
@@ -668,73 +669,6 @@ MINTING_MENU = [
     }
 ]
 
-LP_MENU = [
-    {
-        "label": {
-            "en": "💧 What is LP?",
-            "hi": "💧 लिक्विडिटी पूल क्या है?",
-            "mr": "💧 लिक्विडिटी पूल म्हणजे काय?",
-            "bn": "💧 লিকুইডিটি পুল কী?",
-            "vi": "💧 LP là gì?",
-            "tl": "💧 Ano ang LP?",
-            "ru": "💧 Что такое LP?",
-            "th": "💧 LP คืออะไร?"
-        },
-        "action": "q:lp_info"
-    },
-    {
-        "label": {
-            "en": "🔗 LP Pair",
-            "hi": "🔗 एलपी पेयर",
-            "mr": "🔗 एलपी पेअर",
-            "bn": "🔗 এলপি পেয়ার",
-            "vi": "🔗 Cặp LP",
-            "tl": "🔗 LP Pair",
-            "ru": "🔗 Пара LP",
-            "th": "🔗 คู่ LP"
-        },
-        "action": "q:lp_pair"
-    },
-    {
-        "label": {
-            "en": "⭐ Benefits",
-            "hi": "⭐ लाभ",
-            "mr": "⭐ फायदे",
-            "bn": "⭐ সুবিধা",
-            "vi": "⭐ Lợi ích",
-            "tl": "⭐ Benepisyo",
-            "ru": "⭐ Преимущества",
-            "th": "⭐ ประโยชน์"
-        },
-        "action": "q:lp_benefits"
-    },
-    {
-        "label": {
-            "en": "💰 Rewards",
-            "hi": "💰 रिवार्ड",
-            "mr": "💰 रिवॉर्ड",
-            "bn": "💰 পুরস্কার",
-            "vi": "💰 Phần thưởng",
-            "tl": "💰 Gantimpala",
-            "ru": "💰 Награды",
-            "th": "💰 รางวัล"
-        },
-        "action": "q:lp_rewards"
-    },
-    {
-        "label": {
-            "en": "⬅ Back",
-            "hi": "⬅ वापस",
-            "mr": "⬅ मागे",
-            "bn": "⬅ পিছনে",
-            "vi": "⬅ Quay lại",
-            "tl": "⬅ Bumalik",
-            "ru": "⬅ Назад",
-            "th": "⬅ กลับ"
-        },
-        "action": "menu:others"
-    }
-]
 
 STAKING_MENU = [
     
