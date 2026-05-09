@@ -1564,13 +1564,12 @@ def header_buttons(user_id=None):
                 "web_app": {
                     "url": f"https://finux-chatbot-production.up.railway.app/static/why-finux.html?lang={lang}"
                 }
-            }
-        ],
+            },
 
-        [
-           
-            # ✅ KEEP WEBSITE CLEAN
-            {"text": t("website"), "url": "https://finux.online/"}
+            {
+                "text": t("website"),
+                "url": "https://finux.online/"
+            }
         ],
     ]
 
@@ -2191,7 +2190,7 @@ async def telegram_webhook(request: Request):
 
                 # START
                 if text == "/start":
-                    image_path = os.path.join(DATA_DIR, "Finux icon.png")
+                    image_path = os.path.join(DATA_DIR, "Finux icon.jpg")
 
                     if os.path.exists(image_path):
                         with open(image_path, "rb") as img:
