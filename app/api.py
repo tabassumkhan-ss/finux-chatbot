@@ -1977,7 +1977,7 @@ async def post_button():
             f"{TELEGRAM_API}/sendMessage",
             json={
                 "chat_id": channel_username,
-                "text": "Welcome to FINUX Chat Bot",
+                "text": "Chat Bot",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
