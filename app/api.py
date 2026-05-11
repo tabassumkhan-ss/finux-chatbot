@@ -1500,6 +1500,17 @@ def build_menu(menu_key, user_id=None):
         keyboard = header_buttons(user_id)
 
     menu_items = get_full_menu(menu_key).copy()
+        # ➕ Add custom Q&A buttons
+    if menu_key == "main":
+
+        for question in CUSTOM_QA.keys():
+
+            menu_items.append({
+                "label": {
+                    "en": question
+                },
+                "action": f"custom:{question}"
+            })
 
     # 👑 Admin-only buttons
     if user_id and int(user_id) in ADMIN_IDS:
@@ -2063,6 +2074,25 @@ async def telegram_webhook(request: Request):
                                 "text": answer,
                             },
                         )
+
+                    return {"ok": True}
+                                # 🔥 CUSTOM Q&A
+                elif payload.startswith("custom:"):
+
+                    question = payload.replace("custom:", "")
+
+                    answer = CUSTOM_QA.get(
+                        question,
+                        "No answer found."
+                    )
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": answer
+                        },
+                    )
 
                     return {"ok": True}
 
