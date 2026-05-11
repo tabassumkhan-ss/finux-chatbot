@@ -2237,14 +2237,20 @@ async def telegram_webhook(request: Request):
                         return {"ok": True}
 
 
-                    # ✏ STEP 1 → find question to edit
+                                        # ✏ STEP 1 → find question to edit
                     elif state["mode"] == "editing_question":
 
                         conn = get_conn()
                         cur = conn.cursor()
 
+                        # 🔍 Flexible search
                         cur.execute(
-                            "SELECT question FROM faq WHERE LOWER(question) LIKE LOWER(%s)LIMIT 1",
+                            """
+                            SELECT question
+                            FROM faq
+                            WHERE LOWER(question) LIKE LOWER(%s)
+                            LIMIT 1
+                            """,
                             (f"%{text}%",)
                         )
 
@@ -2267,21 +2273,22 @@ async def telegram_webhook(request: Request):
 
                             return {"ok": True}
 
+                        found_question = row[0]
+
                         USER_STATES[chat_id] = {
                             "mode": "editing_new_question",
-                            "old_question": text
+                            "old_question": found_question
                         }
 
                         await client.post(
                             f"{TELEGRAM_API}/sendMessage",
                             json={
                                 "chat_id": chat_id,
-                                "text": "Send the new question.\n\nType SAME to keep current question."
+                                "text": f"Found:\n\n{found_question}\n\nSend new question.\nType SAME to keep current question."
                             },
                         )
 
                         return {"ok": True}
-
 
                     # ✏ STEP 2 → new question
                     elif state["mode"] == "editing_new_question":
