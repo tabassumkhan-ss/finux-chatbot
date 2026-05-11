@@ -1498,30 +1498,30 @@ def build_menu(menu_key, user_id=None):
     menu_items = get_full_menu(menu_key)
 
     # 👑 Admin-only buttons
-if user_id and int(user_id) in ADMIN_IDS:
+    if user_id and int(user_id) in ADMIN_IDS:
 
-    menu_items.extend([
-        {
-            "label": {
-                "en": "➕ Add Q&A"
+        menu_items.extend([
+            {
+                "label": {
+                    "en": "➕ Add Q&A"
+                },
+                "action": "admin:add_qa"
             },
-            "action": "admin:add_qa"
-        },
 
-        {
-            "label": {
-                "en": "✏ Edit Q&A"
+            {
+                "label": {
+                    "en": "✏ Edit Q&A"
+                },
+                "action": "admin:edit_qa"
             },
-            "action": "admin:edit_qa"
-        },
 
-        {
-            "label": {
-                "en": "👑 Add Admin"
-            },
-            "action": "admin:add_admin"
-        }
-    ])
+            {
+                "label": {
+                    "en": "👑 Add Admin"
+                },
+                "action": "admin:add_admin"
+            }
+        ])
 
     row = []
 
