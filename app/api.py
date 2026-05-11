@@ -2145,9 +2145,60 @@ async def telegram_webhook(request: Request):
                 if chat_id in USER_STATES:
 
                     state = USER_STATES[chat_id]
+                                        # 👑 ADD ADMIN FLOW
+                    if state["mode"] == "adding_admin":
+
+                        try:
+
+                            new_admin_id = int(text)
+
+                            conn = get_conn()
+                            cur = conn.cursor()
+
+                            cur.execute(
+                                """
+                                INSERT INTO admins (telegram_id)
+                                VALUES (%s)
+                                ON CONFLICT DO NOTHING
+                                """,
+                                (new_admin_id,)
+                            )
+
+                            conn.commit()
+
+                            cur.close()
+                            conn.close()
+
+                            del USER_STATES[chat_id]
+
+                            MENU_CACHE.clear()
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": f"✅ Added admin: {new_admin_id}"
+                                },
+                            )
+
+                            return {"ok": True}
+
+                        except Exception as e:
+
+                            print("ADD ADMIN ERROR:", e)
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": "❌ Invalid Telegram ID."
+                                },
+                            )
+
+                            return {"ok": True}
 
                     # ➕ STEP 1 → waiting for question
-                    if state["mode"] == "waiting_question":
+                    elif state["mode"] == "waiting_question":
 
                         USER_STATES[chat_id] = {
                             "mode": "waiting_answer",
@@ -2172,8 +2223,8 @@ async def telegram_webhook(request: Request):
                         cur = conn.cursor()
 
                         cur.execute(
-                            "SELECT question FROM faq WHERE question=%s",
-                            (text,)
+                            "SELECT question FROM faq WHERE LOWER(question) LIKE LOWER(%s)LIMIT 1",
+                            (f"%{text}%",)
                         )
 
                         row = cur.fetchone()
