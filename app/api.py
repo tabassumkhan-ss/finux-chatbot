@@ -1499,7 +1499,7 @@ def build_menu(menu_key, user_id=None):
     if menu_key == "main":
         keyboard = header_buttons(user_id)
 
-    menu_items = get_full_menu(menu_key)
+    menu_items = get_full_menu(menu_key).copy()
 
     # 👑 Admin-only buttons
     if user_id and int(user_id) in ADMIN_IDS:
@@ -2071,6 +2071,50 @@ async def telegram_webhook(request: Request):
                 msg = data["message"]
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "").strip()
+                                # 👑 ADMIN ADD Q&A FLOW
+                if chat_id in USER_STATES:
+
+                    state = USER_STATES[chat_id]
+
+                    # STEP 1 → waiting for question
+                    if state["mode"] == "waiting_question":
+
+                        USER_STATES[chat_id] = {
+                            "mode": "waiting_answer",
+                            "question": text
+                        }
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": "Now send the answer."
+                            },
+                        )
+
+                        return {"ok": True}
+
+                    # STEP 2 → waiting for answer
+                    elif state["mode"] == "waiting_answer":
+
+                        question = state["question"]
+                        answer = text
+
+                        CUSTOM_QA[question] = answer
+
+                        del USER_STATES[chat_id]
+
+                        MENU_CACHE.clear()
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": f"✅ Added successfully:\n\nQ: {question}\nA: {answer}"
+                            },
+                        )
+
+                        return {"ok": True}
 
                 # START
                 if text == "/start":
