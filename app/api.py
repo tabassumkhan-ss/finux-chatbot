@@ -24,6 +24,10 @@ from app.db import save_chat, init_db
 
 TRANSLATION_CACHE = {}
 
+ADMIN_IDS = [
+    7955075357
+]
+
 class ChatRequest(BaseModel):
     message: str
     session_id: str
@@ -1493,6 +1497,32 @@ def build_menu(menu_key, user_id=None):
 
     menu_items = get_full_menu(menu_key)
 
+    # 👑 Admin-only buttons
+if user_id and int(user_id) in ADMIN_IDS:
+
+    menu_items.extend([
+        {
+            "label": {
+                "en": "➕ Add Q&A"
+            },
+            "action": "admin:add_qa"
+        },
+
+        {
+            "label": {
+                "en": "✏ Edit Q&A"
+            },
+            "action": "admin:edit_qa"
+        },
+
+        {
+            "label": {
+                "en": "👑 Add Admin"
+            },
+            "action": "admin:add_admin"
+        }
+    ])
+
     row = []
 
     for item in menu_items:
@@ -1962,6 +1992,18 @@ async def telegram_webhook(request: Request):
                             "reply_markup": build_menu(menu_key, str(chat_id)),
                         },
                     )
+                    return {"ok": True}
+                
+                elif payload == "admin:add_qa":
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Send question and answer."
+                        },
+                    )
+
                     return {"ok": True}
 
                 # ❓ QUESTION HANDLER (FIXED)
