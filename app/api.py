@@ -2338,7 +2338,7 @@ async def telegram_webhook(request: Request):
 
                     return {"ok": True}
 
-                # # 🤖 AI RESPONSE
+                 # 🤖 AI RESPONSE
                 # if text:
                 #     answer = generate_answer(text)
 
