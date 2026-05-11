@@ -1512,18 +1512,23 @@ def build_menu(menu_key, user_id=None):
         keyboard = header_buttons(user_id)
 
     menu_items = get_full_menu(menu_key).copy()
-        # ➕ Add custom Q&A buttons
+            # ➕ Add custom Q&A buttons
     if menu_key == "main":
 
         for question, answer in get_all_faq():
 
+            display_question = question
+
+            # 🌐 Translate FAQ question
+            if lang != "en":
+                display_question = translate(question, lang)
+
             menu_items.append({
                 "label": {
-                    "en": question
+                    "en": display_question
                 },
                 "action": f"custom:{question}"
             })
-
     # 👑 Admin-only buttons
     if user_id and int(user_id) in ADMIN_IDS:
 
@@ -1540,6 +1545,13 @@ def build_menu(menu_key, user_id=None):
                     "en": "✏ Edit Q&A"
                 },
                 "action": "admin:edit_qa"
+            },
+
+            {
+                 "label": {
+                     "en": "🗑 Delete Q&A"
+                },
+                "action": "admin:delete_qa"
             },
 
             {
@@ -2060,7 +2072,7 @@ async def telegram_webhook(request: Request):
                     
 
                     
-                                # ✏ EDIT Q&A
+                                               # ✏ EDIT Q&A
                 elif payload == "admin:edit_qa":
 
                     USER_STATES[chat_id] = {
@@ -2071,13 +2083,31 @@ async def telegram_webhook(request: Request):
                         f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
-                            "text": "Send the exact question you want to edit."
+                            "text": "Send question text to edit."
                         },
                     )
 
                     return {"ok": True}
 
 
+                # 🗑 DELETE Q&A
+                elif payload == "admin:delete_qa":
+
+                    USER_STATES[chat_id] = {
+                        "mode": "deleting_question"
+                    }
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Send question text to delete."
+                        },
+                    )
+
+                    return {"ok": True}
+
+                    
                 # ❓ QUESTION HANDLER
                 elif payload.startswith("q:"):
 
@@ -2144,6 +2174,10 @@ async def telegram_webhook(request: Request):
                     conn.close()
 
                     answer = row[0] if row else "No answer found."
+                    lang = get_user_language(str(chat_id))
+
+                    if lang != "en":
+                        answer = translate(answer, lang)
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
@@ -2217,6 +2251,67 @@ async def telegram_webhook(request: Request):
                             )
 
                             return {"ok": True}
+                                            # 🗑 DELETE Q&A
+                    elif state["mode"] == "deleting_question":
+
+                        conn = get_conn()
+                        cur = conn.cursor()
+
+                        # 🔍 Flexible search
+                        cur.execute(
+                            """
+                            SELECT question
+                            FROM faq
+                            WHERE LOWER(question) LIKE LOWER(%s)
+                            LIMIT 1
+                            """,
+                            (f"%{text}%",)
+                        )
+
+                        row = cur.fetchone()
+
+                        if not row:
+
+                            cur.close()
+                            conn.close()
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": "❌ Question not found."
+                                },
+                            )
+
+                            del USER_STATES[chat_id]
+
+                            return {"ok": True}
+
+                        found_question = row[0]
+
+                        cur.execute(
+                            "DELETE FROM faq WHERE question=%s",
+                            (found_question,)
+                        )
+
+                        conn.commit()
+
+                        cur.close()
+                        conn.close()
+
+                        del USER_STATES[chat_id]
+
+                        MENU_CACHE.clear()
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": f"✅ Deleted:\n\n{found_question}"
+                            },
+                        )
+
+                        return {"ok": True}
 
                     # ➕ STEP 1 → waiting for question
                     elif state["mode"] == "waiting_question":
