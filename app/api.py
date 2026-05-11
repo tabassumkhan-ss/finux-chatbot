@@ -28,6 +28,10 @@ ADMIN_IDS = [
     7955075357
 ]
 
+CUSTOM_QA = {}
+
+USER_STATES = {}
+
 class ChatRequest(BaseModel):
     message: str
     session_id: str
@@ -1979,7 +1983,7 @@ async def telegram_webhook(request: Request):
                     )
                     return {"ok": True}
 
-                # 📂 MENU NAVIGATION
+                                # 📂 MENU NAVIGATION
                 elif payload.startswith("menu:"):
                     menu_key = payload.replace("menu:", "")
 
@@ -1992,34 +1996,35 @@ async def telegram_webhook(request: Request):
                             "reply_markup": build_menu(menu_key, str(chat_id)),
                         },
                     )
+
                     return {"ok": True}
-                
+
+
+                # 👑 ADD Q&A
                 elif payload == "admin:add_qa":
+
+                    USER_STATES[chat_id] = {
+                        "mode": "waiting_question"
+                    }
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
                         json={
                             "chat_id": chat_id,
-                            "text": "Send question and answer."
+                            "text": "Send your question."
                         },
                     )
 
                     return {"ok": True}
 
-                # ❓ QUESTION HANDLER (FIXED)
+
+                # ❓ QUESTION HANDLER
                 elif payload.startswith("q:"):
+
                     key = payload.replace("q:", "")
                     print("KEY:", key)
 
                     answer = get_full_answer(key, str(chat_id))
-
-                    # if not answer or not str(answer).strip():
-                    #     topic = key.replace("_", " ")
-                    #     answer = semantic_search(topic)
-
-                    # if not answer or not str(answer).strip():
-                    #     topic = key.replace("_", " ")
-                    #     answer = generate_answer(topic)
 
                     if not answer or not str(answer).strip():
                         return {"ok": True}
@@ -2027,6 +2032,7 @@ async def telegram_webhook(request: Request):
                     print("FINAL ANSWER:", repr(answer))
 
                     lang = get_user_language(str(chat_id))
+
                     if key not in HARDCODED_ANSWERS and lang != "en":
                         answer = translate(answer, lang)
 
@@ -2045,7 +2051,9 @@ async def telegram_webhook(request: Request):
                                 "reply_markup": build_menu(menu_to_show, str(chat_id)),
                             },
                         )
+
                     except Exception as e:
+
                         print("EDIT FAILED:", e)
 
                         await client.post(
