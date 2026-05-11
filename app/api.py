@@ -2027,6 +2027,22 @@ async def telegram_webhook(request: Request):
                     )
 
                     return {"ok": True}
+                                # ✏ EDIT Q&A
+                elif payload == "admin:edit_qa":
+
+                    USER_STATES[chat_id] = {
+                        "mode": "editing_question"
+                    }
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Send the exact question you want to edit."
+                        },
+                    )
+
+                    return {"ok": True}
 
 
                 # ❓ QUESTION HANDLER
@@ -2096,17 +2112,19 @@ async def telegram_webhook(request: Request):
 
                     return {"ok": True}
 
-            # ================= NORMAL MESSAGE =================
+                        # ================= NORMAL MESSAGE =================
             if "message" in data:
+
                 msg = data["message"]
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "").strip()
-                                # 👑 ADMIN ADD Q&A FLOW
+
+                # 👑 ADMIN ADD / EDIT Q&A FLOW
                 if chat_id in USER_STATES:
 
                     state = USER_STATES[chat_id]
 
-                    # STEP 1 → waiting for question
+                    # ➕ STEP 1 → waiting for question
                     if state["mode"] == "waiting_question":
 
                         USER_STATES[chat_id] = {
@@ -2124,7 +2142,41 @@ async def telegram_webhook(request: Request):
 
                         return {"ok": True}
 
-                    # STEP 2 → waiting for answer
+
+                    # ✏ STEP 1 → question to edit
+                    elif state["mode"] == "editing_question":
+
+                        if text not in CUSTOM_QA:
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": "❌ Question not found."
+                                },
+                            )
+
+                            del USER_STATES[chat_id]
+
+                            return {"ok": True}
+
+                        USER_STATES[chat_id] = {
+                            "mode": "editing_answer",
+                            "question": text
+                        }
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": "Send the new answer."
+                            },
+                        )
+
+                        return {"ok": True}
+
+
+                    # ➕ STEP 2 → save new Q&A
                     elif state["mode"] == "waiting_answer":
 
                         question = state["question"]
@@ -2141,6 +2193,28 @@ async def telegram_webhook(request: Request):
                             json={
                                 "chat_id": chat_id,
                                 "text": f"✅ Added successfully:\n\nQ: {question}\nA: {answer}"
+                            },
+                        )
+
+                        return {"ok": True}
+
+
+                    # ✏ STEP 2 → save edited answer
+                    elif state["mode"] == "editing_answer":
+
+                        question = state["question"]
+
+                        CUSTOM_QA[question] = text
+
+                        del USER_STATES[chat_id]
+
+                        MENU_CACHE.clear()
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": f"✅ Updated successfully:\n\nQ: {question}\nA: {text}"
                             },
                         )
 
