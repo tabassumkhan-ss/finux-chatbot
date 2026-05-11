@@ -28,8 +28,6 @@ ADMIN_IDS = [
     7955075357
 ]
 
-CUSTOM_QA = {}
-
 USER_STATES = {}
 
 class ChatRequest(BaseModel):
@@ -248,6 +246,20 @@ Keep formatting, emojis, and line breaks same.
         logging.error(f"Translation error: {e}")
 
     return text
+
+def get_all_faq():
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("SELECT question, answer FROM faq ORDER BY id")
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return rows
 
 # ================ TELEGRAM ===============
 
@@ -1503,7 +1515,7 @@ def build_menu(menu_key, user_id=None):
         # ➕ Add custom Q&A buttons
     if menu_key == "main":
 
-        for question in CUSTOM_QA.keys():
+        for question, answer in get_all_faq():
 
             menu_items.append({
                 "label": {
@@ -2092,15 +2104,25 @@ async def telegram_webhook(request: Request):
                         )
 
                     return {"ok": True}
-                                # 🔥 CUSTOM Q&A
+                                                # 🔥 CUSTOM Q&A
                 elif payload.startswith("custom:"):
 
                     question = payload.replace("custom:", "")
 
-                    answer = CUSTOM_QA.get(
-                        question,
-                        "No answer found."
+                    conn = get_conn()
+                    cur = conn.cursor()
+
+                    cur.execute(
+                        "SELECT answer FROM faq WHERE question=%s",
+                        (question,)
                     )
+
+                    row = cur.fetchone()
+
+                    cur.close()
+                    conn.close()
+
+                    answer = row[0] if row else "No answer found."
 
                     await client.post(
                         f"{TELEGRAM_API}/sendMessage",
@@ -2111,7 +2133,7 @@ async def telegram_webhook(request: Request):
                     )
 
                     return {"ok": True}
-
+                
                         # ================= NORMAL MESSAGE =================
             if "message" in data:
 
@@ -2119,7 +2141,7 @@ async def telegram_webhook(request: Request):
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "").strip()
 
-                # 👑 ADMIN ADD / EDIT Q&A FLOW
+                                # 👑 ADMIN ADD / EDIT Q&A FLOW
                 if chat_id in USER_STATES:
 
                     state = USER_STATES[chat_id]
@@ -2143,10 +2165,23 @@ async def telegram_webhook(request: Request):
                         return {"ok": True}
 
 
-                    # ✏ STEP 1 → question to edit
+                    # ✏ STEP 1 → find question to edit
                     elif state["mode"] == "editing_question":
 
-                        if text not in CUSTOM_QA:
+                        conn = get_conn()
+                        cur = conn.cursor()
+
+                        cur.execute(
+                            "SELECT question FROM faq WHERE question=%s",
+                            (text,)
+                        )
+
+                        row = cur.fetchone()
+
+                        cur.close()
+                        conn.close()
+
+                        if not row:
 
                             await client.post(
                                 f"{TELEGRAM_API}/sendMessage",
@@ -2161,8 +2196,35 @@ async def telegram_webhook(request: Request):
                             return {"ok": True}
 
                         USER_STATES[chat_id] = {
+                            "mode": "editing_new_question",
+                            "old_question": text
+                        }
+
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": "Send the new question.\n\nType SAME to keep current question."
+                            },
+                        )
+
+                        return {"ok": True}
+
+
+                    # ✏ STEP 2 → new question
+                    elif state["mode"] == "editing_new_question":
+
+                        old_question = state["old_question"]
+
+                        if text.upper() == "SAME":
+                            new_question = old_question
+                        else:
+                            new_question = text
+
+                        USER_STATES[chat_id] = {
                             "mode": "editing_answer",
-                            "question": text
+                            "old_question": old_question,
+                            "new_question": new_question
                         }
 
                         await client.post(
@@ -2182,7 +2244,23 @@ async def telegram_webhook(request: Request):
                         question = state["question"]
                         answer = text
 
-                        CUSTOM_QA[question] = answer
+                        conn = get_conn()
+                        cur = conn.cursor()
+
+                        cur.execute(
+                            """
+                            INSERT INTO faq (question, answer)
+                            VALUES (%s, %s)
+                            ON CONFLICT (question)
+                            DO UPDATE SET answer = EXCLUDED.answer
+                            """,
+                            (question, answer)
+                        )
+
+                        conn.commit()
+
+                        cur.close()
+                        conn.close()
 
                         del USER_STATES[chat_id]
 
@@ -2199,12 +2277,29 @@ async def telegram_webhook(request: Request):
                         return {"ok": True}
 
 
-                    # ✏ STEP 2 → save edited answer
+                    # ✏ STEP 3 → save edited question + answer
                     elif state["mode"] == "editing_answer":
 
-                        question = state["question"]
+                        old_question = state["old_question"]
+                        new_question = state["new_question"]
+                        new_answer = text
 
-                        CUSTOM_QA[question] = text
+                        conn = get_conn()
+                        cur = conn.cursor()
+
+                        cur.execute(
+                            """
+                            UPDATE faq
+                            SET question=%s, answer=%s
+                            WHERE question=%s
+                            """,
+                            (new_question, new_answer, old_question)
+                        )
+
+                        conn.commit()
+
+                        cur.close()
+                        conn.close()
 
                         del USER_STATES[chat_id]
 
@@ -2214,12 +2309,12 @@ async def telegram_webhook(request: Request):
                             f"{TELEGRAM_API}/sendMessage",
                             json={
                                 "chat_id": chat_id,
-                                "text": f"✅ Updated successfully:\n\nQ: {question}\nA: {text}"
+                                "text": f"✅ Updated successfully:\n\nQ: {new_question}\nA: {new_answer}"
                             },
                         )
 
                         return {"ok": True}
-
+                    
                 # START
                 if text == "/start":
                    # image_path = os.path.join(DATA_DIR, "finux.png")
@@ -2243,23 +2338,23 @@ async def telegram_webhook(request: Request):
 
                     return {"ok": True}
 
-                # 🤖 AI RESPONSE
-                if text:
-                    answer = generate_answer(text)
+                # # 🤖 AI RESPONSE
+                # if text:
+                #     answer = generate_answer(text)
 
-                    lang = get_user_language(str(chat_id))
-                    if lang != "en":
-                        answer = translate(answer, lang)
+                #     lang = get_user_language(str(chat_id))
+                #     if lang != "en":
+                #         answer = translate(answer, lang)
 
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
-                        json={
-                            "chat_id": chat_id,
-                            "text": answer,
-                        },
-                    )
+                #     await client.post(
+                #         f"{TELEGRAM_API}/sendMessage",
+                #         json={
+                #             "chat_id": chat_id,
+                #             "text": answer,
+                #         },
+                #     )
 
-                    return {"ok": True}
+                #     return {"ok": True}
 
         return {"ok": True}
 
