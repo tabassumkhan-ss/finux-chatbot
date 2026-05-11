@@ -2023,7 +2023,7 @@ async def telegram_webhook(request: Request):
                     return {"ok": True}
 
 
-                # 👑 ADD Q&A
+                                # 👑 ADD Q&A
                 elif payload == "admin:add_qa":
 
                     USER_STATES[chat_id] = {
@@ -2039,6 +2039,27 @@ async def telegram_webhook(request: Request):
                     )
 
                     return {"ok": True}
+
+
+                # 👑 ADD ADMIN
+                elif payload == "admin:add_admin":
+
+                    USER_STATES[chat_id] = {
+                        "mode": "adding_admin"
+                    }
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Send Telegram ID to make admin."
+                        },
+                    )
+
+                    return {"ok": True}
+                    
+
+                    
                                 # ✏ EDIT Q&A
                 elif payload == "admin:edit_qa":
 
