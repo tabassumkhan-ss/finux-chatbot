@@ -2203,11 +2203,13 @@ async def telegram_webhook(request: Request):
                     if lang != "en":
                         answer = translate(answer, lang)
 
-                    await client.post(
-                        f"{TELEGRAM_API}/sendMessage",
+                        await client.post(
+                        f"{TELEGRAM_API}/editMessageText",
                         json={
                             "chat_id": chat_id,
-                            "text": answer
+                            "message_id": message_id,
+                            "text": f"🚀 FINUX Assistant\n\n{answer}",
+                            "reply_markup": build_menu("main", str(chat_id)),
                         },
                     )
 
