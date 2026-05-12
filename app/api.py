@@ -1559,6 +1559,13 @@ def build_menu(menu_key, user_id=None):
                     "en": "👑 Add Admin"
                 },
                 "action": "admin:add_admin"
+            },
+
+            {
+                 "label": {
+                    "en": "❌ Remove Admin"
+                },
+                "action": "admin:remove_admin"
             }
         ])
 
@@ -2069,6 +2076,23 @@ async def telegram_webhook(request: Request):
                     )
 
                     return {"ok": True}
+                
+                                # ❌ REMOVE ADMIN
+                elif payload == "admin:remove_admin":
+
+                    USER_STATES[chat_id] = {
+                        "mode": "removing_admin"
+                    }
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "Send Telegram ID to remove admin."
+                        },
+                    )
+
+                    return {"ok": True}
                     
 
                     
@@ -2251,6 +2275,68 @@ async def telegram_webhook(request: Request):
                             )
 
                             return {"ok": True}
+                        
+                    # ❌ REMOVE ADMIN
+                    elif state["mode"] == "removing_admin":
+
+                        try:
+
+                            remove_admin_id = int(text)
+
+                            # 🚫 Prevent removing yourself
+                            if remove_admin_id == 7955075357:
+
+                                await client.post(
+                                    f"{TELEGRAM_API}/sendMessage",
+                                    json={
+                                        "chat_id": chat_id,
+                                        "text": "❌ You cannot remove yourself."
+                                    },
+                                )
+
+                                return {"ok": True}
+
+                            conn = get_conn()
+                            cur = conn.cursor()
+
+                            cur.execute(
+                                "DELETE FROM admins WHERE telegram_id=%s",
+                                (remove_admin_id,)
+                            )
+
+                            conn.commit()
+
+                            cur.close()
+                            conn.close()
+
+                            del USER_STATES[chat_id]
+
+                            MENU_CACHE.clear()
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": f"✅ Removed admin: {remove_admin_id}"
+                                },
+                            )
+
+                            return {"ok": True}
+
+                        except Exception as e:
+
+                            print("REMOVE ADMIN ERROR:", e)
+
+                            await client.post(
+                                f"{TELEGRAM_API}/sendMessage",
+                                json={
+                                    "chat_id": chat_id,
+                                    "text": "❌ Invalid Telegram ID."
+                                },
+                            )
+
+                            return {"ok": True}
+                        
                                             # 🗑 DELETE Q&A
                     elif state["mode"] == "deleting_question":
 
