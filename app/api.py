@@ -2220,6 +2220,25 @@ async def telegram_webhook(request: Request):
                 chat_id = msg["chat"]["id"]
                 text = msg.get("text", "").strip()
 
+                                # ❌ CANCEL CURRENT FLOW
+                if text.lower() == "/cancel":
+
+                    if chat_id in USER_STATES:
+                        del USER_STATES[chat_id]
+
+                    MENU_CACHE.clear()
+
+                    await client.post(
+                        f"{TELEGRAM_API}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "❌ Current operation cancelled.",
+                            "reply_markup": build_menu("main", str(chat_id)),
+                        },
+                    )
+
+                    return {"ok": True}
+
                                 # 👑 ADMIN ADD / EDIT Q&A FLOW
                 if chat_id in USER_STATES:
 
