@@ -2179,7 +2179,8 @@ async def telegram_webhook(request: Request):
                         )
 
                     return {"ok": True}
-                                                # 🔥 CUSTOM Q&A
+                
+                # 🔥 CUSTOM Q&A
                 elif payload.startswith("custom:"):
 
                     question = payload.replace("custom:", "")
@@ -2198,23 +2199,41 @@ async def telegram_webhook(request: Request):
                     conn.close()
 
                     answer = row[0] if row else "No answer found."
+
+                    # 🌐 Translate answer
                     lang = get_user_language(str(chat_id))
 
                     if lang != "en":
                         answer = translate(answer, lang)
 
+                    # ✅ Show answer ABOVE menu
+                    try:
+
                         await client.post(
-                        f"{TELEGRAM_API}/editMessageText",
-                        json={
-                            "chat_id": chat_id,
-                            "message_id": message_id,
-                            "text": f"🚀 FINUX Assistant\n\n{answer}",
-                            "reply_markup": build_menu("main", str(chat_id)),
-                        },
-                    )
+                            f"{TELEGRAM_API}/editMessageText",
+                            json={
+                                "chat_id": chat_id,
+                                "message_id": message_id,
+                                "text": f"🚀 FINUX Assistant\n\n📌 {answer}",
+                                "reply_markup": build_menu("main", str(chat_id)),
+                            },
+                        )
+
+                    except Exception as e:
+
+                        print("CUSTOM FAQ ERROR:", e)
+
+                        # fallback
+                        await client.post(
+                            f"{TELEGRAM_API}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": answer
+                            },
+                        )
 
                     return {"ok": True}
-                
+                                
                         # ================= NORMAL MESSAGE =================
             if "message" in data:
 
