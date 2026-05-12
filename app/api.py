@@ -2330,7 +2330,7 @@ async def telegram_webhook(request: Request):
                                     f"{TELEGRAM_API}/sendMessage",
                                     json={
                                         "chat_id": chat_id,
-                                        "text": "❌ You cannot remove yourself."
+                                        "text": "❌ This Admin cannot be removed ."
                                     },
                                 )
 
