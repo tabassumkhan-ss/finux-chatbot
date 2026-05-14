@@ -1563,6 +1563,7 @@ def build_menu(menu_key, user_id=None):
                 "action": f"custom:{question}"
             })
     # 👑 Admin-only buttons
+    print("IS ADMIN:", user_id, is_admin(user_id))
     if user_id and is_admin(user_id):
 
         menu_items.extend([
