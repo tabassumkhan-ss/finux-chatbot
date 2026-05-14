@@ -261,6 +261,24 @@ def get_all_faq():
 
     return rows
 
+def is_admin(user_id):
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT telegram_id FROM admins WHERE telegram_id=%s",
+        (int(user_id),)
+    )
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return bool(row)
+
+
 # ================ TELEGRAM ===============
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -1530,7 +1548,7 @@ def build_menu(menu_key, user_id=None):
                 "action": f"custom:{question}"
             })
     # 👑 Admin-only buttons
-    if user_id and int(user_id) in ADMIN_IDS:
+    if user_id and is_admin(user_id):
 
         menu_items.extend([
             {
