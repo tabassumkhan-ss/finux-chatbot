@@ -263,25 +263,34 @@ def get_all_faq():
 
 def is_admin(user_id):
 
-    print("CHECK ADMIN:", user_id)
+    try:
 
-    conn = get_conn()
-    cur = conn.cursor()
+        user_id = int(user_id)
 
-    cur.execute(
-        "SELECT telegram_id FROM admins WHERE telegram_id=%s",
-        (int(user_id),)
-    )
+        # ✅ Hardcoded admin fallback
+        if user_id in ADMIN_IDS:
+            return True
 
-    row = cur.fetchone()
+        conn = get_conn()
+        cur = conn.cursor()
 
-    print("ADMIN ROW:", row)
+        cur.execute(
+            "SELECT telegram_id FROM admins WHERE telegram_id=%s",
+            (user_id,)
+        )
 
-    cur.close()
-    conn.close()
+        row = cur.fetchone()
 
-    return bool(row)
+        cur.close()
+        conn.close()
 
+        return bool(row)
+
+    except Exception as e:
+
+        print("ADMIN CHECK ERROR:", e)
+
+        return False
 
 # ================ TELEGRAM ===============
 
@@ -1622,17 +1631,36 @@ def build_menu(menu_key, user_id=None):
 
     return result
 
-def is_admin(username):
-    conn = get_conn()
-    cur = conn.cursor()
+def is_admin(user_id):
 
-    cur.execute("SELECT role FROM users WHERE username=%s", (username,))
-    row = cur.fetchone()
+    try:
 
-    cur.close()
-    conn.close()
+        user_id = int(user_id)
 
-    return row and row[0] == "admin"
+        # ✅ Hardcoded fallback admin
+        if user_id in ADMIN_IDS:
+            return True
+
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT telegram_id FROM admins WHERE telegram_id=%s",
+            (user_id,)
+        )
+
+        row = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        return bool(row)
+
+    except Exception as e:
+
+        print("ADMIN CHECK ERROR:", e)
+
+        return False
 
 
 # ===================== FASTAPI =====================
