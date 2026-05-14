@@ -263,6 +263,8 @@ def get_all_faq():
 
 def is_admin(user_id):
 
+    print("CHECK ADMIN:", user_id)
+
     conn = get_conn()
     cur = conn.cursor()
 
@@ -272,6 +274,8 @@ def is_admin(user_id):
     )
 
     row = cur.fetchone()
+
+    print("ADMIN ROW:", row)
 
     cur.close()
     conn.close()
