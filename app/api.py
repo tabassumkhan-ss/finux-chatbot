@@ -1514,6 +1514,8 @@ MENU_CACHE = {}
 
 def build_menu(menu_key, user_id=None):
 
+    print("BUILD MENU:", menu_key, user_id)
+
     # 🌐 Get language
     lang = "en"
     if user_id:
